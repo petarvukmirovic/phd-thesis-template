@@ -1,15 +1,15 @@
 \chapter{Introduction}
 \label{introduction}
 
-\dropcap{H}alf sleeping, half playing Fruit Ninja on my smartphone at one of the
+Half sleeping, half playing Fruit Ninja on my smartphone at one of the
 philosophy lectures in my high school I heard my professor exclaim with
 excitement: “Mathematical truth is the highest and absolute form of truth!”.
 Unbothered and uninterested, I continued playing Fruit Ninja.
 
 Many years later I started studying various formal methods in computer science.
-There I learned the value of formal, mathematical languages and finally
+There I learned the value of formal, mathematical language and finally
 understood him. Not only does using a rigorous mathematical language avoid the
-ambiguity of natural language, it allows us to use formal rules of reasoning to
+ambiguity of natural language, it allows us to use the formal rules of reasoning to
 make conclusions from initial arguments in a trustworthy manner. 
 
 Though the interest for rigorous and formal reasoning dates back to Aristotle,
@@ -25,7 +25,7 @@ people are mortal'' ($\forall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
 
 The initial study of this formalism and the rules to reason about statements in
 it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
-that there is a system of inference rules such that for any true (valid) statement a
+that there is a system of inference rules (calculus) such that for any valid statement a
 proof of validity can be constructed in this system. Around the same time, the
 first computers were leaving the imagination of the engineers and began to
 automate many complicated processes.  Naturally, the question as to  whether a
@@ -40,17 +40,20 @@ first-order formula. As first-order logic is undecidable this algorithm
 terminated only on valid formulas. Even though it was efficient enough to prove
 only simple formulas, it was an impressive achievement for the time.
 
-A bigger breakthrough happened in 1965 when Robinson introduced a formal system
-(calculus) that would shape the future of automatic reasoning --- the resolution
-calculus \cite{ar-65-resolution}. Consisting of a single inference rule it was
-simple and elegant. It was also \emph{complete}: each theorem could be proven
-using this system. Furthermore, it was less explosive that Davis and Putnam's
-algorithm since it introduced unification as an inference filter.
+A bigger breakthrough happened in 1965 when Robinson introduced a calculus that
+would shape the future of automatic reasoning --- the resolution calculus
+\cite{ar-65-resolution}. Consisting of a single inference rule it was simple and
+elegant. It was also \emph{complete}: each theorem could be proven using this
+system. Furthermore, it was less explosive than Davis and Putnam's algorithm
+since it introduced unification as an inference filter.
 
-Since the introduction of resolution calculus it was improved in many ways.
-Strategies and heuristics \cite{lw-65-sos} to curb the explosion of the search
-space were introduced, as well as variants of resolution calculus that are less
-explosive than the original calculus but still complete .
+Since its introduction, resolution was improved in many ways. Strategies and
+heuristics~\cite{lw-65-sos} to curb the explosion of the search space were
+introduced, as well as complete, but less explosive variants of the calculus \cite{cc-73-resolution-book}. Despite this
+progress, reasoning about equality of objects was still hard for these methods. This changed with introduction of
+superposition in 199
+
+
 
 
 
