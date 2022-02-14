@@ -69,10 +69,39 @@ for theorem provers. However, computers can still be of help to construct formal
 proofs.
 
 Proof assistants (or interactive theorem provers) are programs which allow users
-to describe a theory in a formal way and to prove the statements about this
-theory using rules of the inference system the proof assistant is based on.
-These programs can then check if the given proof is correct. As their core is usually
-small and well-tested, proofs that pass the checking phase are considered trustworthy.
+to describe a theory formally and to prove the statements about this theory
+using rules of the inference system the proof assistant is based on. These
+programs can then check if the given proof is correct. As their core is usually
+small and well-tested, proofs that pass the checking phase are considered
+trustworthy.
+
+They proved indispensible in proving very complex mathematical theorems in a
+trustworthy manner. For example, four-color theorem \cite{gg-2008-four-color}
+and Kepler conjecture \cite{th-2015-kepler} were proven inside proof assistants,
+ending the need to trust hundreds of pages of hard mathematical proofs. Proof
+assistants are also used to show correctness of complex software such as
+compilers \cite{xl-09-compcert} or operating systems kernels \cite{gk-09-sel4}.
+This verified software can be used in safety-critical scenarios such as nuclear
+plants or autonomous vehicles.
+
+The proofs need to be spelled out in minute details to be accepted by a proof assistant.
+Even though many proof assistants offer some sort of automation, seemingly simple
+statements cannot be automatically proved. This is one of the reasons why large
+verification projects can take years to finish.
+
+Integrating proof automation right into the proof assistant is not an easy task.
+Most proof assistants are based on variants of higher-order logic, which is more
+expressive than first-order logic, but in general does not even allow complete
+proof calculi. To provide some level of automation, proof assistant developers
+use the efficient first-order provers as follows. First, the proof goal is
+translated from higher-order to first-order logic. Then the first-order prover
+is run on the translated problem. If the first-order prover finds the proof, the
+proof is reconstructed in the proof assistant. This approach is implemented in
+modern assistants such as Coq \cite{bc-04-coq}, HOL Light \cite{jh-09-hol-light}
+and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer \cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer}
+and Sledgehammer \cite{bn-10-sh}, respectively. 
+
+
 
 
 
