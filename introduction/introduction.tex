@@ -1,53 +1,89 @@
 \chapter{Introduction}
 \label{introduction}
 
-\begin{abstract}
-Sample Abstract.
-\end{abstract}
+\dropcap{H}alf sleeping, half playing Fruit Ninja on my smartphone at one of the
+philosophy lectures in my high school I heard my professor exclaim with
+excitement: “Mathematical truth is the highest and absolute form of truth!”.
+Unbothered and uninterested, I continued playing Fruit Ninja.
 
-\blfootnote{This chapter is partly based on \faFileTextO~\emph{M. Beller. Toward an
-    Empirical Theory of Feedback-Driven Development, ICSE'18 (Student Research Competition)}~\cite{BellerSRC2018}.
-}
+Many years later I started studying various formal methods in computer science.
+There I learned the value of formal, mathematical languages and finally
+understood him. Not only does using a rigorous mathematical language avoid the
+ambiguity of natural language, it allows us to use formal rules of reasoning to
+make conclusions from initial arguments in a trustworthy manner. 
 
+Though the interest for rigorous and formal reasoning dates back to Aristotle,
+it intensified at the end of 19th and the beginning of 20th century
+\cite{jf-01-modern-logic}. Researchers in that time were mostly interested in
+finding a formal language that is expressive enough to describe complex
+mathematical theories, yet intuitive and understandable enough to allow
+reasonably simple formal reasoning systems. First-order logic seemed to satisfy
+both requirements.  This formalism does not only allow one to model simple
+logical relations such as ``if it rains, the road is muddy'' (or formally
+$\cst{rains} \imp \cst{muddy}$), but also to quantify over objects as in ``all
+people are mortal'' ($\forall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
 
-\newpage
-
-\dropcap{T}his is a introductory page.
-
-\section{Background \& Context}
-In this thesis, you can reference pictures~\Cref{fig:devmodel} using Cleverref and circles \circled{5}.
-
-\begin{figure}[htb]
-	\centering
-	\includegraphics[width=0.65\columnwidth]{development_model_without_papers}
-	\caption{The stages of the FDD model and their relationship to other
-          Software Engineering concepts.}
-	\label{fig:devmodel}
-\end{figure}
-
-We also have lists:
-
-\begin{enumerate}
-  \item Static Analysis~\circled{3} examines program artifacts or
-    their source code without executing them~\cite{wichmann1995industrial}, while
- \item Dynamic Analysis~\circled{4} relies on information gathered from their
-   execution~\cite{cornelissen2009systematic}.
-\end{enumerate}
-
-Or boxes:
-
-\begin{framed}
-This thesis is concerned with the empirical assessment of the state of the art of how developers
-drive software development with the help of feedback loops.
-\end{framed}
-
-Or code:
-\begin{lstlisting}[caption={\textsc{TrinityCore}},label={lst:e1}]
- x += other.x;
- y += other.y;
- z += other.y;
-\end{lstlisting}
+The initial study of this formalism and the rules to reason about statements in
+it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
+that there is a system of inference rules such that for any true (valid) statement a
+proof of validity can be constructed in this system. Around the same time, the
+first computers were leaving the imagination of the engineers and began to
+automate many complicated processes.  Naturally, the question as to  whether a
+computer can decide if a first-order statement is valid (i.e., a theorem) arose.
+Church \cite{ac-36-fol-undecidable} and Turing \cite{tm-37-undecidable} answered
+this question negatively in 1936.
 
 
-I hope this helps you get started!
-Moritz
+
+
+
+% \begin{abstract}
+% Sample Abstract.
+% \end{abstract}
+
+% \blfootnote{This chapter is partly based on \faFileTextO~\emph{M. Beller. Toward an
+%     Empirical Theory of Feedback-Driven Development, ICSE'18 (Student Research Competition)}~\cite{BellerSRC2018}.
+% }
+
+
+% \newpage
+
+% \dropcap{T}his is a introductory page.
+
+% \section{Background \& Context}
+% In this thesis, you can reference pictures~\Cref{fig:devmodel} using Cleverref and circles \circled{5}.
+
+% \begin{figure}[htb]
+% 	\centering
+% 	\includegraphics[width=0.65\columnwidth]{development_model_without_papers}
+% 	\caption{The stages of the FDD model and their relationship to other
+%           Software Engineering concepts.}
+% 	\label{fig:devmodel}
+% \end{figure}
+
+% We also have lists:
+
+% \begin{enumerate}
+%   \item Static Analysis~\circled{3} examines program artifacts or
+%     their source code without executing them~\cite{wichmann1995industrial}, while
+%  \item Dynamic Analysis~\circled{4} relies on information gathered from their
+%    execution~\cite{cornelissen2009systematic}.
+% \end{enumerate}
+
+% Or boxes:
+
+% \begin{framed}
+% This thesis is concerned with the empirical assessment of the state of the art of how developers
+% drive software development with the help of feedback loops.
+% \end{framed}
+
+% Or code:
+% \begin{lstlisting}[caption={\textsc{TrinityCore}},label={lst:e1}]
+%  x += other.x;
+%  y += other.y;
+%  z += other.y;
+% \end{lstlisting}
+
+
+% I hope this helps you get started!
+% Moritz
