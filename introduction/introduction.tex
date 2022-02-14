@@ -69,13 +69,13 @@ for theorem provers. However, computers can still be of help to construct formal
 proofs.
 
 Proof assistants (or interactive theorem provers) are programs which allow users
-to describe a theory formally and to prove the statements about this theory
-using rules of the inference system the proof assistant is based on. These
+to describe a theory formally and to write proofs of the statements about this theory
+using inference system rules of the proof assistant. These
 programs can then check if the given proof is correct. As their core is usually
 small and well-tested, proofs that pass the checking phase are considered
 trustworthy.
 
-They proved indispensible in proving very complex mathematical theorems in a
+Proof assistants showed indispensible in proving very complex mathematical theorems in a
 trustworthy manner. For example, four-color theorem \cite{gg-2008-four-color}
 and Kepler conjecture \cite{th-2015-kepler} were proven inside proof assistants,
 ending the need to trust hundreds of pages of hard mathematical proofs. Proof
@@ -98,10 +98,28 @@ translated from higher-order to first-order logic. Then the first-order prover
 is run on the translated problem. If the first-order prover finds the proof, the
 proof is reconstructed in the proof assistant. This approach is implemented in
 modern assistants such as Coq \cite{bc-04-coq}, HOL Light \cite{jh-09-hol-light}
-and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer \cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer}
-and Sledgehammer \cite{bn-10-sh}, respectively. 
+and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer
+\cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer} and Sledgehammer
+\cite{bn-10-sh}, respectively. 
 
+This approach proved useful: around 69\% of the simple proof goals can be
+discharged automatically using Sledgehammer \cite{kb-13-mash}. However, there is
+clearly some untapped potential in the approach as it communicates with
+automatic theorem provers through a translation. To bridge this translation gap,
+attempts were made to use higher-order automatic theorem provers instead of
+first-order ones \cite{ns-13-leo2sh}. This proved unfruitful as state-of-the-art
+higher-order of the time theorem provers were primarily designed for small and tricky
+problems. On the other hand, problems coming from hammers consist of mostly first-order formulas, are rather large,
+and mostly require simple higher-order proof steps. 
 
+Thus, from a standpoint of proof assistant ideal automatic theorem prover fulfills
+the following wishlist:
+\begin{itemize}
+  \item Performs as best first-order provers
+  \item Supports higher-order logic
+  \item Works well on large problems
+\end{itemize}
+This brings us to the topic of this thesis: \emph{How can we develop a theorem provers that fulfills this wishlist?}
 
 
 
