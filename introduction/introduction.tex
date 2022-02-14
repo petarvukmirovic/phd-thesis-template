@@ -9,8 +9,8 @@ Unbothered and uninterested, I continued playing Fruit Ninja.
 Many years later I started studying various formal methods in computer science.
 There I learned the value of formal, mathematical language and finally
 understood him. Not only does using a rigorous mathematical language avoid the
-ambiguity of natural language, it allows us to use the formal rules of reasoning to
-make conclusions from initial arguments in a trustworthy manner. 
+ambiguity of natural language, it allows us to use the formal rules of reasoning
+to make conclusions from initial arguments in a trustworthy manner. 
 
 Though the interest for rigorous and formal reasoning dates back to Aristotle,
 it intensified at the end of 19th and the beginning of 20th century
@@ -25,13 +25,13 @@ people are mortal'' ($\forall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
 
 The initial study of this formalism and the rules to reason about statements in
 it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
-that there is a system of inference rules (calculus) such that for any valid statement a
-proof of validity can be constructed in this system. Around the same time, the
-first computers were leaving the imagination of the engineers and began to
-automate many complicated processes.  Naturally, the question as to  whether a
-computer can decide if a first-order statement is valid (i.e., a theorem) arose.
-Church \cite{ac-36-fol-undecidable} and Turing \cite{tm-37-undecidable} answered
-this question negatively in 1936.
+that there is a system of inference rules (calculus) such that for any valid
+statement a proof of validity can be constructed in this system. Around the same
+time, the first computers were leaving the imagination of the engineers and
+began to automate many complicated processes.  Naturally, the question as to
+whether a computer can decide if a first-order statement is valid (i.e., a
+theorem) arose. Church \cite{ac-36-fol-undecidable} and Turing
+\cite{tm-37-undecidable} answered this question negatively in 1936.
 
 Despite this negative result, the prospect of automatically proving theorems of
 first-order logic remained too enticing. In 1960 Davis and Putnam
@@ -49,10 +49,23 @@ since it introduced unification as an inference filter.
 
 Since its introduction, resolution was improved in many ways. Strategies and
 heuristics~\cite{lw-65-sos} to curb the explosion of the search space were
-introduced, as well as complete, but less explosive variants of the calculus \cite{cc-73-resolution-book}. Despite this
-progress, reasoning about equality of objects was still hard for these methods. This changed with introduction of
-superposition in 199
+introduced, as well as complete, but less explosive variants of the calculus
+\cite{cc-73-resolution-book}. Despite this progress, reasoning about equality of
+objects was still hard for these methods. This changed with introduction of
+superposition \cite{bg-94-superposition} in early 1990s.
 
+Superposition is a complete calculus for first-order logic loosely based on
+resolution, featuring support for equality on the calculus level. This support
+is further optimized by use of term orders and selection functions to prune the
+search space. Thanks to efficient implementation, this calculus was used to
+prove long-standing open problem known as ``Robbins conjecture''
+\cite{mccune-97-robbins}. Furthermore, provers based on this calculus have been
+winning the first-order division of CASC theorem proving competition since its
+inception in the 1990s \cite{ss-96-casc}.
+
+Even though the successes such proving Robbins conjecture show that it is
+possible, automatically proving hard mathematical problems is still out of reach
+for theorem provers. However, computers can still be used to verify human-written proofs.
 
 
 
