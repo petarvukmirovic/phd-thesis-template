@@ -162,7 +162,7 @@ represent statements such as ``what Jasmin says is true'' as $\forall x. \,
 \cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support Boolean terms
 as first-class citizens.
 
-\section{Contribution}
+\section{Contributions}
 
 The biggest contribution of this thesis is the extension of two theorem provers,
 E and Zipperposition \cite{sc-15-simon-phd}, to full higher-order logic. To
@@ -208,6 +208,13 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   which implemented the new calculus and the described tweaks. It again won
   CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
   runner-up, Vampire 4.5. 
+
+  \item Taking all the experience we gathered while working on Zipperposition,
+  we further extended Ehoh to full higher-order logic. Here again modified term
+  structure, implemented new unification and matching algorithms, extended indexing data
+  structures, and tweaked heuristics. Even though this extension has larger scope than 
+  the original extension from E to Ehoh, strong basis that we have earlier built
+  made it manageable.
 
   \item Taking inspiration from our approach of lifting efficient provers from
   first-order to higher-order logic, we went a step back in an effort to improve
