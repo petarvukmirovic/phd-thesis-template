@@ -199,6 +199,23 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   algorithm. In 2020, Zipperposition 2 was the winner of higher-order division
   of CASC. This time it was 20 percent points better than the second best
   prover, Satallax.
+  \item Inspired by this success we implemented the complete superposition
+  calculus for full higher-order logic that we developed by Bentkamp and other
+  colleagues. The development of complete calculus helped us understand in which
+  ways our pragmatic extension was too weak to prove hard theorems of
+  higher-order logic. We further tuned the heuristics and implemented new ways
+  to tame the search space explosion. In 2021 we released Zipperposition 2.1
+  which implemented the new calculus and the described tweaks. It again won
+  CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
+  runner-up, Vampire 4.5. 
+
+  \item Taking inspiration from our approach of lifting efficient provers from
+  first-order to higher-order logic, we went a step back in an effort to improve
+  first-order provers. In particular, we looked at the most efficient approaches
+  to simplify problems in propositional logic, a logic that disallows quantification,
+  but it is decidable. We lifted some of these approaches to first-order logic
+  and implemented them in Zipperposition. 
+
 \end{itemize}
 
 \section{Publications and Thesis Structure}
