@@ -155,12 +155,52 @@ x.\, x \, \cst{+} \, 2$. Replacing $x$ with this term suffices to prove the
 original statement. The second stage is to support automatically synthesizing
 such functions.
 
-In higher-order logic we can make statements about statements. For example, we
-can naturally represent statements such as ``what Jasmin says is true'' as
-$\forall x. \, \cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support this
-feature of first-order logic.
+In higher-order logic we can make statements about statements. More precisely,
+we it treats Boolean terms (formulas) as first-class citizens, enabling us to
+model some concepts in more natural manner. For example, we can naturally
+represent statements such as ``what Jasmin says is true'' as $\forall x. \,
+\cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support Boolean terms
+as first-class citizens.
 
 \section{Contribution}
+
+The biggest contribution of this thesis is the extension of two theorem provers,
+E and Zipperposition \cite{sc-15-simon-phd}, to full higher-order logic. To
+extend those provers, we faced many challenges. Some of them were of engineering
+nature, some of them were algorithmic, while others concerned fine-tuning the
+heuristics to achieve best possible performance. We discuss those challenges in more detail:
+\begin{itemize}
+  \item We implemented the complete superposition calculus for $\lambda$-free
+  higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
+  We had to modify internal term structure of Ehoh to support $\lambda$-free
+  higher-order terms, implement new unification and matching algorithms, extend
+  indexing data structures to work with higher-order terms and to improve the
+  performance of heuristics on higher-order problems.
+  \item Together with Alexander Bentkamp and other colleagues we developed
+  complete superposition calculus for the second stage described above
+  \cite{bbtvw-21-sup-lam}. Due to the complexity of the calculus and many design
+  decisions that had to be evaluated in short amount of time we decided to
+  implement the calculus in Zipperposition. This prover is less efficient than
+  E, but it is implemented in OCaml and it was designed to make prototyping
+  ideas and experimenting with calculi much easier. In 2019 we entered the
+  higher-order division of CASC theorem proving competition with Zipperposition
+  \cite{gs-19-casc27}. It took third place, closely behind Leo-III (1 percent
+  point) \cite{sb-21-leo3} and far behind (12 percent points) Satallax
+  \cite{cb-12-satallax}.
+  \item Through this experience we identified one of the bottlenecks of
+  Zipperposition: its unification algorithm. To remove this bottleneck we
+  developed a complete higher-order unification algorithm that was more
+  efficient and less redundant than current state of the art. 
+  \item We also noticed that Zipperposition's support for first-class Booleans
+  was lacking compared to competition. We have closely studied the problems on
+  which Zipperposition fails, but are easily solved by other provers and created
+  a set of incomplete rules that enhance Zipperposition's Boolean support.
+  Zipperposition 2 implemented these rules together with the new unification
+  algorithm. In 2020, Zipperposition 2 was the winner of higher-order division
+  of CASC. This time it was 20 percent points better than the second best
+  prover, Satallax.
+\end{itemize}
+
 \section{Publications and Thesis Structure}
 \section{Related Work}
 
