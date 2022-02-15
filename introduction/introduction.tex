@@ -174,10 +174,10 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
   We had to modify internal term structure of Ehoh to support $\lambda$-free
   higher-order terms, implement new unification and matching algorithms, extend
-  indexing data structures to work with higher-order terms and to improve the
+  indexing data structures to work with higher-order terms, and to improve the
   performance of heuristics on higher-order problems.
   \item Together with Alexander Bentkamp and other colleagues we developed
-  complete superposition calculus for the second stage described above
+  a complete superposition calculus for the second stage described above
   \cite{bbtvw-21-sup-lam}. Due to the complexity of the calculus and many design
   decisions that had to be evaluated in short amount of time we decided to
   implement the calculus in Zipperposition. This prover is less efficient than
@@ -197,26 +197,26 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   a set of incomplete rules that enhance Zipperposition's Boolean support.
   Zipperposition 2 implemented these rules together with the new unification
   algorithm. In 2020, Zipperposition 2 was the winner of higher-order division
-  of CASC. This time it was 20 percent points better than the second best
+  of CASC \cite{gs-21-cascj10}. This time it was 20 percent points better than the second best
   prover, Satallax.
   \item Inspired by this success we implemented the complete superposition
-  calculus for full higher-order logic that we developed by Bentkamp and other
+  calculus for full higher-order logic (i.e., the third stage) that we developed with Bentkamp and other
   colleagues. The development of complete calculus helped us understand in which
   ways our pragmatic extension was too weak to prove hard theorems of
   higher-order logic. We further tuned the heuristics and implemented new ways
   to tame the search space explosion. In 2021 we released Zipperposition 2.1
   which implemented the new calculus and the described tweaks. It again won
   CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
-  runner-up, Vampire 4.5. 
+  runner-up, Vampire 4.5 \cite{lkav-13-vampire}. 
 
   \item Taking all the experience we gathered while working on Zipperposition,
-  we further extended Ehoh to full higher-order logic. Here again modified term
+  we further extended Ehoh to full higher-order logic. We again modified term
   structure, implemented new unification and matching algorithms, extended indexing data
   structures, and tweaked heuristics. Even though this extension has larger scope than 
   the original extension from E to Ehoh, strong basis that we have earlier built
   made it manageable.
 
-  \item Taking inspiration from our approach of lifting efficient provers from
+  \item Following our approach of lifting efficient provers from
   first-order to higher-order logic, we went a step back in an effort to improve
   first-order provers. In particular, we looked at the most efficient approaches
   to simplify problems in propositional logic, a logic that disallows quantification,
