@@ -23,12 +23,12 @@ logical relations such as ``if it rains, the road is muddy'' (or formally
 $\cst{rains} \imp \cst{muddy}$), but also to quantify over objects as in ``all
 people are mortal'' ($\forall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
 
-\paragraph{Automatic Theorem Proving}The initial study of this formalism and the rules to reason about statements in
+\paragraph{Automatic Theorem Proving}The initial study of first-order logic and the rules to reason about statements in
 it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
 that there is a system of inference rules (calculus) such that for any valid
 statement a proof of validity can be constructed in this system. Around the same
 time, the first computers were leaving the imagination of the engineers and
-began to automate many complicated processes.  Naturally, the question as to
+began automating many complicated processes.  Naturally, the question as to
 whether a computer can decide if a first-order statement is valid (i.e., a
 theorem) arose. Church \cite{ac-36-fol-undecidable} and Turing
 \cite{tm-37-undecidable} answered this question negatively in 1936.
@@ -65,15 +65,15 @@ inception in the 1990s \cite{ss-96-casc}.
 
 Even though the successes of proving Robbins conjecture showed that it is
 possible, automatically proving hard mathematical problems is still out of reach
-for theorem provers. However, computers can still be of help to construct formal
+for theorem provers. However, there are other ways in which humans and computers can work together to construct formal
 proofs.
 
-\paragraph{Proof Assistants and Hammers} Proof assistants (or interactive theorem provers) are programs which allow users
-to describe a theory formally and to write proofs of the statements about this theory
-using inference system rules of the proof assistant. These
-programs can then check if the given proof is correct. As their core is usually
-small and well-tested, proofs that pass the checking phase are considered
-trustworthy.
+\paragraph{Proof Assistants and Hammers} Proof assistants (or interactive
+theorem provers) are programs which allow users to describe a theory formally
+and to write proofs of the statements about this theory using inference 
+rules of the proof assistant. These programs can then check if the given proof
+is correct. As their core is usually small and well-tested, proofs that pass the
+checking phase are considered trustworthy.
 
 Proof assistants showed indispensible in proving very complex mathematical theorems in a
 trustworthy manner. For example, four-color theorem \cite{gg-2008-four-color}
@@ -108,18 +108,61 @@ clearly some untapped potential in the approach as it communicates with
 automatic theorem provers through a translation. To bridge this translation gap,
 attempts were made to use higher-order automatic theorem provers instead of
 first-order ones \cite{ns-13-leo2sh}. This proved unfruitful as state-of-the-art
-higher-order of the time theorem provers were primarily designed for small and tricky
-problems. On the other hand, problems coming from hammers consist of mostly first-order formulas, are rather large,
-and mostly require simple higher-order proof steps. 
-
-Thus, from a standpoint of proof assistant ideal automatic theorem prover fulfills
-the following wishlist:
-\begin{itemize}
-  \item Performs as best first-order provers
-  \item Supports higher-order logic
-  \item Works well on large problems
-\end{itemize}
+higher-order theorem provers of the time were primarily designed for small and
+tricky problems. On the other hand, problems coming from hammers consist of
+mostly first-order formulas, are rather large, and mostly require simple
+higher-order proof steps. Thus, from a standpoint of proof assistant ideal
+automatic theorem prover fulfills the following wishlist:
+\begin{enumerate}
+  \item\label{it:fo} Performs as best first-order provers on first-order problems
+  \item\label{it:ho} Supports higher-order logic and scales with the amount of higher-order axioms
+  \item\label{it:size} Scales well with the size of the problem
+\end{enumerate}
 This brings us to the topic of this thesis: \emph{How can we develop a theorem provers that fulfills this wishlist?}
+
+\paragraph{Our Approach} To improve the automatic reasoning for higher-order
+logic we decided not to start from a blank slate and build a new theorem prover.
+Rather, we start from a position of strength --- from state-of-the-art
+first-order superposition theorem prover E \cite{scv-19-e23} --- and extend this
+prover to higher-order logic. In this way, the points \ref{it:fo} and
+\ref{it:size} from the above wishlist  is fulfilled for free, as E is very
+efficient and deals well with large problems.
+
+We do not extend E to higher-order logic in one atomic step. Instead, we extend
+it by adding support for three distinguished features of higher-order logic,
+which gradually increase its support for higher-order logic. With the layered
+approach we make sure that after every extension to higher-order logic, E's
+efficiency on first-order problems was not affect. In other words, while trying
+to fulfill the point \ref{it:ho} from the wishlist we make sure that points
+\ref{it:fo} and \ref{it:size} are not affected.
+
+We have split the road to full higher-order logic in three stages. A
+distinguished feature of higher-order logic is that it not only supports
+quantification over objects, but also over functions that manipulate these
+objects. Thus, higher-order logic allows us to make a statement ``all functions
+with arguments $0$ and $1$ result in $2$" ($\forall x. x (\cst{0}, \cst{1}) \eq
+\cst{2}$). Replacing $x$ with addition function ($\cst{+}$) is enough to
+disprove this statement. The first stage is to extend E to support
+quantification over functions that are already present in the theory.
+
+Higher-order logic also supports expressing functions that are not explicitly
+stated in the problem. For example, suppose we want to prove that there is a
+function such that returns 4 when given 2 and 5 when given 3 ($\exists x.
+x(\cst{2}) \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such
+function is the function that adds 2 to its argument. In higher-order logic such
+unnamed function can be represented using $\lambda$ abstractions as $\lambda
+x.\, x \, \cst{+} \, 2$. Replacing $x$ with this term suffices to prove the
+original statement. The second stage is to support automatically synthesizing
+such functions.
+
+In higher-order logic we can make statements about statements. For example, we
+can naturally represent statements such as ``whatever Jasmin says is true'' as
+$\forall x. \, \cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support this
+feature of first-order logic.
+
+
+
+
 
 
 
