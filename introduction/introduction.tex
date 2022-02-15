@@ -226,11 +226,100 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   and implemented them in Zipperposition. 
 \end{itemize}
 
-\section{Publications and Thesis Structure}
+\section{Thesis Structure and Publications}
 
-Starting from Chapter ????, every chapter of this thesis corresponds to a work that
-was previously published. Work is presented in this thesis with the approval of coauthors.
+This thesis is cumulative: chapters~\ref{ch:ehoh}~-~\ref{ch:satfol}  are
+directly taken from previous publications (or drafts in case of
+Chapter~\ref{ch:ehoh2}) where I was the main author. Use
+of publications in this thesis was authorized by the coauthors. 
 
+Chapter~\ref{ch:pre} introduces the background material necessary for following this thesis,
+while Chapter~\ref{ch:conclusion} gives a brief summary of the work and describes alleys for future work.
+Other six chapters discuss previously described contributions in detail:
 
+\vspace{0.5em}
+\noindent\textbf{Chapter~\ref{ch:ehoh}} discusses the steps we have taken to extend first-order
+  prover E to $\lambda$-free higher-order logic, obtaining Ehoh. It is mostly based on the journal publication
+  \begin{quote}
+    Petar Vukmirović, Jasmin Blanchette, Simon Cruanes, and Stephan Schulz.
+    Extending a Brainiac Prover to Lambda-Free Higher-Order Logic.
+    In \emph{International Journal on Software Tools for Technology Transfer}. Springer, 2021.  
+  \end{quote}
+\vspace{-0.3em}
+while parts of the chapter were previously published in the conference publication
+\vspace{-0.3em}
+  \begin{quote}
+    Petar Vukmirović, Jasmin Blanchette, Simon Cruanes, and Stephan Schulz.
+    Extending a Brainiac Prover to Lambda-Free Higher-Order Logic.
+    In  In Vojnar, T., Zhang, L. (eds.) \emph{TACAS 2019}, LNCS 11427, pp. 192--210, Springer, 2019.
+  \end{quote}
+\noindent\textbf{Chapter~\ref{ch:unif}} discusses the higher-order unification algorithm we designed to be used
+inside efficient theorem provers. It is mostly based on the journal publication
+  \begin{quote}
+    Petar Vukmirović, Alexander Bentkamp, and Visa Nummelin. Efficient Full Hi\-gher-Order Unification. 
+    In \emph{Logical Methods in Computer Science} 17(4): 18:1--18:31, 2021.
+  \end{quote}
+\vspace{-0.3em}
+while parts of the chapter were previously published in the conference
+publication, which won the best paper by junior researcher award:
+\vspace{-0.3em}
+\begin{quote}
+  Petar Vukmirović, Alexander Bentkamp, and Visa Nummelin. Efficient Full Hi\-gher-Order Unification. 
+  In Ariola, Z.M. (ed.) \emph{FSCD 2020} LIPIcs 167, pp. 5:1--5:17, Schloss Dagstuhl--Leibniz-Zentrum für Informatik, 2020. 
+\end{quote}
+\noindent\textbf{Chapter~\ref{ch:bools}} discusses the pragmatic extensions of
+the complete calculus for superposition with lambdas to support first-class
+Booleans. It is based on the publication
+    \begin{quote}
+      Petar Vukmirović and Visa Nummelin. Boolean Reasoning in a Higher-Order
+      Superposition Prover. In P. Fontaine, K. Korovin, I.S. Kotsireas, P.
+      R\"ummer, S. Tourret (eds.) \emph{PAAR-2020}, CEUR Workshop Proceedings, vol.
+      2752, pp. 148--166. CEUR-WS.org (2020)
+    \end{quote}
+\noindent\textbf{Chapter~\ref{ch:ho-techniques}} discusses the approach we took to
+control explosion of the search space inherent to higher-order superposition. It is mostly based on the journal publication
+  \begin{quote}
+    Petar Vukmirović, Alexander Bentkamp, Jasmin Blanchette, Simon Cruanes, Visa Nummelin, and Sophie Tourret.
+    Making Higher-Order Superposition Work. In \emph{Journal of Automated Reasoning}. Springer, 2022.
+  \end{quote}
+\vspace{-0.3em}
+  while parts of the chapter were previously published in the conference publication, which won the best paper by a student award:
+\vspace{-0.3em}
+\begin{quote}
+  Petar Vukmirović, Alexander Bentkamp, Jasmin Blanchette, Simon Cruanes, Visa Nummelin, and Sophie Tourret.
+  Making Higher-Order Superposition Work. In Platzer, A., Sutcliffe, G. (eds.) \emph{CADE-28},
+  LNCS 12699, pp. 415--432, Springer, 2021.
+\end{quote}
+\noindent\textbf{Chapter~\ref{ch:ehoh2}} discusses the extension of Ehoh to
+support full higher-order logic. We call the obtained prover \newehoh.
+It is based on the draft of the joint work with Jasmin Blanchette and
+Stephan Schulz, planned for submission at TACAS 2022.
+
+\vspace{0.5em}
+\noindent\textbf{Chapter~\ref{ch:satfol}} discusses lifting some of the techniques used to
+simplify formulas in propositional logic to first-order logic. It is based on the extended, report version of the publication:
+  \begin{quote}
+    Petar Vukmirović, Jasmin Blanchette, and Marijn J.H. Heule. 
+    SAT-Inspired Eliminations for Superposition. In Piskac, R., Whalen, M. (eds.) \emph{FMCAD 2021}, pp. 231--240, IEEE, 2021. 
+  \end{quote}
+
+As a PhD candidate, I coauthored the following articles and papers, which are not included in this thesis:
+
+\begin{itemize}
+  \item Martin Desharnais, Petar Vukmirović, Jasmin Blanchette, and Makarius Wenzel. Seventeen Provers Under the Hammer.
+  Draft paper, submitted to ITP 2022.
+  \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, and Petar Vukmirović. Superposition for Higher-Order Logic.
+  Draft article, submitted to Journal of automated reasoning.
+  \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, Petar Vukmirović, and Uwe Waldmann.  Superposition with Lambdas.
+  \emph{Journal of Automated Reasoning} 65(7): 893--940, 2021. 
+  \item Visa Nummelin, Alexander Bentkamp, Sophie Tourret, and Petar Vukmirović. Superposition with First-Class Booleans and Inprocessing Clausification.
+  In Platzer, A., Sutcliffe, G. (eds.) \emph{CADE-28}, LNCS 12699, pp. 378--395, Springer, 2021.
+  \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, and Petar Vukmirović. Superposition for Full Higher-Order Logic.
+  In Platzer, A., Sutcliffe, G. (eds.) \emph{CADE-28}, LNCS 12699, pp. 396--412, Springer, 2021.
+  \item Stephan Schulz, Simon Cruanes, and Petar Vukmirović. Faster, Higher, Stronger: E 2.3.
+  In Fontaine, P. (ed.) \emph{CADE-27},  LNCS 11716, pp. 495--507, Springer, 2019.
+  \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, Petar Vukmirović, and Uwe Waldmann.  Superposition with Lambdas.
+  In Fontaine, P. (ed.) \emph{CADE-27}, LNCS 11716, pp. 55--73, Springer, 2019. 
+\end{itemize}
 
 \section{Related Work}
