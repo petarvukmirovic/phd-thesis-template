@@ -3,7 +3,7 @@
 
 Half sleeping, half playing Fruit Ninja on my smartphone at one of the
 philosophy lectures in my high school I heard my professor exclaim with
-excitement: “Mathematical truth is the highest and absolute form of truth!”.
+excitement: “Mathematical truth is the highest form of truth!”.
 Unbothered and uninterested, I continued playing Fruit Ninja.
 
 Many years later I started studying various formal methods in computer science.
@@ -84,7 +84,7 @@ compilers \cite{xl-09-compcert} or operating systems kernels \cite{gk-09-sel4}.
 This verified software can be used in safety-critical scenarios such as nuclear
 plants or autonomous vehicles.
 
-The proofs need to be spelled out in minute details to be accepted by a proof assistant.
+The proofs need to be spelled out in minute detail to be accepted by a proof assistant.
 Even though many proof assistants offer some sort of automation, seemingly simple
 statements cannot be automatically proved. This is one of the reasons why large
 verification projects can take years to finish.
@@ -102,8 +102,8 @@ and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer
 \cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer} and Sledgehammer
 \cite{bn-10-sh}, respectively. 
 
-This approach proved useful: around 69\% of the simple proof goals can be
-discharged automatically using Sledgehammer \cite{kb-13-mash}. However, there is
+This approach proved useful: around 76\% of the simple proof goals can be
+discharged automatically using Sledgehammer \cite{bgkku-16-larning-fact-selector}. However, there is
 clearly some untapped potential in the approach as it communicates with
 automatic theorem provers through a translation. To bridge this translation gap,
 attempts were made to use higher-order automatic theorem provers instead of
@@ -125,14 +125,14 @@ logic we decided not to start from a blank slate and build a new theorem prover.
 Rather, we start from a position of strength --- from state-of-the-art
 first-order superposition theorem prover E \cite{scv-19-e23} --- and extend this
 prover to higher-order logic. In this way, the points \ref{it:fo} and
-\ref{it:size} from the above wishlist  is fulfilled for free, as E is very
+\ref{it:size} from the above wishlist are fulfilled for free, as E is very
 efficient and deals well with large problems.
 
 We do not extend E to higher-order logic in one atomic step. Instead, we extend
 it by adding support for three distinguished features of higher-order logic,
 which gradually increase its support for higher-order logic. With the layered
 approach we make sure that after every extension to higher-order logic, E's
-efficiency on first-order problems was not affect. In other words, while trying
+efficiency on first-order problems did not decrease. In other words, while trying
 to fulfill the point \ref{it:ho} from the wishlist we make sure that points
 \ref{it:fo} and \ref{it:size} are not affected.
 
@@ -140,13 +140,13 @@ We have split the road to full higher-order logic in three stages. A
 distinguished feature of higher-order logic is that it not only supports
 quantification over objects, but also over functions that manipulate these
 objects. Thus, higher-order logic allows us to make a statement ``all functions
-with arguments $0$ and $1$ result in $2$" ($\forall x. x (\cst{0}, \cst{1}) \eq
+with arguments $0$ and $1$ result in $2$" ($\forall x. \,  x (\cst{0}, \cst{1}) \eq
 \cst{2}$). Replacing $x$ with addition function ($\cst{+}$) is enough to
 disprove this statement. The first stage is to extend E to support
 quantification over functions that are already present in the theory.
 
 Higher-order logic also supports expressing functions that are not explicitly
-stated in the problem. For example, suppose we want to prove that there is a
+present in the theory. For example, suppose we want to prove that there is a
 function such that returns 4 when given 2 and 5 when given 3 ($\exists x.
 x(\cst{2}) \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such
 function is the function that adds 2 to its argument. In higher-order logic such
@@ -156,18 +156,13 @@ original statement. The second stage is to support automatically synthesizing
 such functions.
 
 In higher-order logic we can make statements about statements. For example, we
-can naturally represent statements such as ``whatever Jasmin says is true'' as
+can naturally represent statements such as ``what Jasmin says is true'' as
 $\forall x. \, \cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support this
 feature of first-order logic.
 
-
-
-
-
-
-
-
-
+\section{Contribution}
+\section{Publications and Thesis Structure}
+\section{Related Work}
 
 % \begin{abstract}
 % Sample Abstract.
