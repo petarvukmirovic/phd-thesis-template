@@ -10,7 +10,7 @@ Unbothered and uninterested, I continued playing Fruit Ninja.
 Many years later I started studying various formal methods in computer science.
 There I learned the value of formal, mathematical language and finally
 understood him. Not only does using a rigorous mathematical language avoid the
-ambiguity of natural language, it allows us to use the formal rules of reasoning
+ambiguity of the natural one, it allows us to use the formal rules of reasoning
 to make conclusions from initial arguments in a trustworthy manner. 
 
 Though the interest for rigorous and formal reasoning dates back to Aristotle,
@@ -36,8 +36,8 @@ theorem) arose. Church \cite{ac-36-fol-undecidable} and Turing
 
 Despite this negative result, the prospect of automatically proving theorems of
 first-order logic remained too enticing. In 1960, Davis and Putnam
-\cite{dp-1960-dpll} described an algorithm for checking validity of a
-first-order formula. As first-order logic is undecidable, this algorithm
+\cite{dp-1960-dpll} described a procedure for checking validity of a
+first-order formula. As first-order logic is undecidable, this procedure
 terminated only on valid formulas. Even though it was efficient enough to prove
 only simple formulas, it was an impressive achievement for the time.
 
@@ -92,7 +92,7 @@ verification projects can take years to finish.
 
 Integrating proof automation right into the proof assistant is not an easy task.
 Most proof assistants are based on variants of higher-order logic, which is more
-expressive than first-order logic, but in general does not even allow complete
+expressive than first-order logic, but harder to automate as in general it does not even allow complete
 proof calculi. To provide some level of automation, proof assistant developers
 use the efficient first-order provers as follows. First, the proof goal is
 translated from higher-order to first-order logic. Then the first-order prover
@@ -103,7 +103,7 @@ and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer
 \cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer} and Sledgehammer
 \cite{bn-10-sh}, respectively. 
 
-This approach proved useful: around 76\% of the simple proof goals can be
+The approach proved useful: around 76\% of the simple proof goals can be
 discharged automatically using Sledgehammer \cite{bgkku-16-larning-fact-selector}. However, there is
 clearly some untapped potential in the approach as it communicates with
 automatic theorem provers through a translation. To bridge this translation gap,
@@ -116,8 +116,8 @@ higher-order proof steps. Thus, from a standpoint of proof assistant ideal
 automatic theorem prover fulfills the following wishlist:
 \begin{enumerate}
   \item\label{it:fo} Performs as best first-order provers on first-order problems
-  \item\label{it:ho} Supports higher-order logic and scales with the amount of higher-order axioms
   \item\label{it:size} Scales well with the size of the problem
+  \item\label{it:ho} Supports higher-order logic and scales with the amount of higher-order axioms
 \end{enumerate}
 This brings us to the topic of this thesis: \emph{How to develop a prover fulfilling this wishlist?}
 
@@ -126,14 +126,14 @@ logic we decided not to start from a blank slate and build a new theorem prover.
 Rather, we start from a position of strength --- from state-of-the-art
 first-order superposition theorem prover E \cite{scv-19-e23} --- and extend this
 prover to higher-order logic. In this way, the points \ref{it:fo} and
-\ref{it:size} from the above wishlist are fulfilled for free, as E is very
+\ref{it:size} from the above wishlist are already fulfilled, as E is very
 efficient and deals well with large problems.
 
 We do not extend E to higher-order logic in one atomic step. Instead, we extend
-it by adding support for three distinguished features of higher-order logic,
-which gradually increase its support for higher-order logic. With the layered
-approach we make sure that after every extension to higher-order logic, E's
-efficiency on first-order problems did not decrease. In other words, while trying
+it by adding support for features of higher-order logic one by one,
+which gradually increase its reasoning capabilities. With this gradual
+approach we make sure that after every extension, E's
+efficiency on first-order problems did not decrease. Thus, while trying
 to fulfill the point \ref{it:ho} from the wishlist we make sure that points
 \ref{it:fo} and \ref{it:size} are not affected.
 
@@ -148,16 +148,15 @@ quantification over functions that are already present in the theory.
 
 Higher-order logic also supports expressing functions that are not explicitly
 present in the theory. For example, suppose we want to prove that there is a
-function such that returns 4 when given 2 and 5 when given 3 ($\exists x.
-x(\cst{2}) \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such
-function is the function that adds 2 to its argument. In higher-order logic such
-unnamed function can be represented using $\lambda$ abstractions as $\lambda
-x.\, x \, \cst{+} \, 2$. Replacing $x$ with this term suffices to prove the
-original statement. The second stage is to support automatically synthesizing
-such functions.
+function that returns 4 when given 2 and 5 when given 3 ($\exists x. x(\cst{2})
+\eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such function is
+the function that adds 2 to its argument. In higher-order logic such unnamed
+function can be represented using $\lambda$ abstractions as $\lambda y.\, y \,
+\cst{+} \, \cst{2}$. This term suffices to prove the original statement. The
+second stage is to support automatically synthesizing such functions.
 
 In higher-order logic we can make statements about statements. More precisely,
-we it treats Boolean terms (formulas) as first-class citizens, enabling us to
+it treats Boolean terms (formulas) as first-class citizens, enabling us to
 model some concepts in more natural manner. For example, we can naturally
 represent statements such as ``what Jasmin says is true'' as $\forall x. \,
 \cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support Boolean terms
