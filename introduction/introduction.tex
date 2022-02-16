@@ -185,9 +185,8 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   E, but it is implemented in OCaml and it was designed to make prototyping
   ideas and experimenting with calculi much easier. In 2019 we entered the
   higher-order division of CASC theorem proving competition with Zipperposition
-  \cite{gs-19-casc27}. It took third place, closely behind Leo-III (1 percent
-  point) \cite{sb-21-leo3} and far behind (12 percent points) Satallax
-  \cite{cb-12-satallax}.
+  \cite{gs-19-casc27}. It took third place, closely behind (1 percent
+  point) Leo-III \cite{sb-21-leo3}  and far behind (12 percent points) Satallax \cite{cb-12-satallax}.
   \item Through this experience we identified one of the bottlenecks of
   Zipperposition: its unification algorithm. To remove this bottleneck we
   developed a complete higher-order unification algorithm that was more
@@ -201,8 +200,8 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   of CASC \cite{gs-21-cascj10}. This time it was 20 percent points better than the second best
   prover, Satallax.
   \item Inspired by this success we implemented the complete superposition
-  calculus for full higher-order logic (i.e., the third stage) that we developed with Bentkamp and other
-  colleagues. The development of complete calculus helped us understand in which
+  calculus for higher-order logic with Booleans (i.e., the third stage) that we developed with Bentkamp and other
+  colleagues. Developing this calculus helped us understand in which
   ways our pragmatic extension was too weak to prove hard theorems of
   higher-order logic. We further tuned the heuristics and implemented new ways
   to tame the search space explosion. In 2021 we released Zipperposition 2.1
@@ -211,16 +210,17 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   runner-up, Vampire 4.5 \cite{lkav-13-vampire}. 
 
   \item Taking all the experience we gathered while working on Zipperposition,
-  we further extended Ehoh to full higher-order logic. We again modified term
-  structure, implemented new unification and matching algorithms, extended indexing data
-  structures, and tweaked heuristics. Even though this extension has larger scope than 
-  the original extension from E to Ehoh, strong basis that we have earlier built
-  made it manageable.
+  we further extended Ehoh to full higher-order logic, obtaining prover we call
+  \newehoh{}. We again modified term structure, implemented new unification and
+  matching algorithms, extended indexing data structures, and tweaked
+  heuristics. Even though this extension has larger scope than the original
+  extension from E to Ehoh, strong basis that we have earlier built made it
+  manageable.
 
   \item Following our approach of lifting efficient provers from
   first-order to higher-order logic, we went a step back in an effort to improve
   first-order provers. In particular, we looked at the most efficient approaches
-  to simplify problems in propositional logic, a logic that disallows quantification,
+  to simplify problems in propositional logic, a simpler logic that disallows quantification,
   but it is decidable. We lifted some of these approaches to first-order logic
   and implemented them in Zipperposition. 
 \end{itemize}
@@ -306,9 +306,9 @@ As a PhD candidate, I coauthored the following articles and papers, which are no
 
 \begin{itemize}
   \item Martin Desharnais, Petar Vukmirović, Jasmin Blanchette, and Makarius Wenzel. Seventeen Provers Under the Hammer.
-  Draft paper, submitted to ITP 2022.
+  Draft paper.
   \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, and Petar Vukmirović. Superposition for Higher-Order Logic.
-  Draft article, submitted to Journal of automated reasoning.
+  Draft article.
   \item Alexander Bentkamp, Jasmin Blanchette, Sophie Tourret, Petar Vukmirović, and Uwe Waldmann.  Superposition with Lambdas.
   \emph{Journal of Automated Reasoning} 65(7): 893--940, 2021. 
   \item Visa Nummelin, Alexander Bentkamp, Sophie Tourret, and Petar Vukmirović. Superposition with First-Class Booleans and Inprocessing Clausification.
