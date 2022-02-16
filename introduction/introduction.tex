@@ -147,11 +147,11 @@ disprove this statement. The first stage is to extend E to support
 quantification over functions that are already present in the theory.
 
 Higher-order logic also supports expressing functions that are not explicitly
-present in the theory. For example, suppose we want to prove that there is a
+present in the theory. Suppose we want to prove that there is a
 function that returns 4 when given 2 and 5 when given 3 ($\exists x. x(\cst{2})
 \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such function is
 the function that adds 2 to its argument. In higher-order logic such unnamed
-function can be represented using $\lambda$ abstractions as $\lambda y.\, y \,
+function can be represented using $\lambda$-abstractions as $\lambda y.\, y \,
 \cst{+} \, \cst{2}$. This term suffices to prove the original statement. The
 second stage is to support automatically synthesizing such functions.
 
@@ -173,7 +173,7 @@ heuristics to achieve best possible performance. We discuss those challenges in 
 \begin{itemize}
   \item We implemented the complete superposition calculus for $\lambda$-free
   higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
-  We had to modify internal term structure of Ehoh to support $\lambda$-free
+  We had to modify internal term representation of Ehoh to support $\lambda$-free
   higher-order terms, implement new unification and matching algorithms, extend
   term indexing data structures to work with higher-order terms, and to improve the
   performance of heuristics on higher-order problems.
@@ -201,17 +201,16 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   prover, Satallax.
   \item Inspired by this success we implemented the complete superposition
   calculus for higher-order logic with Booleans (i.e., the third stage) that we developed with Bentkamp and other
-  colleagues. Developing this calculus helped us understand in which
+  colleagues \cite{bbtv-21-full-ho-sup}. Developing this calculus helped us understand in which
   ways our pragmatic extension was too weak to prove hard theorems of
   higher-order logic. We further tuned the heuristics and implemented new ways
   to tame the search space explosion. In 2021 we released Zipperposition 2.1
-  which implemented the new calculus and the described tweaks. It again won
+  which implemented these new features. It again won
   CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
   runner-up, Vampire 4.5 \cite{lkav-13-vampire}. 
-
   \item Taking all the experience we gathered while working on Zipperposition,
-  we further extended Ehoh to full higher-order logic, obtaining prover we call
-  \newehoh{}. We again modified term structure, implemented new unification and
+  we further extended Ehoh to full higher-order logic, obtaining a prover we call
+  \newehoh{}. We again modified the term representation, implemented new unification and
   matching algorithms, extended indexing data structures, and tweaked
   heuristics. Even though this extension has larger scope than the original
   extension from E to Ehoh, strong basis that we have earlier built made it
@@ -220,8 +219,8 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   \item Following our approach of lifting efficient provers from
   first-order to higher-order logic, we went a step back in an effort to improve
   first-order provers. In particular, we looked at the most efficient approaches
-  to simplify problems in propositional logic, a simpler logic that disallows quantification,
-  but it is decidable. We lifted some of these approaches to first-order logic
+  to simplify problems in propositional logic, a simpler, decidable logic that disallows quantification. 
+  We lifted some of these approaches to first-order logic
   and implemented them in Zipperposition. 
 \end{itemize}
 
@@ -325,8 +324,7 @@ As a PhD candidate, I coauthored the following articles and papers, which are no
 
 \section{Related Work}
 
-The e
-arliest attempts to automate higher-order logic can be traced back to
+The earliest attempts to automate higher-order logic can be traced back to
 Robinson~\cite{ar-70-hol}. His approach was based on translating higher-order
 logic to first-order logic using combinators, similar to the approach taken by
 hammers. Huet~\cite{gh-73-hol} and Andrews~\cite{pa-71-type-theory} designed
@@ -339,14 +337,14 @@ and colleageues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
 resolution which introduced cooperative paradigm. Provers of this paradigm
 invoke first-order back-ends in regular intervals to finish the proof. Latest
 iteration in LEO family of provers is Leo-III \cite{sb-21-leo3}. Satallax
-\cite{sb-21-leo3} is based on higher-order analytic tableau and uses SAT solver
-to close the branches. It won of higher-order division of CASC on 7 ocassions:
-in 2011 and every year from 2013 to 2019 (and once in 2011).
+\cite{cb-12-satallax} is based on higher-order analytic tableau and uses SAT solver
+to close tableau branches. It won higher-order division of CASC on 7 ocassions:
+in 2011 and every year from 2013 to 2019.
 
 Various reserachers also experimented with the idea of extending a first-order
 prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order
 unification and added $\lambda$-terms to one of the best superposition
-provers of the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
+provers at the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
 \cite{sc-15-simon-phd} with arithmetic, induction, and rudimentary support for
 higher-order logic. Bhayat and Reger implemented a complete superposition
 calculus  for higher-order logic, based on combinators  in Vampire
@@ -358,7 +356,7 @@ Higher-order unification is one of the central procedures in a higher-order
 prover. Jensen and Pietrzykowski introduced a complete procedure for enumerating
 elements unifiers for higher-order terms \cite{jp-76-unif}. Huet noticed that
 some calculi remaing complete if solving a difficult subproblem of higher-order
-unification (`flex-flex'' pairs) is delayed. He described procedure to solve
+unification (``flex-flex'' pairs) is delayed. He described procedure to solve
 this easier problem in a more efficient way \cite{gh-75-unification}. Dougherty
 desgined a procedure to enumerate higher-order unifiers using higher-order
 combinators~\cite{dd-93-comb-unif}. To make unification more efficient, Bhayat
