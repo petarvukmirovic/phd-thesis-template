@@ -325,28 +325,29 @@ As a PhD candidate, I coauthored the following articles and papers, which are no
 
 \section{Related Work}
 
-Earliest attempts to automate higher-order logic can be traced back to
+The e
+arliest attempts to automate higher-order logic can be traced back to
 Robinson~\cite{ar-70-hol}. His approach was based on translating higher-order
 logic to first-order logic using combinators, similar to the approach taken by
 hammers. Huet~\cite{gh-73-hol} and Andrews~\cite{pa-71-type-theory} designed
-calculi that are directly applied on higher-order formulas.
+calculi that are directly applied to higher-order formulas.
 
 These attempts resulted in early higher-order theorem provers. Andrews and
-collegaues developed TPS~\cite{abinpx-96-tps}: a semi-automatic prover which
+collegaues developed TPS~\cite{abinpx-96-tps}: an automatic prover which
 allows user to specify proof outlines, based on expansion proofs. Benzm\"uller
 and colleageues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
 resolution which introduced cooperative paradigm. Provers of this paradigm
 invoke first-order back-ends in regular intervals to finish the proof. Latest
 iteration in LEO family of provers is Leo-III \cite{sb-21-leo3}. Satallax
-\cite{sb-21-leo3} is based on higher-order analytic tableu and uses SAT solver
+\cite{sb-21-leo3} is based on higher-order analytic tableau and uses SAT solver
 to close the branches. It won of higher-order division of CASC on 7 ocassions:
 in 2011 and every year from 2013 to 2019 (and once in 2011).
 
 Various reserachers also experimented with the idea of extending a first-order
-prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second
-order unification and added $\lambda$-terms to one of the best superposition
+prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order
+unification and added $\lambda$-terms to one of the best superposition
 provers of the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
-\cite{sc-15-simon-phd} with arithmetic, induction. and rudimentary support for
+\cite{sc-15-simon-phd} with arithmetic, induction, and rudimentary support for
 higher-order logic. Bhayat and Reger implemented a complete superposition
 calculus  for higher-order logic, based on combinators  in Vampire
 \cite{br-20-full-sup-w-combs}. Authors of SMT solvers followed a similar path:
@@ -354,12 +355,12 @@ they extended cvc4~\cite{cbetal-11-cvc4} and veriT~\cite{bodf-09-veriT} to
 support higher-order logic \cite{brotb-19-ho-smt}.
 
 Higher-order unification is one of the central procedures in a higher-order
-prover. Jensen and Pietrzykowski introduced a complete algorithm for enumerating
+prover. Jensen and Pietrzykowski introduced a complete procedure for enumerating
 elements unifiers for higher-order terms \cite{jp-76-unif}. Huet noticed that
-some calculi remaing complete if solving a difficult subprobem of higher-order
-unification (`flex-flex'' pairs) is delayed. He described algorithm to solve
+some calculi remaing complete if solving a difficult subproblem of higher-order
+unification (`flex-flex'' pairs) is delayed. He described procedure to solve
 this easier problem in a more efficient way \cite{gh-75-unification}. Dougherty
-desgined an algorithm to enumerate higher-order unifiers using higher-order
+desgined a procedure to enumerate higher-order unifiers using higher-order
 combinators~\cite{dd-93-comb-unif}. To make unification more efficient, Bhayat
 and Reger implemented efficient term indexing in their extension of Vampire
 \cite{br-20-full-sup-w-combs}. Libal and Steen designed efficient term indexing
