@@ -22,7 +22,7 @@ order of expressivity.
 
 \section{Propositional Logic}
 
-Basic formulas of propositional logic syntax are propositional variables
+Basic formulas of propositional logic are propositional variables
 $\cst{p}, \cst{q}, \ldots$ and constants $\top$ and $\bot$. More complex
 formulas are built inductively using logical connectives $\neg, \land, \lor,
 \imp, \lequiv$: if $\phi$ and $\psi$ are formulas, then $\neg \phi, \phi \land
@@ -55,39 +55,71 @@ tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
 $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
 \ldots, \tau_{n})$ are argument types, $\tau$ is the return type, and that $n$
 is the arity of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ we call
-$\cst{f}$ a predicate symbol, otherwise we call it a function symbol. It is
-required that argument types are not Boolean.
+$\cst{f}$ a predicate symbol, otherwise we call it a function symbol. Argument types may not be Boolean.
 
 Terms are the basic building blocks of first-order logic. Variables
-$x,y,z,\ldots$, assigned types $\tau \in T$, are terms. If $t_1,\ldots,t_n$ are
+$x,y,\ldots$, assigned types $\tau \in T$, are terms. If $t_1,\ldots,t_n$ are
 terms of types $\tau_1, \ldots, \tau_n$, respectively, and $\cst{f} : (\tau_1,
 \ldots, \tau_{n}) \rightarrow \tau$, then $\cst{f}(t_1, \ldots, t_n)$ is a term
 of type $\tau$. If $n=0$, we drop parentheses and write $\cst{f}$. We also
-abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$.
+abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$. Using similar notation,
+we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$ or simply $\tuplen{t}$.
 
-Terms are used to build atoms. Atom is either a term $t : o$ or an equation $s
-\eq t$ where terms $t$ and and $s$ are of the same type. Atoms are combined
-using logical connectives just like in propositional logic. Additionally,
-first-order formulas are built using quantifiers: if $\phi$ is a formula and $x$
-is a variable then $\forall x.\, \phi$, as well as $\exists x.\, \phi$ are
-formulas. The first formula is interpreted as ``$\phi$ must hold for all terms
-replaced for $x$'' and the second one as ``there is a replacement for $x$ such
-that $\phi$ holds''. As soon as there is a single functional symbol with arity
-greater than 0, there are infinitely many terms that can be substituted for a
-free variable. It is therefore obvious that the propositional technique for
-deciding satisfiability does not work in the first-order case.
+Terms are used to build atoms. Atom is either a term $t$ of type $o$ or an
+equation $s \eq t$ where terms $t$ and and $s$ are of the same type. Atoms are
+combined using logical connectives just like in propositional logic.
+Additionally, first-order formulas are built using quantifiers: if $\phi$ is a
+formula and $x$ is a variable then $\forall x.\, \phi$, as well as $\exists x.\,
+\phi$ are formulas. The first formula requires that $\phi$ holds for any value
+of $x$, while second requires that there is some $x$ for which $\phi$ holds. As
+soon as there is a single functional symbol with arity greater than 0, there are
+infinitely many terms that can be substituted for a free variable. It is
+therefore obvious that the propositional technique for deciding satisfiability
+does not work in the first-order case.
 
 Substitutions $\sigma, \varrho, \ldots$ are total mappings from variables to
 terms of the same type. Substitutions map only finitely many variables to terms
 other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
-x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself. 
-Applying a substitution $\sigma$ to a term $t$ results in replacing all mapped variables 
-by the corresponding terms and it is denoted.
+x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself.
+Applying a substitution $\sigma$ to a term $t$ results in replacing all mapped
+variables by the corresponding terms and it is denoted.
+
 \section{Higher-Order Logic}
+
+We assume classic simply typed monomorphic higher-order logic with the choice
+operator. Assuming a set of base types $T$ and a set of symbols $\Sigma$ as in
+first-order logic, let us define terms and types. Types are either base types
+$\tau in T$, or function types $\tau_1 \rightarrow \tau_2$ where both $\tau_1$
+and $\tau_2$ are types. Each symbol $\cst{f} \in \Sigma$ is assigned a type.
+
+Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
+\dotsc$, or symbols $\cst{f}, \cst{g},\allowbreak \cst{a},\allowbreak \cst{b}
+\dotsc$. Furthermore is $s$ and $t$ are terms of type $\tau_1 \rightarrow
+\tau_2$, and $\tau_1$ respectively, then $s \, t$ is a term of type $\tau_2$.
+Lastly, if $x$ is a bound variable of type $\tau_1$ and $s$ is a term of type
+$\tau_2$, then $\lambda$-abstractions $\lamx{s}$ is a term of type $\tau_1
+\rightarrow tau_2$. The syntactic distinction between free and bound variables
+gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
+\cite{tn-93-patterns}. In Chapter \ref{ch:ehoh} we write free variables in
+lowercase as the logic described in that chapter disallows
+$\lambda$-abstraction, and consequently bound variables.
+
+We assume the standard notions of $\alpha$, $\beta$ and $\eta$ conversions. We
+let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$ and
+$\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
+$\beta$-normal term can be written as $\lam{\tuple{x}{m}}{s \, \tuplen{t}}$,
+where $s$ is not an application; we call $s$ the \emph{head} of the term. If $s$
+is a free variable, we call the term \emph{flex}; otherwise, the term is
+\emph{rigid}.
+
+Throughout this thesis, we consider completeness of higher-order calculi only
+with respect to Henkin semantics \cite{bm-14-automation-ho}. Note that no
+complete calculus exists for higher-order calculi with standard (full) semantics.
+
 \section{Clausal Forms}
 \section{Superposition}
 \subsection{Term Order and Selection}
 \subsection{Unification}
-\subsection{The Calculus}
-\subsection{Redundancy Criterion}
-\subsection{Saturation Procedure}
+\subsection{Inference Rules}
+\subsection{The Redundancy Criterion}
+\subsection{The Saturation Procedure}
