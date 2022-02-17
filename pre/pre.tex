@@ -4,12 +4,11 @@
 
 \begin{abstract}
     In this chapter we lay out the basic prerequisites for the remaining
-    chapters. We begin by defining three logics that we work with in this
+    chapters. We begin by describing the three logics that we work with in this
     thesis: propositional logic, monomorphic first-order logic and simply typed
     higher-order logic. Then, we explain the clausal structure which is the
-    backbone of many calculi for automated provers. We further describe the
-    superposition calculus and finish with description of the process superposition
-    provers use to actually perform the inferences.
+    backbone of many calculi for automated provers. We finish with the description of the
+    superposition calculus.
 \end{abstract}
       
 \newpage
@@ -22,19 +21,19 @@ order of expressivity.
 
 \section{Propositional Logic}
 
-Basic formulas of propositional logic are propositional variables
+Atomic formulas of propositional logic are propositional variables
 $\cst{p}, \cst{q}, \ldots$ and constants $\top$ and $\bot$. More complex
-formulas are built inductively using logical connectives $\neg, \land, \lor,
-\imp, \lequiv$: if $\phi$ and $\psi$ are formulas, then $\neg \phi, \phi \land
-\psi, \phi \lor \psi, \phi \imp \psi, \phi \lequiv \psi$ are formulas as well.
+formulas are built inductively using logical connectives $\inot, \iand, \ior,
+\iimplies, \allowbreak \iequiv$: if $\phi$ and $\psi$ are formulas, then $\inot \phi, \phi \iand
+\psi, \allowbreak \phi \ior \psi, \phi \iimplies \psi, \phi \iequiv \psi$ are formulas as well.
 
 To interpret the formulas, propositional variables are assigned 0 (false) or 1
 (true), constants $\top$ and $\bot$ are assigned 1 and 0 respectively and the
 formula is interpreted using the rules for each connective
 \cite[Sect.~1.4]{hr-00-logic-in-cs}. As there are finitely many propositional
-variables in a formula, trying all (finitely many) possible assignments
+variables in a formula, trying all (finitely many) possible variable assignments
 describes an algorithm to decide satisfiability (existence of satisfiable
-assignment) or validity (if all assignments are satisfiable).
+assignment for a formula) or validity (if all assignments are satisfy the formula).
 
 However, this simple approach is prohibitively expensive and modern tools that
 decide propositional satisfiability problem (SAT solvers) use more advanced
@@ -67,55 +66,89 @@ we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$ or simply 
 
 Terms are used to build atoms. Atom is either a term $t$ of type $o$ or an
 equation $s \eq t$ where terms $t$ and and $s$ are of the same type. Atoms are
-combined using logical connectives just like in propositional logic.
-Additionally, first-order formulas are built using quantifiers: if $\phi$ is a
-formula and $x$ is a variable then $\forall x.\, \phi$, as well as $\exists x.\,
-\phi$ are formulas. The first formula requires that $\phi$ holds for any value
-of $x$, while second requires that there is some $x$ for which $\phi$ holds. As
-soon as there is a single functional symbol with arity greater than 0, there are
-infinitely many terms that can be substituted for a free variable. It is
-therefore obvious that the propositional technique for deciding satisfiability
-does not work in the first-order case.
+combined using logical connectives to build formulas just like in propositional
+logic. Additionally, first-order formulas are built using quantifiers: if $\phi$
+is a formula and $x$ is a variable then $\iforall x.\, \phi$, as well as
+$\iexists x.\, \phi$ are formulas. The first formula requires that $\phi$ holds
+for any value of $x$, while the second one requires that there is some $x$ for
+which $\phi$ holds. As soon as there is a single functional symbol with arity
+greater than 0, there are infinitely many terms that can be substituted for a
+free variable. Furthermore, in first-order logic to determine the truth value of
+the formula, it does not suffice to assign values to variables. It is also
+necessary to interpret symbols. Therefore, it is obvious that the propositional
+technique for deciding satisfiability does not work in the first-order case.
+
+A position in a term is a tuple of natural numbers, with $\varepsilon$ denoting
+the empty tuple. Subterms and positions are inductively defined as follows.
+Term $t$ is a subterm of itself at position $\varepsilon$. If $s$ is a subterm
+of $t_i$ at position $p$, then $s$ is a subterm of $\cst{f}(\tuplen{t})$ at
+position $i.p$. A context is a term with zero or more subterms replaced by a
+hole $\square$. We write $C[\overline{u}_n]$ for the term resulting from filling
+in the holes of a context $C$ with the terms $\overline{u}_n$, left to
+right.
 
 Substitutions $\sigma, \varrho, \ldots$ are total mappings from variables to
 terms of the same type. Substitutions map only finitely many variables to terms
 other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
 x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself.
-Applying a substitution $\sigma$ to a term $t$ results in replacing all mapped
-variables by the corresponding terms and it is denoted.
+Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$ results in
+replacing all mapped variables by the corresponding terms.
+The composition $\varrho\sigma$ of substitutions is defined by
+$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$.
 
 \section{Higher-Order Logic}
 
-We assume classic simply typed monomorphic higher-order logic with the choice
-operator. Assuming a set of base types $T$ and a set of symbols $\Sigma$ as in
-first-order logic, let us define terms and types. Types are either base types
-$\tau in T$, or function types $\tau_1 \rightarrow \tau_2$ where both $\tau_1$
-and $\tau_2$ are types. Each symbol $\cst{f} \in \Sigma$ is assigned a type.
+In this thesis we use classic simply typed monomorphic higher-order logic with
+the choice operator (and some variations of this logic). Assuming a set of
+base types $T$ and a set of symbols $\Sigma$, let us
+define terms and types. Types are either base types $\tau \in T$, or function
+types $\tau_1 \rightarrow \tau_2$ where both $\tau_1$ and $\tau_2$ are types.
+Each symbol $\cst{f} \in \Sigma$ is assigned a type.
 
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 \dotsc$, or symbols $\cst{f}, \cst{g},\allowbreak \cst{a},\allowbreak \cst{b}
-\dotsc$. Furthermore is $s$ and $t$ are terms of type $\tau_1 \rightarrow
-\tau_2$, and $\tau_1$ respectively, then $s \, t$ is a term of type $\tau_2$.
+\dotsc$. Furthermore, if $s$ and $t$ are terms of type $\tau_1 \rightarrow
+\tau_2$, and $\tau_1$, respectively, then $s \, t$ is a term of type $\tau_2$.
 Lastly, if $x$ is a bound variable of type $\tau_1$ and $s$ is a term of type
 $\tau_2$, then $\lambda$-abstractions $\lamx{s}$ is a term of type $\tau_1
-\rightarrow tau_2$. The syntactic distinction between free and bound variables
+\rightarrow \tau_2$. The syntactic distinction between free and bound variables
 gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
-\cite{tn-93-patterns}. In Chapter \ref{ch:ehoh} we write free variables in
-lowercase as the logic described in that chapter disallows
-$\lambda$-abstraction, and consequently bound variables.
+\cite{tn-93-patterns}.
 
-We assume the standard notions of $\alpha$, $\beta$ and $\eta$ conversions. We
-let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$ and
-$\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
-$\beta$-normal term can be written as $\lam{\tuple{x}{m}}{s \, \tuplen{t}}$,
-where $s$ is not an application; we call $s$ the \emph{head} of the term. If $s$
-is a free variable, we call the term \emph{flex}; otherwise, the term is
-\emph{rigid}.
+We assume the standard notions of $\alpha$, $\beta$ and $\eta$ conversions and
+write $s \equi t$ if terms $s$ and $t$ are equal modulo $\alpha\beta\eta$
+converison. We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$
+and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
+$\beta$-reduced term can be written as $\lam{\tuple{x}{m}}{a \, \tuplen{t}}$,
+where $a$ is not an application; we call $a$ the \emph{head} of the term. By
+convention, $a$ and $b$ denote heads. If $a$ is a free variable, we call the term
+\emph{flex}; otherwise, the term is \emph{rigid}.
+
+Deviating from the standard notion of higher-order subterm, we define subterms
+on $\beta$-reduced terms as follows: a term $t$ is a subterm of $t$ at position
+$\varepsilon$. If $s$ is a subterm of $u_i$ at position $p$, then $s$ is a
+subterm of $a\;\overline{u}_n$ at position $i.p$. If $s$ is a subterm of $t$ at
+position $p$, then $s$ is a subterm of $\lambda x.\, t$ at position $1.p$. Our
+definition of subterm gracefully generalizes the corresponding first-order
+notion: $\cst{a}$ is a subterm of $\cst{f} \, \cst{a} \, \cst{b}$ at position 1,
+but $\cst{f}$ and $\cst{f} \, \cst{a}$ are not subterms of $\cst{f} \, \cst{a}
+\, \cst{b}$. 
+
+Higher-order substitutions ($\sigma,\varrho,\ldots$) are functions from free and bound
+variables to terms. A variable $F$ is mapped by $\sigma$ if $ \sigma F \not\equi
+F$. Each substitution maps only finitely many variables, and it is denoted as in
+first-order case. Application of  $\sigma$ to term $t$ is denoted $\sigma(t)$;
+this application $\alpha$-renames $t$ to avoid variable capture. For example,
+$\{X \mapsto x\}(\lamx{X \, a})$ results in $\lam{y}{x \, a}$.  Given a substitution
+$\varrho$, which maps $F$ to $s$, we write $\varrho\setminus\{F \mapsto s\}$ to
+denote a substitution that does not map $F$ and otherwise coincides with
+$\varrho$. Given substitutions $\varrho$ and $\sigma$, which map disjoint sets
+of variables, we write $\varrho \cup \sigma$ to denote $\varrho\sigma$.
 
 Throughout this thesis, we consider completeness of higher-order calculi only
 with respect to Henkin semantics \cite{bm-14-automation-ho}. Note that no
-complete calculus exists for higher-order calculi with standard (full) semantics.
-
+complete calculus exists for higher-order calculi with standard (full)
+semantics.
 \section{Clausal Forms}
 \section{Superposition}
 \subsection{Term Order and Selection}
