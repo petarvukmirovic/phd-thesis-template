@@ -46,7 +46,7 @@ would shape the future of automatic reasoning --- the resolution calculus
 \cite{ar-65-resolution}. Consisting of a single inference rule it was simple and
 elegant. It was also \emph{complete}: each theorem could be proven using this
 system. Furthermore, it was less explosive than Davis and Putnam's algorithm
-since it provided better guided search space exploration.
+since it provided better guidance for search space exploration.
 
 Since its introduction, resolution was improved in many ways. Strategies and
 heuristics~\cite{lw-65-sos} to curb the explosion of the search space were
@@ -64,7 +64,7 @@ prove long-standing open problem known as the Robbins conjecture
 winning the first-order division of the CASC theorem proving competition since its
 inception in the 1990s \cite{ss-96-casc}.
 
-Even though the successes of proving Robbins conjecture showed that it is
+Even though the successes of proving the Robbins conjecture showed that it is
 possible, automatically proving hard mathematical problems is still out of reach
 for theorem provers. However, there are other ways in which humans and computers can work together to construct formal
 proofs.
@@ -135,7 +135,7 @@ efficiency on first-order problems did not decrease. Thus, while trying
 to fulfill the point \ref{it:ho} from the wishlist we make sure that points
 \ref{it:fo} and \ref{it:size} are not affected.
 
-We identified three stops on the road to full higher-order logic. A
+We have identified three stops on the road to full higher-order logic. A
 distinguished feature of higher-order logic is that it not only supports
 quantification over objects, but also over functions that manipulate these
 objects. Thus, higher-order logic allows us to make a statement ``all functions
@@ -171,7 +171,7 @@ heuristics to achieve the best possible performance. We discuss those challenges
 \begin{itemize}
   \item We implemented the complete superposition calculus for $\lambda$-free
   higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
-  We had to modify internal term representation of E to support $\lambda$-free
+  We had to modify the internal term representation of E to support $\lambda$-free
   higher-order terms, implement new unification and matching algorithms, extend
   term indexing data structures to work with higher-order terms, and to improve the
   performance of heuristics on higher-order problems.
