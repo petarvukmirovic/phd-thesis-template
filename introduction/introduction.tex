@@ -46,7 +46,7 @@ would shape the future of automatic reasoning --- the resolution calculus
 \cite{ar-65-resolution}. Consisting of a single inference rule it was simple and
 elegant. It was also \emph{complete}: each theorem could be proven using this
 system. Furthermore, it was less explosive than Davis and Putnam's algorithm
-since it introduced unification as an inference filter.
+since it provided better guided search space exploration.
 
 Since its introduction, resolution was improved in many ways. Strategies and
 heuristics~\cite{lw-65-sos} to curb the explosion of the search space were
@@ -57,11 +57,11 @@ superposition~\cite{bg-94-superposition} in the early 1990s.
 
 Superposition is a complete calculus for first-order logic loosely based on
 resolution, featuring support for equality on the calculus level. This support
-is further optimized by use of term orders and selection functions to prune the
+is further optimized by use of various heuristics built to help prune the
 search space. Thanks to efficient implementation, this calculus was used to
-prove long-standing open problem known as ``Robbins conjecture''
+prove long-standing open problem known as the Robbins conjecture
 \cite{mccune-97-robbins}. Provers based on this calculus have been
-winning the first-order division of CASC theorem proving competition since its
+winning the first-order division of the CASC theorem proving competition since its
 inception in the 1990s \cite{ss-96-casc}.
 
 Even though the successes of proving Robbins conjecture showed that it is
@@ -69,17 +69,17 @@ possible, automatically proving hard mathematical problems is still out of reach
 for theorem provers. However, there are other ways in which humans and computers can work together to construct formal
 proofs.
 
-\paragraph{Proof Assistants and Hammers} Proof assistants (or interactive
+\paragraph{Proof Assistants and Hammers} Proof assistants (also called interactive
 theorem provers) are programs which allow users to describe a theory formally
 and to write proofs of the statements about this theory using inference 
 rules of the proof assistant. These programs can then check if the given proof
 is correct. As their core is usually small and well-tested, proofs that pass the
 checking phase are considered trustworthy.
 
-Proof assistants showed indispensible in proving very complex mathematical theorems in a
-trustworthy manner. For example, four-color theorem \cite{gg-2008-four-color}
-and Kepler conjecture \cite{th-2015-kepler} were proven inside proof assistants,
-ending the need to trust hundreds of pages of hard mathematical proofs. Proof
+Proof assistants were essential in proving very complex mathematical theorems in a
+trustworthy manner. For example, the four-color theorem \cite{gg-2008-four-color}
+and the Kepler conjecture \cite{th-2015-kepler} were proven inside proof assistants,
+ending the need to trust hundreds of pages of mathematical proofs. Proof
 assistants are also used to show correctness of complex software such as
 compilers \cite{xl-09-compcert} or operating systems kernels \cite{gk-09-sel4}.
 This verified software can be used in safety-critical scenarios such as nuclear
@@ -90,7 +90,7 @@ Even though many proof assistants offer some sort of automation, seemingly simpl
 statements cannot be automatically proved. This is one of the reasons why large
 verification projects can take years to finish.
 
-Integrating proof automation right into the proof assistant is not an easy task.
+Integrating proof automation directly into the proof assistant is not an easy task.
 Most proof assistants are based on variants of higher-order logic, which is more
 expressive than first-order logic, but harder to automate as in general it does not even allow complete
 proof calculi. To provide some level of automation, proof assistant developers
@@ -99,11 +99,11 @@ translated from higher-order to first-order logic. Then the first-order prover
 is run on the translated problem. If the first-order prover finds the proof, the
 proof is reconstructed in the proof assistant. This approach is implemented in
 modern assistants such as Coq \cite{bc-04-coq}, HOL Light \cite{jh-09-hol-light}
-and Isabelle \cite{lc-88-isabelle} using \emph{hammers} CoqHammer
+and Isabelle \cite{lc-88-isabelle} using the \emph{hammers} CoqHammer
 \cite{ck-18-coqhammer}, HOL(y)Hammer \cite{ku-15-holyhammer} and Sledgehammer
 \cite{bn-10-sh}, respectively. 
 
-The approach proved useful: around 76\% of the simple proof goals can be
+The approach proved useful: on some benchmarks, around 77\% of the proof goals can be
 discharged automatically using Sledgehammer \cite{bgkku-16-larning-fact-selector}. However, there is
 clearly some untapped potential in the approach as it communicates with
 automatic theorem provers through a translation. To bridge this translation gap,
@@ -112,18 +112,18 @@ first-order ones \cite{ns-13-leo2sh}. This proved unfruitful as state-of-the-art
 higher-order theorem provers of the time were primarily designed for small and
 tricky problems. On the other hand, problems coming from hammers consist of
 mostly first-order formulas, are rather large, and mostly require simple
-higher-order proof steps. Thus, from a standpoint of proof assistant ideal
+higher-order proof steps. Thus, from the standpoint of proof assistants the ideal
 automatic theorem prover fulfills the following wishlist:
 \begin{enumerate}
-  \item\label{it:fo} Performs as best first-order provers on first-order problems
+  \item\label{it:fo} Performs as the best first-order provers on first-order problems
   \item\label{it:size} Scales well with the size of the problem
   \item\label{it:ho} Supports higher-order logic and scales with the amount of higher-order axioms
 \end{enumerate}
 This brings us to the topic of this thesis: \emph{How to develop a prover fulfilling this wishlist?}
 
 \paragraph{Our Approach} To improve the automatic reasoning for higher-order
-logic we decided not to start from a blank slate and build a new theorem prover.
-Rather, we start from a position of strength --- from state-of-the-art
+logic, we decided not to start from a blank slate and build a new theorem prover.
+Rather, we start from a position of strength --- from the state-of-the-art
 first-order superposition theorem prover E \cite{scv-19-e23} --- and extend this
 prover to higher-order logic. In this way, the points \ref{it:fo} and
 \ref{it:size} from the above wishlist are already fulfilled, as E is very
@@ -137,13 +137,13 @@ efficiency on first-order problems did not decrease. Thus, while trying
 to fulfill the point \ref{it:ho} from the wishlist we make sure that points
 \ref{it:fo} and \ref{it:size} are not affected.
 
-We have split the road to full higher-order logic in three stages. A
+We identified three stops on the road to full higher-order logic. A
 distinguished feature of higher-order logic is that it not only supports
 quantification over objects, but also over functions that manipulate these
 objects. Thus, higher-order logic allows us to make a statement ``all functions
 with arguments $0$ and $1$ result in $2$" ($\forall x. \,  x (\cst{0}, \cst{1}) \eq
-\cst{2}$). Replacing $x$ with addition function ($\cst{+}$) is enough to
-disprove this statement. The first stage is to extend E to support
+\cst{2}$). Replacing $x$ with the addition function ($\cst{+}$) is enough to
+disprove this statement. The first stop is to extend E to support
 quantification over functions that are already present in the theory.
 
 Higher-order logic also supports expressing functions that are not explicitly
@@ -153,27 +153,27 @@ function that returns 4 when given 2 and 5 when given 3 ($\exists x. x(\cst{2})
 the function that adds 2 to its argument. In higher-order logic such unnamed
 function can be represented using $\lambda$-abstractions as $\lambda y.\, y \,
 \cst{+} \, \cst{2}$. This term suffices to prove the original statement. The
-second stage is to support automatically synthesizing such functions.
+second stop is to support automatically synthesizing such functions.
 
 In higher-order logic we can make statements about statements. More precisely,
 it treats Boolean terms (formulas) as first-class citizens, enabling us to
 model some concepts in more natural manner. For example, we can naturally
 represent statements such as ``what Jasmin says is true'' as $\forall x. \,
-\cst{says}(\cst{jasmin}, x) \imp x$. The last stage is to support Boolean terms
+\cst{says}(\cst{jasmin}, x) \imp x$. The last stop is to support Boolean terms
 as first-class citizens.
 \pagebreak[2]
 
 \section{Contributions}
 
-The biggest contribution of this thesis is the extension of two theorem provers,
+The main contribution of this thesis is the extension of two theorem provers,
 E and Zipperposition \cite{sc-15-simon-phd}, to full higher-order logic. To
-extend those provers, we faced many challenges. Some of them were of engineering
+extend these provers, we faced many challenges. Some of them were of engineering
 nature, some of them were algorithmic, while others concerned fine-tuning the
-heuristics to achieve best possible performance. We discuss those challenges in more detail:
+heuristics to achieve the best possible performance. We discuss those challenges in more detail:
 \begin{itemize}
   \item We implemented the complete superposition calculus for $\lambda$-free
   higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
-  We had to modify internal term representation of Ehoh to support $\lambda$-free
+  We had to modify internal term representation of E to support $\lambda$-free
   higher-order terms, implement new unification and matching algorithms, extend
   term indexing data structures to work with higher-order terms, and to improve the
   performance of heuristics on higher-order problems.
@@ -185,25 +185,26 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   E, but it is implemented in OCaml and it was designed to make prototyping
   ideas and experimenting with calculi much easier. In 2019 we entered the
   higher-order division of CASC theorem proving competition with Zipperposition
-  \cite{gs-19-casc27}. It took third place, closely behind (1 percent
-  point) Leo-III \cite{sb-21-leo3}  and far behind (12 percent points) Satallax \cite{cb-12-satallax}.
+  \cite{gs-19-casc27}. It finished third, 1 percent point behind Leo-III
+  \cite{sb-21-leo3}  and 12 percent points behind  Satallax
+  \cite{cb-12-satallax}.
   \item Through this experience we identified one of the bottlenecks of
   Zipperposition: its unification algorithm. To remove this bottleneck we
   developed a complete higher-order unification algorithm that was more
-  efficient and less redundant than current state of the art. 
+  efficient and generated less redundant unifiers than the state of the art. 
   \item We also noticed that Zipperposition's support for first-class Booleans
   was lacking compared to competition. We have closely studied the problems on
   which Zipperposition fails, but are easily solved by other provers and created
   a set of incomplete rules that enhance Zipperposition's Boolean support.
   Zipperposition 2 implemented these rules together with the new unification
-  algorithm. In 2020, Zipperposition 2 was the winner of higher-order division
-  of CASC \cite{gs-21-cascj10}. This time it was 20 percent points better than the second best
+  algorithm. In 2020, Zipperposition 2 won the higher-order division
+  of CASC \cite{gs-21-cascj10}. This time it was 20 percent points ahead of the second best
   prover, Satallax.
   \item Inspired by this success we implemented the complete superposition
   calculus for higher-order logic with Booleans (i.e., the third stage) that we developed with Bentkamp and other
   colleagues \cite{bbtv-21-full-ho-sup}. Developing this calculus helped us understand in which
   ways our pragmatic extension was too weak to prove hard theorems of
-  higher-order logic. We further tuned the heuristics and implemented new ways
+  higher-order logic. We further fine-tuned the heuristics and implemented new ways
   to tame the search space explosion. In 2021 we released Zipperposition 2.1
   which implemented these new features. It again won
   CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
@@ -213,27 +214,27 @@ heuristics to achieve best possible performance. We discuss those challenges in 
   \newehoh{}. We again modified the term representation, implemented new unification and
   matching algorithms, extended indexing data structures, and tweaked
   heuristics. Even though this extension has larger scope than the original
-  extension from E to Ehoh, strong basis that we have earlier built made it
+  extension from E to Ehoh, the strong basis that we have earlier built made it
   manageable.
 
-  \item Following our approach of lifting efficient provers from
-  first-order to higher-order logic, we went a step back in an effort to improve
-  first-order provers. In particular, we looked at the most efficient approaches
-  to simplify problems in propositional logic, a simpler, decidable logic that disallows quantification. 
-  We lifted some of these approaches to first-order logic
-  and implemented them in Zipperposition. 
+  \item After spending so much time and energy on developing higher-order
+  provers, we took a step back and worked on improving first-order provers. In
+  particular, we looked at the most efficient approaches to simplify problems in
+  propositional logic, a simpler, decidable logic that disallows quantification.
+  We lifted some of these approaches to first-order logic and implemented them
+  in Zipperposition. 
 \end{itemize}
 
 \section{Thesis Structure and Publications}
 
-This thesis is cumulative: chapters~\ref{ch:ehoh}~-~\ref{ch:satfol}  are
-directly taken from previous publications (or drafts in case of
+This thesis is cumulative: chapters~\ref{ch:ehoh}--\ref{ch:satfol}  are
+taken from previous publications (or drafts in case of
 Chapter~\ref{ch:ehoh2}) where I was the main author. Use
-of publications in this thesis was authorized by the coauthors. 
+of the publications in this thesis was authorized by the coauthors. 
 
 Chapter~\ref{ch:pre} introduces the background material necessary for following this thesis,
 while Chapter~\ref{ch:conclusion} gives a brief summary of the work and describes alleys for future work.
-Other six chapters discuss previously described contributions in detail:
+The other six chapters discuss previously described contributions in detail:
 
 \vspace{0.5em}
 \noindent\textbf{Chapter~\ref{ch:ehoh}} discusses the steps we have taken to extend first-order
@@ -241,7 +242,7 @@ Other six chapters discuss previously described contributions in detail:
   \begin{enumerate}
     \item Petar Vukmirović, Jasmin Blanchette, Simon Cruanes, and Stephan Schulz.
     Extending a Brainiac Prover to Lambda-Free Higher-Order Logic.
-    In \emph{International Journal on Software Tools for Technology Transfer}. Springer, 2021.  
+    In \emph{International Journal on Software Tools for Technology Transfer}. Springer, 2021. Published online only.
   \end{enumerate}
 \vspace{-0.3em}
 while parts of the chapter were previously published in the conference publication
@@ -249,9 +250,9 @@ while parts of the chapter were previously published in the conference publicati
   \begin{enumerate}[resume]
     \item Petar Vukmirović, Jasmin Blanchette, Simon Cruanes, and Stephan Schulz.
     Extending a Brainiac Prover to Lambda-Free Higher-Order Logic.
-    In  In Vojnar, T., Zhang, L. (eds.) \emph{TACAS 2019}, LNCS 11427, pp. 192--210, Springer, 2019.
+    In Vojnar, T., Zhang, L. (eds.) \emph{TACAS 2019}, LNCS 11427, pp. 192--210, Springer, 2019.
   \end{enumerate}
-\noindent\textbf{Chapter~\ref{ch:unif}} discusses the higher-order unification algorithm we designed to be used
+\noindent\textbf{Chapter~\ref{ch:unif}} discusses the higher-order unification procedure we designed to be used
 inside efficient theorem provers. It is mostly based on the journal publication
   \begin{enumerate}[resume]
     \item Petar Vukmirović, Alexander Bentkamp, and Visa Nummelin. Efficient Full Hi\-gher-Order Unification. 
@@ -259,14 +260,14 @@ inside efficient theorem provers. It is mostly based on the journal publication
   \end{enumerate}
 \vspace{-0.3em}
 while parts of the chapter were previously published in the conference
-publication, which won the best paper by junior researcher award:
+publication, which won the best paper by a junior researcher award:
 \vspace{-0.3em}
 \begin{enumerate}[resume]
   \item Petar Vukmirović, Alexander Bentkamp, and Visa Nummelin. Efficient Full Hi\-gher-Order Unification. 
   In Ariola, Z.M. (ed.) \emph{FSCD 2020} LIPIcs 167, pp. 5:1--5:17, Schloss Dagstuhl--Leibniz-Zentrum für Informatik, 2020. 
 \end{enumerate}
 \noindent\textbf{Chapter~\ref{ch:bools}} discusses the pragmatic extensions of
-the complete calculus for superposition with lambdas to support first-class
+the complete calculus for superposition with $\lambda$-abstractions to support first-class
 Booleans. It is based on the publication
     \begin{enumerate}[resume]
       \item Petar Vukmirović and Visa Nummelin. Boolean Reasoning in a Higher-Order
@@ -275,7 +276,7 @@ Booleans. It is based on the publication
       2752, pp. 148--166. CEUR-WS.org (2020)
     \end{enumerate}
 \noindent\textbf{Chapter~\ref{ch:ho-techniques}} discusses the approach we took to
-control explosion of the search space inherent to higher-order superposition. It is mostly based on the journal publication
+control the explosion of the search space inherent to higher-order superposition. It is mostly based on the journal publication
   \begin{enumerate}[resume]
     \item Petar Vukmirović, Alexander Bentkamp, Jasmin Blanchette, Simon Cruanes, Visa Nummelin, and Sophie Tourret.
     Making Higher-Order Superposition Work. In \emph{Journal of Automated Reasoning}. Springer, 2022.
@@ -289,10 +290,10 @@ control explosion of the search space inherent to higher-order superposition. It
   LNCS 12699, pp. 415--432, Springer, 2021.
 \end{enumerate}
 \noindent\textbf{Chapter~\ref{ch:ehoh2}} discusses the extension of Ehoh to
-support full higher-order logic. We call the obtained prover \newehoh.
+support full higher-order logic, resulting in \newehoh.
 It is based on the draft 
 \begin{enumerate}[resume]
-  \item Petar Vukmirović, Jasmin Blanchette, Stephan Schulz.  Extending a
+  \item Petar Vukmirović, Jasmin Blanchette, and Stephan Schulz.  Extending a
   High-Performance Prover to Higher-Order Logic. 2022.
 \end{enumerate}
 
@@ -331,17 +332,17 @@ hammers. Huet~\cite{gh-73-hol} and Andrews~\cite{pa-71-type-theory} designed
 calculi that are directly applied to higher-order formulas.
 
 These attempts resulted in early higher-order theorem provers. Andrews and
-collegaues developed TPS~\cite{abinpx-96-tps}: an automatic prover which
+colleagues developed TPS~\cite{abinpx-96-tps}: an automatic prover which
 allows user to specify proof outlines, based on expansion proofs. Benzm\"uller
-and colleageues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
-resolution which introduced cooperative paradigm. Provers of this paradigm
-invoke first-order back-ends in regular intervals to finish the proof. Latest
+and colleagues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
+resolution which introduced the cooperative paradigm. Provers implementing this paradigm
+invoke first-order backends in regular intervals to finish the proof. Latest
 iteration in LEO family of provers is Leo-III \cite{sb-21-leo3}. Satallax
 \cite{cb-12-satallax} is based on higher-order analytic tableau and uses SAT solver
-to close tableau branches. It won higher-order division of CASC on 7 ocassions:
+to close tableau branches. It won higher-order division of CASC on eight occasions:
 in 2011 and every year from 2013 to 2019.
 
-Various reserachers also experimented with the idea of extending a first-order
+Various researchers also experimented with the idea of extending a first-order
 prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order
 unification and added $\lambda$-terms to one of the best superposition
 provers at the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
@@ -359,7 +360,9 @@ some calculi remaing complete if solving a difficult subproblem of higher-order
 unification (``flex-flex'' pairs) is delayed. He described procedure to solve
 this easier problem in a more efficient way \cite{gh-75-unification}. Dougherty
 desgined a procedure to enumerate higher-order unifiers using higher-order
-combinators~\cite{dd-93-comb-unif}. To make unification more efficient, Bhayat
+combinators~\cite{dd-93-comb-unif}. 
+
+To make unification more efficient, Bhayat
 and Reger implemented efficient term indexing in their extension of Vampire
 \cite{br-20-full-sup-w-combs}. Libal and Steen designed efficient term indexing
 based on substitution trees \cite{ls-16-indexing}.
@@ -367,7 +370,7 @@ based on substitution trees \cite{ls-16-indexing}.
 There have been many studies on the performance of algorithms or success rate of
 heuristics in first-order theorem proving. For example, Hoder and Voronkov
 evaluate different unification algorithms \cite{hv-09-unifalgs}, while Reger and
-Voronkov evaluate different parameters of AVATAR architecture
+Voronkov evaluate different parameters of a novel prover architecture
 \cite{rsv-15-playing-with-avatar}. Other authors evaluated different proof
 search heuristics for superposition provers \cite{gs-20-clausesel,
 hrsv-16-selsel, sm-16-clausesel}. Evaluation of many prover parameters has been
