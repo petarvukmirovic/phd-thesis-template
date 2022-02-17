@@ -1,3 +1,93 @@
 \chapter{Preliminaries}
 \setheader{Preliminaries}
 \label{ch:pre}
+
+\begin{abstract}
+    In this chapter we lay out the basic prerequisites for the remaining
+    chapters. We begin by defining three logics that we work with in this
+    thesis: propositional logic, monomorphic first-order logic and simply typed
+    higher-order logic. Then, we explain the clausal structure which is the
+    backbone of many calculi for automated provers. We further describe the
+    superposition calculus and finish with description of the process superposition
+    provers use to actually perform the inferences.
+\end{abstract}
+      
+\newpage
+
+Our work mostly concerns retrofitting first-order provers to support
+higher-order concepts. But part of our work also concerns integrating
+successful approaches for propositional logic in first-order
+provers. We begin by defining all three logics, in the increasing
+order of expressivity.
+
+\section{Propositional Logic}
+
+Basic formulas of propositional logic syntax are propositional variables
+$\cst{p}, \cst{q}, \ldots$ and constants $\top$ and $\bot$. More complex
+formulas are built inductively using logical connectives $\neg, \land, \lor,
+\imp, \lequiv$: if $\phi$ and $\psi$ are formulas, then $\neg \phi, \phi \land
+\psi, \phi \lor \psi, \phi \imp \psi, \phi \lequiv \psi$ are formulas as well.
+
+To interpret the formulas, propositional variables are assigned 0 (false) or 1
+(true), constants $\top$ and $\bot$ are assigned 1 and 0 respectively and the
+formula is interpreted using the rules for each connective
+\cite[Sect.~1.4]{hr-00-logic-in-cs}. As there are finitely many propositional
+variables in a formula, trying all (finitely many) possible assignments
+describes an algorithm to decide satisfiability (existence of satisfiable
+assignment) or validity (if all assignments are satisfiable).
+
+However, this simple approach is prohibitively expensive and modern tools that
+decide propositional satisfiability problem (SAT solvers) use more advanced
+approaches such as CDCL calculus \cite{mss-96-cdcl}. Modern SAT solvers also
+heavily preprocess the problem and continue simplifying it during proving
+process.
+
+\section{First-Order Logic}
+
+First-order logic increases the expressivity by allowing quantification over
+objects and has more complicated formula structure. There are many flavors of
+first-order logic, but in this thesis we consider monomorphic first-order logic
+with equality.
+
+We distinguish a set of base types $T$ which is required to have the Boolean
+type $o$, and a set of symbols $\Sigma$. To each symbol $\cst{f} \in \Sigma$ a
+tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
+$\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
+\ldots, \tau_{n})$ are argument types, $\tau$ is the return type, and that $n$
+is the arity of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ we call
+$\cst{f}$ a predicate symbol, otherwise we call it a function symbol. It is
+required that argument types are not Boolean.
+
+Terms are the basic building blocks of first-order logic. Variables
+$x,y,z,\ldots$, assigned types $\tau \in T$, are terms. If $t_1,\ldots,t_n$ are
+terms of types $\tau_1, \ldots, \tau_n$, respectively, and $\cst{f} : (\tau_1,
+\ldots, \tau_{n}) \rightarrow \tau$, then $\cst{f}(t_1, \ldots, t_n)$ is a term
+of type $\tau$. If $n=0$, we drop parentheses and write $\cst{f}$. We also
+abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$.
+
+Terms are used to build atoms. Atom is either a term $t : o$ or an equation $s
+\eq t$ where terms $t$ and and $s$ are of the same type. Atoms are combined
+using logical connectives just like in propositional logic. Additionally,
+first-order formulas are built using quantifiers: if $\phi$ is a formula and $x$
+is a variable then $\forall x.\, \phi$, as well as $\exists x.\, \phi$ are
+formulas. The first formula is interpreted as ``$\phi$ must hold for all terms
+replaced for $x$'' and the second one as ``there is a replacement for $x$ such
+that $\phi$ holds''. As soon as there is a single functional symbol with arity
+greater than 0, there are infinitely many terms that can be substituted for a
+free variable. It is therefore obvious that the propositional technique for
+deciding satisfiability does not work in the first-order case.
+
+Substitutions $\sigma, \varrho, \ldots$ are total mappings from variables to
+terms of the same type. Substitutions map only finitely many variables to terms
+other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
+x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself. 
+Applying a substitution $\sigma$ to a term $t$ results in replacing all mapped variables 
+by the corresponding terms and it is denoted.
+\section{Higher-Order Logic}
+\section{Clausal Forms}
+\section{Superposition}
+\subsection{Term Order and Selection}
+\subsection{Unification}
+\subsection{The Calculus}
+\subsection{Redundancy Criterion}
+\subsection{Saturation Procedure}
