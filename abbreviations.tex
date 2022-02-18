@@ -41,3 +41,13 @@
 \newcommand{\sigmacl}[1]{\ensuremath{\substcl{\sigma}{#1}}}
 
 \newcommand\unif{\mathrel{\smash{\stackrel{\lower.1ex\hbox{\ensuremath{\scriptscriptstyle ?}}}{=}}}}
+
+
+\newcommand\infname[1]{\textsc{#1}}
+% Inference rule
+\newcommand{\namedinference}[3]{\prftree[r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
+\newcommand{\inference}[2]{\namedinference{}{\strut#1}{\strut#2}}
+
+% Simplification rule
+\newcommand{\namedsimp}[3]{\prftree[d][r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
+\newcommand{\simp}[2]{\namedinference{}{\strut#1}{\strut#2}}

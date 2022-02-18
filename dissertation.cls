@@ -17,6 +17,7 @@
 \RequirePackage{amssymb}
 \RequirePackage{txfonts}
 \RequirePackage{mathptmx}
+\RequirePackage{prftree}
 
 %% English is the default language, but Dutch is used for some sections.
 \RequirePackage[dutch,english]{babel}

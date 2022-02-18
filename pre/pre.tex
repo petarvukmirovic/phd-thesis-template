@@ -207,7 +207,9 @@ $\succ$. The order is extended to multisets as follows
 \cite[Sect.~2.5]{bg-01-resolution}. We write $S_1 \succ S_2$ if $S_1 \not= S_2$
 and whenever $S_2(x) > S_1(x)$ then there is some $y \succ x$ such that $S_1(y)
 > S_2(y)$. We use notation $S(x)$ to denote the number of occurrences of $x$ in
-$S$. 
+$S$. To use multiset extension, positive literals are represented as $ \{ \{s\},
+\{t\} \}$ and negative ones as $\{ \{ s, t \} \}$. Clauses are then represented as 
+multisets of such literals. 
 
 Two orders that are commonly used in superposition theorem proving are
 Knuth-Bendix order (KBO) \cite[Sect.~5.4.4]{bn-98-tr-and-all-that} and
@@ -216,6 +218,9 @@ KBO assigns integer weights to symbols and uses precedence between symbols to
 break eventual ties. LPO entirely relies on precedence and inspects term
 structure more closely to determine the order. 
 
+\newcommand{\selfun}{\ensuremath{\mathit{Sel}}}
+Literal selection function is a function that selects a (multi)subset of literals.
+Superposition requires that at least one of the selected literals is negative. 
 
 \subsection{Unification}
 
@@ -259,5 +264,55 @@ unifiers as first-order or higher-order and let the context provide enough
 information.
 
 \subsection{Inference Rules}
+\newcommand{\mgu}{\ensuremath{\mathit{mgu}}}
+
+Before we spell out the inference rules of standard, first-order superposition
+let us introduce some helpful notation, following Schulz \cite{ss-02-brainiac}.
+With $t|_p$ we denote subterm of $t$ at position $p$ and with $t[p \rightarrow
+t']$ replacement of this subterm with $t'$. Let \selfun be a selection function
+and $\succ$ a reduction ordering, $C = l \llor C'$ a clause, and $\sigma$ a
+substitution. We say that \sigmacl{l} is eligible for resolution if: (1) nothing
+is selected by \selfun and \sigmacl{l} is $\succ$-maximal within literals in
+\sigmacl{C} or (2) \selfun selected some literals and \sigmacl{l} is the maximal
+within either positive or negative selected literals. We say \sigmacl{l} is
+eligible for paramodulation if it is positive, nothing is selected and
+\sigmacl{l} is the maximal literal within the literals of \sigmacl{C}.
+With $\mgu(s,t)$ we denote the most general unifier of $s$ and $t$.
+Using
+horizontal line to separate premises and the conclusion, four inference rules of superposition are as
+follows:
+
+\[
+\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
+\]
+where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
+for resolution; \infname{ER} stands for equality resolution
+\medskip
+
+\[
+\namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}
+\]
+where $\sigma = \mgu(u,v), \sigma(t) \not\succ \sigma(s)$ and 
+$(s \eq t)\sigma$ is eligible for paramodulation; \infname{EF} stands for equality factoring
+\medskip
+
+\[
+\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}
+\]
+where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+$(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable;
+\infname{SP} stands for positive superposition 
+\medskip
+
+\[
+\namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}
+\]
+where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+$(s \eq t)\sigma$ is eligible for paramodulation, $(u \eq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable;
+\infname{SN} stands for negative superposition
+\medskip
+
 \subsection{The Redundancy Criterion and Simplification Rules}
+
+
 \subsection{The Saturation Procedure}
