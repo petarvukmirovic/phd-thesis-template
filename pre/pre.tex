@@ -7,17 +7,15 @@
     chapters. We begin by describing the three logics that we work with in this
     thesis: propositional logic, monomorphic first-order logic and simply typed
     higher-order logic. Then, we explain the clausal structure which is the
-    backbone of many calculi for automated provers. We finish with the description of the
-    superposition calculus.
+    backbone of many calculi for automated provers. We finish with the
+    description of the superposition calculus. The text of this chapter is
+    partially based on the preliminaries sections of the publications listed in
+    Chapter \ref{ch:intro}.
+    
 \end{abstract}
       
 \newpage
 
-Our work mostly concerns retrofitting first-order provers to support
-higher-order concepts. But part of our work also concerns integrating
-successful approaches for propositional logic in first-order
-provers. We begin by defining all three logics, in the increasing
-order of expressivity.
 
 \section{Propositional Logic}
 
@@ -79,6 +77,17 @@ the formula, it does not suffice to assign values to variables. It is also
 necessary to interpret symbols. Therefore, it is obvious that the propositional
 technique for deciding satisfiability does not work in the first-order case.
 
+Even though we do not formally define semantics of logic, we assume the natural
+extensions of domain, valuation, interpretation and model (as defined by Fitting
+\cite{mf-1996-fol}) from unsorted to many-sorted logic. Models we consider are
+\emph{normal}, i.e., they interpret $\eq$ as an equality relation. Usual notions
+of (un)satisfiability and (in)validity are assumed. We write
+$\ourmodel~\models_\xi~N$ to denote that a model $\ourmodel$ satisfies a clause
+set $N$, for a variable assignment $\xi$. If $\ourmodel$ is a model of $N$
+(i.e., it satisfies it under every variable assignment), we simply write
+$\ourmodel \models N.$  Abusing notation, we write $M \models N$ to denote that
+$M$ \emph{entails} $N$, i.e., that every model of $M$ is a model of $N.$
+
 A position in a term is a tuple of natural numbers, with $\varepsilon$ denoting
 the empty tuple. Subterms and positions are inductively defined as follows. Term
 $t$ is a subterm of itself at position $\varepsilon$. If $s$ is a subterm of
@@ -95,7 +104,8 @@ x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself.
 Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$ results in
 replacing all mapped variables by the corresponding terms.
 The composition $\varrho\sigma$ of substitutions is defined by
-$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$.
+$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitution is grounding
+if it maps all variables to ground terms.
 
 \section{Higher-Order Logic}
 
@@ -176,7 +186,8 @@ $\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$.
 
 Applying substitution to a literal is reduced to applying it to both sides of
 the (dis)equa\-tion and it is extended pointwise to clauses. It is written in postfix notation
-as $\sigmacl{l}$ and $\sigmacl{C}$.
+as $\sigmacl{l}$ and $\sigmacl{C}$. We say $\sigmacl{C}$ is a ground instance of $C$ is $\sigma$ is a grounding
+substitution.
 
 \section{Superposition}
 
@@ -276,11 +287,10 @@ is selected by \selfun and \sigmacl{l} is $\succ$-maximal within literals in
 \sigmacl{C} or (2) \selfun selected some literals and \sigmacl{l} is the maximal
 within either positive or negative selected literals. We say \sigmacl{l} is
 eligible for paramodulation if it is positive, nothing is selected and
-\sigmacl{l} is the maximal literal within the literals of \sigmacl{C}.
-With $\mgu(s,t)$ we denote the most general unifier of $s$ and $t$.
-Using
-horizontal line to separate premises and the conclusion, four inference rules of superposition are as
-follows:
+\sigmacl{l} is the maximal literal within the literals of \sigmacl{C}. With
+$\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using horizontal
+line to separate premises and the conclusion, four inference rules of
+superposition are as follows:
 
 \[
 \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
@@ -314,5 +324,48 @@ $(s \eq t)\sigma$ is eligible for paramodulation, $(u \eq v)\sigma$ is eligible 
 
 \subsection{The Redundancy Criterion and Simplification Rules}
 
+Above described rules are used to generate new clauses from already derived
+ones. Even though orderings and selection are used to reduce the search space,
+it still grows rather fast. To identify unnecessary clauses from the search
+space, superposition features \emph{redundancy criterion}
+\cite[Sect.~4.2.2]{bg-01-resolution}. We say that a ground clause $C$ is
+redundant in a ground set of clauses $N$ if it is entailed by a subset of
+clauses in $N$ such that each clause in this subset is smaller than $C$. More
+generally, a clause (ground or not) is redundant in set $N$ if every ground
+instance of $C$ is redundant for some grounding of $N$. Removing redundant
+clauses does not affect completeness of superposition.
+
+Other than the four generating rules, superposition provers also use
+simplification rules, which are justified using redundancy criterion. These
+rules replace the premises with conclusions, and we denote them using double
+bars. As an example of such rule, let us introduce rewriting (demodulation) of
+negative literals (\infname{RN}):
+
+\[
+\namedinference{RN}{s \eq t \qquad u \noteq v \llor D}{(u[p \leftarrow \sigma(t)] \eq v \llor C \llor D)\sigma}
+\]
+where $\sigma = \mgu(u|_p, s)$, and $\sigma(s) \succ \sigma(t)$.
+
+Simple rules such as removing duplicate literals, literals of the form $s \noteq
+t$ or tautological clauses are clearly justified by the redundancy criterion.
+Schulz gives an extensive list of such rules\cite{ss-02-brainiac}.
+
+We say that a clause $C$ subsumes clause $D$ is there is a substitution $\sigma$
+such that $\sigmacl{C} \subseteq D$. Subsumption is one of the most important
+operations within a theorem prover. This rule does not adhere to redundancy
+criterion, but can be justified using other mechanisms \cite{wtrb-20-sat-framework}.
 
 \subsection{The Saturation Procedure}
+
+Superposition provers saturate the input problem with respect to the calculus's
+inference rules using the \emph{given clause procedure}
+\cite{mcw-1997-otter,adf-1995-discount}. It partitions the proof state into a
+passive set $\mathcal{P}$ and an active set $\mathcal{A}$. All clauses start in
+$\mathcal{P}$. At each iteration of the procedure's main loop, the prover
+chooses a clause $C$ from $\mathcal{P}$, simplifies it, and moves it to
+$\mathcal{A}$. Then all inferences between $C$ and active clauses are performed.
+The resulting clauses are again simplified and put in $\mathcal{P}$.
+The provers differ in which clauses are used for simplification: Otter-loop
+\cite{mcw-1997-otter} provers use both active and passive clauses whereas
+DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
+The provers we discuss in this thesis are both DISCOUNT-loop provers.
