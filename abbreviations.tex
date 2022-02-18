@@ -1,7 +1,7 @@
 \usepackage{xspace}
 
 \newcommand{\eq}{\approx}
-\newcommand{\noteq}{\not\eq}
+\newcommand{\noteq}{\napprox}
 
 \newcommand\cst[1]{\mathsf{#1}}
 \newcommand\imp{\ensuremath{\rightarrow}}
@@ -29,3 +29,13 @@
 \newcommand{\ieq}{\pmb\approx}
 \newcommand{\ineq}{\pmb{\not\approx}}
 \newcommand{\equi}{\leftrightarrow^*_{\alpha\beta\eta}}
+
+
+\newcommand{\neglit}[1]{\ensuremath{#1 \noteq \itrue}}
+\newcommand{\poslit}[1]{\ensuremath{#1 \eq \itrue}}
+
+\newcommand{\substterm}[2]{\ensuremath{#1(#2)}}
+\newcommand{\sigmaterm}[1]{\ensuremath{\substterm{\sigma}{#1}}}
+
+\newcommand{\substcl}[2]{\ensuremath{#2#1}}
+\newcommand{\sigmacl}[1]{\ensuremath{\substcl{\sigma}{#1}}}
