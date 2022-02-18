@@ -222,21 +222,23 @@ structure more closely to determine the order.
 Calculi from the resolution family, including superposition, perform inferences
 only on unifiable terms. We say terms $s$ and $t$ are unifiable if there is a
 substitution $\sigma$ such that $\sigmaterm{s} = \sigmaterm{t}$; we further say
-$\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is an unordered pair of two terms of
-the same type. The most general unifier is a unifier $\sigma$, such that for any
-other unifier $\theta$, there is a substitution $\varrho$ such that $\sigma =
-\varrho\theta$. When there is such $\varrho$, we say $\sigma$ is more general
-than $\theta$ In first-order logic, the most general unifier is unique up to
-variable renaming. Furthermore, first-order logic admits efficient algorithms
-for computing the most general unifier \cite{hv-09-unifalgs}.
+$\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is an
+unordered pair of two terms of the same type. The most general unifier is a
+unifier $\sigma$, such that for any other unifier $\theta$, there is a
+substitution $\varrho$ such that $\theta = \varrho\sigma$. When there is such a
+$\varrho$, we say $\sigma$ is more general than $\theta$. In first-order logic,
+the most general unifier is unique up to variable renaming. Furthermore,
+first-order logic admits efficient algorithms for computing the most general
+unifier \cite{hv-09-unifalgs}.
 
 In higher-order logic, unification is performed modulo rules of
 $\alpha\beta\eta$ conversion. Under these conditions, the uniqueness of the most
-general unifier is not guaranteed. Consider the unification of terms $X \,
-(\cst{f} \, \cst{a})$ and $\cst{f} \, (X \, \cst{a})$. Any substitution of the
+general unifier is not guaranteed. Consider the constraint $X \,
+(\cst{f} \, \cst{a}) \unif \cst{f} \, (X \, \cst{a})$. Any substitution of the
 form $X \mapsto \lamx{\cst{f}^i \, x}$ is a unifier, with $\cst{f}^i \, x$
-denoting iterated, $i$-fold application of $\cst{f}$. To generalize most general unifiers
-to higher-order logic, the concept of complete sets of unifiers was introduced.
+denoting iterated, $i$-fold application of $\cst{f}$. To generalize most general
+unifiers to higher-order logic, the concept of complete sets of unifiers was
+introduced.
 
 A (higher-order) \emph{unifier} of a multiset of unification constraints $E$ is
 a substitution $\sigma$, such that $\sigma s \equi \sigma t$, for all $s \unif t
@@ -244,12 +246,17 @@ a substitution $\sigma$, such that $\sigma s \equi \sigma t$, for all $s \unif t
 set $U$ of $E$'s unifiers along with a set $V$ of \emph{auxiliary variables}
 such that no $s \unif t \in E$ contains variables from $V$ and for every unifier
 $\rho$ of $E$, there exists a $\sigma \in U$ and a substitution $\theta$ such
-that for all $X\not\in V,$ $\rho X = \theta\sigma X$. The most general
-unifier corresponds is a one-element CSU. A unifier of terms $s$ and $t$ is a
-unifier of the singleton multiset $\{ s \unif t \}$.
+that for all $X\not\in V,$ $\rho X = \theta\sigma X$. The most general unifier
+corresponds is a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
+the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
+if two higher-order terms are unifiable, but there exist algorithms
+that enumerate all elements of CSU for unifiable terms.
 
-
-
+These higher-order concepts gracefully generalize the corresponding first-order
+ones. For example, if $s$ at $t$ are first-order there must exist a singleton
+CSU, i.e., the most general unifier. Thus, we will not explicitly qualify
+unifiers as first-order or higher-order and let the context provide enough
+information.
 
 \subsection{Inference Rules}
 \subsection{The Redundancy Criterion and Simplification Rules}
