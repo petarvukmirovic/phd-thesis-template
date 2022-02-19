@@ -167,16 +167,18 @@ The main contribution of this thesis is the extension of two theorem provers,
 E and Zipperposition \cite{sc-15-simon-phd}, to full higher-order logic. To
 extend these provers, we faced many challenges. Some of them were of engineering
 nature, some of them were algorithmic, while others concerned fine-tuning the
-heuristics to achieve the best possible performance. We discuss those challenges in more detail:
-\begin{itemize}
-  \item We implemented the complete superposition calculus for $\lambda$-free
+heuristics to achieve the best possible performance. We discuss those challenges in more detail.
+
+  
+  First, we implemented the complete superposition calculus for $\lambda$-free
   higher-order logic \cite{bbcw-21-lfho} in E, obtaining a prover we call Ehoh.
   We had to modify the internal term representation of E to support $\lambda$-free
   higher-order terms, implement new unification and matching algorithms, extend
   term indexing data structures to work with higher-order terms, and to improve the
   performance of heuristics on higher-order problems.
-  \item Together with Alexander Bentkamp and other colleagues we developed
-  a complete superposition calculus for the second stage described above
+  
+  Together with Alexander Bentkamp and other colleagues we developed
+  a complete superposition calculus for the second phase described above
   \cite{bbtvw-21-sup-lam}. Due to the complexity of the calculus and many design
   decisions that had to be evaluated in short amount of time we decided to
   implement the calculus in Zipperposition. This prover is less efficient than
@@ -186,11 +188,13 @@ heuristics to achieve the best possible performance. We discuss those challenges
   \cite{gs-19-casc27}. It finished third, 1 percent point behind Leo-III
   \cite{sb-21-leo3}  and 12 percent points behind  Satallax
   \cite{cb-12-satallax}.
-  \item Through this experience we identified one of the bottlenecks of
+  
+  Through this experience we identified one of the bottlenecks of
   Zipperposition: its unification algorithm. To remove this bottleneck we
   developed a complete higher-order unification algorithm that was more
   efficient and generated less redundant unifiers than the state of the art. 
-  \item We also noticed that Zipperposition's support for first-class Booleans
+  
+  We also noticed that Zipperposition's support for first-class Booleans
   was lacking compared to competition. We have closely studied the problems on
   which Zipperposition fails, but are easily solved by other provers and created
   a set of incomplete rules that enhance Zipperposition's Boolean support.
@@ -198,8 +202,9 @@ heuristics to achieve the best possible performance. We discuss those challenges
   algorithm. In 2020, Zipperposition 2 won the higher-order division
   of CASC \cite{gs-21-cascj10}. This time it was 20 percent points ahead of the second best
   prover, Satallax.
-  \item Inspired by this success we implemented the complete superposition
-  calculus for higher-order logic with Booleans (i.e., the third stage) that we developed with Bentkamp and other
+  
+  Inspired by this success, we implemented the complete superposition
+  calculus for higher-order logic with Booleans (i.e., the third phase) that we developed with Bentkamp and other
   colleagues \cite{bbtv-21-full-ho-sup}. Developing this calculus helped us understand in which
   ways our pragmatic extension was too weak to prove hard theorems of
   higher-order logic. We further fine-tuned the heuristics and implemented new ways
@@ -207,7 +212,8 @@ heuristics to achieve the best possible performance. We discuss those challenges
   which implemented these new features. It again won
   CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
   runner-up, Vampire 4.5 \cite{lkav-13-vampire}. 
-  \item Taking all the experience we gathered while working on Zipperposition,
+  
+  Taking all the experience we gathered while working on Zipperposition,
   we further extended Ehoh to full higher-order logic, obtaining a prover we call
   \newehoh{}. We again modified the term representation, implemented new unification and
   matching algorithms, extended indexing data structures, and tweaked
@@ -215,13 +221,13 @@ heuristics to achieve the best possible performance. We discuss those challenges
   extension from E to Ehoh, the strong basis that we have earlier built made it
   manageable.
 
-  \item After spending so much time and energy on developing higher-order
+  
+  After spending so much time and energy on developing higher-order
   provers, we took a step back and worked on improving first-order provers. In
   particular, we looked at the most efficient approaches to simplify problems in
   propositional logic, a simpler, decidable logic that disallows quantification.
   We lifted some of these approaches to first-order logic and implemented them
   in Zipperposition. 
-\end{itemize}
 
 \section{Thesis Structure and Publications}
 
@@ -324,10 +330,12 @@ As a PhD candidate, I coauthored the following articles and papers, which are no
 \section{Related Work}
 
 The earliest attempts to automate higher-order logic can be traced back to
-Robinson~\cite{ar-70-hol}. His approach was based on translating higher-order
-logic to first-order logic using combinators, similar to the approach taken by
-hammers. Huet~\cite{gh-73-hol} and Andrews~\cite{pa-71-type-theory} designed
-calculi that are directly applied to higher-order formulas.
+Robinson, who provided two approaches. The first one \cite{ar-69-hol} operates
+directly on higher-order formulas. The second approach \cite{ar-70-hol} is based
+on translating higher-order logic to first-order logic using combinators,
+similar to the approach taken by hammers. Huet~\cite{gh-73-hol} and
+Andrews~\cite{pa-71-type-theory} designed calculi that are directly applied to
+higher-order formulas.
 
 These attempts resulted in early higher-order theorem provers. Andrews and
 colleagues developed TPS~\cite{abinpx-96-tps}: an automatic prover which

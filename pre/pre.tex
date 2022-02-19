@@ -8,7 +8,10 @@
     thesis: propositional logic, monomorphic first-order logic and simply typed
     higher-order logic. Then, we explain the clausal structure which is the
     backbone of many calculi for automated provers. We finish with the
-    description of the superposition calculus. The text of this chapter is
+    description of the superposition calculus. As this thesis discusses practical
+    aspects of theorem proving, we define only the fundamental notions, while
+    more advanced notions are intuitively described with references to rigorous
+    definitions. The text of this chapter is
     partially based on the preliminaries sections of the publications listed in
     Chapter \ref{ch:intro}.
     
@@ -54,12 +57,12 @@ $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
 is the \emph{arity} of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ we call
 $\cst{f}$ a \emph{predicate symbol}, otherwise we call it a \emph{function symbol}. Argument types may not be Boolean.
 
-\emph{Terms} are the basic building blocks of first-order logic. Variables
+\emph{Terms} are the basic building blocks of first-order logic, built inductively as follows. Variables
 $x,y,\ldots$, assigned types $\tau \in T$, are terms. If $t_1,\ldots,t_n$ are
 terms of types $\tau_1, \ldots, \tau_n$, respectively, and $\cst{f} : (\tau_1,
 \ldots, \tau_{n}) \rightarrow \tau$, then $\cst{f}(t_1, \ldots, t_n)$ is a term
-of type $\tau$. If $n=0$, we drop parentheses and write $\cst{f}$. We also
-abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$. Using similar
+of type $\tau$. If $n=0$, we drop the parentheses and write $\cst{f}$. We also
+abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$. Using a similar
 notation, we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$
 or simply $\tuplen{t}$.
 
@@ -74,7 +77,7 @@ which $\phi$ holds. As soon as there is a single functional symbol with arity
 greater than 0, there are infinitely many terms that can be substituted for a
 free variable. Furthermore, in first-order logic, it does not suffice to assign
 values to variables to determine the truth value of the formula. It is also
-necessary to interpret symbols. Therefore, it is obvious that the propositional
+necessary to interpret the symbols. Therefore, it is obvious that the propositional
 technique for deciding satisfiability does not work in the first-order case.
 
 Even though we do not formally define semantics of logic, we assume the natural
@@ -104,8 +107,8 @@ x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself.
 Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$ results in
 replacing all mapped variables by the corresponding terms.
 The composition $\varrho\sigma$ of substitutions is defined by
-$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitution is {\em grounding}
-if it maps all variables to ground terms.
+$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitution $\sigma$ is {\em grounding}
+if $\sigma(x) \not= x$ implies that $\sigma(x)$ is ground.
 
 \section{Higher-Order Logic}
 
@@ -119,13 +122,18 @@ Each symbol $\cst{f} \in \Sigma$ is assigned a type.
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 \dotsc$, or symbols $\cst{f}, \cst{g},\allowbreak \cst{a},\allowbreak \cst{b}
 \dotsc$. Furthermore, if $s$ and $t$ are terms of type $\tau_1 \rightarrow
-\tau_2$, and $\tau_1$, respectively, then $s \, t$ is a term of type $\tau_2$.
+\tau_2$ and $\tau_1$, respectively, then $s \, t$ is a term of type $\tau_2$.
 Lastly, if $x$ is a bound variable of type $\tau_1$ and $s$ is a term of type
 $\tau_2$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau_1
 \rightarrow \tau_2$. The syntactic distinction between free and bound variables
 gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
-\cite{tn-93-patterns}. Out of terms, atoms and formulas are built in the same
-way as in first-order logic.
+\cite{tn-93-patterns}. Note that there is no requirement that a symbol is not
+applied to terms of Boolean type as in first-order logic. Furthermore, all
+logical connectives are symbols present in the set $\Sigma$. This means that
+higher-order logic does not distinguish between terms and formulas. For example,
+$\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand \cst{q})$ are well-formed
+terms of higher-order logic. For convenience, we still call terms of Boolean
+types \emph{formulas}.
 
 We assume the standard notions of $\alpha$, $\beta$ and $\eta$ conversions and
 write $s \equi t$ if terms $s$ and $t$ are equal modulo $\alpha\beta\eta$
@@ -168,7 +176,7 @@ semantics.
 The resolution and superposition calculi do not work directly on formulas, but
 on their simplified forms, {\em clauses}. Thus, the initial problem, expressed as a
 set of formulas, must be transformed in a set of clauses. For all three
-discussed logic, there exists such a transformation that does not affect
+discussed logics, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}.
 
 A {\em literal} $l$ is an equation $s \eq t$ or a disequation $s \noteq t$. A clause is a
@@ -177,7 +185,7 @@ finite multiset of literals, interpreted and written disjunctively:\ $l_1 \llor
 universally quantified. Note that $\llor$ used to denote disjunction in clauses
 is different than formula-building $\ior$.
 
-In standard, non-clausal, first-order and higher-order logic, an atom is either
+In standard, non-clausal first-order logic, an atom is either
 predicate or equational. For uniformity, and to
 stay close to the implementation, we encode predicate atoms as equations with
 $\itrue$. Negative literals are encoded as disequations. For example,
@@ -252,18 +260,19 @@ $\alpha\beta\eta$ conversion. Under these conditions, the uniqueness of the most
 general unifier is not guaranteed. Consider the constraint $X \,
 (\cst{f} \, \cst{a}) \unif \cst{f} \, (X \, \cst{a})$. Any substitution of the
 form $\{ X \mapsto \lamx{\cst{f}^i \, x} \}$ is a unifier, with $\cst{f}^i \, x$
-denoting iterated, $i$-fold application of $\cst{f}$. To generalize most general
-unifiers to higher-order logic, the concept of {\em complete sets of unifiers} was
+denoting iterated, $i$-fold application of $\cst{f}$. However, neither of these substitutions
+is more general than the other. To generalize most general
+unifiers to higher-order logic, the concept of tje {\em complete sets of unifiers} (CSU) was
 introduced.
 
 A (higher-order) unifier of a multiset of unification constraints $E$ is
-a substitution $\sigma$, such that $\sigma s \equi \sigma t$, for all $s \unif t
-\in E$. A complete set of unifiers (\emph{CSU}) of $E$ is defined as a
+a substitution $\sigma$, such that $\sigma(s) \equi \sigma(t)$, for all $s \unif t
+\in E$. A complete set of unifiers of $E$ is defined as a
 set $U$ of $E$'s unifiers along with a set $V$ of \emph{auxiliary variables}
 such that no $s \unif t \in E$ contains variables from $V$ and for every unifier
 $\rho$ of $E$, there exists a $\sigma \in U$ and a substitution $\theta$ such
-that for all $X\not\in V,$ $\rho X = \theta\sigma X$. The most general unifier
-corresponds is a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
+that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The most general unifier
+corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
 the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
 if two higher-order terms are unifiable, but there exist algorithms
 that enumerate all elements of CSU for unifiable terms.
@@ -283,7 +292,7 @@ With $t|_p$ we denote subterm of $t$ at position $p$ and with $t[p \leftarrow
 t']$ replacement of this subterm with $t'$. Let \selfun{} be a selection function,
 $\succ$ a reduction ordering, $C = l \llor C'$ a clause, and $\sigma$ a
 substitution. We say that \sigmacl{l} is eligible for resolution if: (1) nothing
-is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within literals in
+is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals in
 \sigmacl{C} or (2) \selfun{} selected some literals and \sigmacl{l} is the maximal
 within either positive or negative selected literals. We say \sigmacl{l} is
 eligible for paramodulation if it is positive, nothing is selected and
@@ -292,31 +301,69 @@ $\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using horizontal
 line to separate premises and the conclusion, four inference rules of
 superposition are as follows:
 
-\[
-\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
-\]
-where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
-for resolution; \infname{ER} stands for equality resolution
+\begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
+    \multicolumn{2}{l}{{\bf Equality resolution} (ER)} \\[\jot]
+    $\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}$ & where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible for resolution
+\end{tabular}
 
-\[
-\namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}
-\]
-where $\sigma = \mgu(s,u), \sigma(t) \not\succ \sigma(s)$ and 
-$(s \eq t)\sigma$ is eligible for paramodulation; \infname{EF} stands for equality factoring
+\medskip
 
-\[
-\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}
-\]
-where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-$(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable;
-\infname{SP} stands for positive superposition 
+\begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
+    \multicolumn{2}{l}{{\bf Equality factoring} (EF)} \\[\jot]
+    $\namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}$ 
+        & where $\sigma = \mgu(s,u), \sigma(t) \not\succ \sigma(s)$ and 
+        $(s \eq t)\sigma$ is eligible for paramodulation
+\end{tabular}
 
-\[
-\namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}
-\]
-where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-$(s \eq t)\sigma$ is eligible for paramodulation, $(u \eq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable;
-\infname{SN} stands for negative superposition
+\medskip
+
+\begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
+    \multicolumn{2}{l}{{\bf Superposition into positive literals} (SP)} \\[\jot]
+    $\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}$ 
+        & where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+        $(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable
+\end{tabular}
+
+\medskip
+
+\begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
+    \multicolumn{2}{l}{{\bf Superposition into negative literals} (SN)} \\[\jot]
+    $\namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}$ 
+        & where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+         $(s \eq t)\sigma$ is eligible for paramodulation, $(u \noteq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable
+\end{tabular}
+
+% \[
+% \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
+% \]
+% where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
+% for resolution; \infname{ER} stands for equality resolution
+
+% \[
+% \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
+% \]
+% where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
+% for resolution; \infname{ER} stands for equality resolution
+
+% \[
+% \namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}
+% \]
+% where $\sigma = \mgu(s,u), \sigma(t) \not\succ \sigma(s)$ and 
+% $(s \eq t)\sigma$ is eligible for paramodulation; \infname{EF} stands for equality factoring
+
+% \[
+% \namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}
+% \]
+% where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+% $(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable;
+% \infname{SP} stands for positive superposition 
+
+% \[
+% \namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}
+% \]
+% where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
+% $(s \eq t)\sigma$ is eligible for paramodulation, $(u \eq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable;
+% \infname{SN} stands for negative superposition
 \medskip
 
 \subsection{The Redundancy Criterion and Simplification Rules}
@@ -347,7 +394,8 @@ where $\sigma = \mgu(u|_p, s)$, and $\sigma(s) \succ \sigma(t)$.
 
 Simple rules such as removing duplicate literals, literals of the form $s \noteq
 s$ or tautological clauses are clearly justified by the redundancy criterion.
-Schulz gives an extensive list of such rules \cite{ss-02-brainiac}.
+Schulz gives an extensive list of such rules \cite{ss-02-brainiac}, including rewriting of positive
+literals which has more side conditions.
 
 We say that a clause $C$ subsumes clause $D$ is there is a substitution $\sigma$
 such that $\sigmacl{C} \subseteq D$. Subsumption is one of the most important
@@ -367,4 +415,4 @@ The resulting clauses are again simplified and put in $\mathcal{P}$.
 The provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
-The provers we discuss in this thesis are both DISCOUNT-loop provers.
+The provers we discuss in this thesis, E and Zipperposition, are both DISCOUNT-loop provers.
