@@ -80,7 +80,7 @@
     %% The style for titles is small caps.
     \def\titlefont{\rmfamily}
     \def\titleshape{\scshape}
-    \def\titlestyle{\titlefont\titleshape\bfseries}
+    \def\titlestyle{\titlefont\titleshape\bfseries\sffamily}
     \if@print
         \def\headerstyle{\titlefont\titleshape}
         %\def\headerstyle{\titlefont\titleshape\bfseries}
@@ -93,14 +93,14 @@
     %% for monospace and Cambria for math.
     \RequirePackage{unicode-math}
 
-    \setmainfont[Path = fonts/libertinus/, ItalicFont=libertinusserif-italic.otf, BoldFont=libertinusserif-bold.otf, BoldItalicFont=libertinusserif-bolditalic.otf]{libertinusserif-regular.otf}
-    \setsansfont[Path = fonts/libertinus/, BoldFont=libertinussans-bold.otf, ItalicFont=libertinussans-italic.otf]{libertinussans-regular.otf}
+    \setmainfont[Path = fonts/minion/, ItalicFont=MinionPro-It.otf, BoldFont=MinionPro-Semibold.otf, BoldItalicFont=MinionPro-SemiboldIt.otf]{MinionPro-Regular.otf}
+    \setsansfont[Scale=0.9, Path = fonts/nhup/, BoldFont=NeueHaasUnicaPro-Bold.ttf, ItalicFont=NeueHaasUnicaPro-Italic.ttf]{NeueHaasUnicaPro-Regular.ttf}
     \setmathfont[Path = fonts/libertinus/]{libertinusmath-regular.otf}
     \setmonofont[Scale=MatchLowercase, Path=fonts/inconsolata/]{Inconsolata-Regular.ttf}
     %% The default style for text is Tahoma (sans-serif).
     %\renewcommand*\familydefault{\sfdefault}
     %% The default style for titles is Bookman Old Style (serif).
-    \def\titlefont{\rmfamily}
+    \def\titlefont{\sffamily}
     \def\titleshape{}
     \if@print
         \def\titlestyle{\titlefont\titleshape}
@@ -426,12 +426,12 @@
 \fancypagestyle{mainmatter}{%
     \fancyhf{}
     %% Page numbers on the top left and top right.
-    \fancyhead[LE]{\cropmarks\lthumb\fontsize{8.5pt}{8.5pt}\titlefont\color{thumb}\thepage}
-    \fancyhead[RO]{\cropmarks\rthumb\fontsize{8.5pt}{8.5pt}\titlefont\color{thumb}\thepage}
+    \fancyhead[LE]{\cropmarks\lthumb\fontsize{8.5pt}{8.5pt}\rmfamily\color{thumb}\thepage}
+    \fancyhead[RO]{\cropmarks\rthumb\fontsize{8.5pt}{8.5pt}\rmfamily\color{thumb}\thepage}
     %% Chapter name on the left (even) page.
-    \fancyhead[RE]{\fontsize{8.5pt}{8.5pt}\titlefont\titleshape\color{thumb}\nouppercase{\leftmark}}
+    \fancyhead[RE]{\fontsize{8.5pt}{8.5pt}\rmfamily\titleshape\color{thumb}\nouppercase{\leftmark}}
     %% Section name on the right (odd) page.
-    \fancyhead[LO]{\fontsize{8.5pt}{8.5pt}\titlefont\titleshape\color{thumb}\nouppercase{\rightmark}}
+    \fancyhead[LO]{\fontsize{8.5pt}{8.5pt}\rmfamily\titleshape\color{thumb}\nouppercase{\rightmark}}
 }
 
 %% The mainmatter style is default for normal pages.
@@ -448,6 +448,7 @@
 %% Change the headrule command (from fancyhdr.sty) to draw the line below the
 %% header in the title color.
 \renewcommand*\headrule{%
+    \selectfont\bfseries\rmfamily
     \if@fancyplain%
         \let\headrulewidth\plainheadrulewidth%
     \fi%
@@ -466,7 +467,7 @@
 %% right, followed by the part name on the next line in the title color.
 \titleformat{\part}[display]
     {\flushright\titlestyle}
-    {\fontsize{96pt}{96pt}\selectfont\bfseries\thepart}
+    {\fontsize{96pt}{96pt}\selectfont\bfseries\sffamily\thepart}
     {0pt}
     {\Huge\color{title}}
 %% Separate the title from the text by two empty lines.
@@ -478,7 +479,7 @@
 %% Chapter titles have the same layout as parts.
 \titleformat{\chapter}[display]
     {\flushright\titlestyle}
-    {\fontsize{84pt}{84pt}\selectfont\bfseries\thechapter}
+    {\fontsize{84pt}{84pt}\selectfont\bfseries\sffamily\thechapter}
     {0pt}
     {\Huge\color{title}}
 \titlespacing{\chapter}{0pt}{0pt}{2\baselineskip}

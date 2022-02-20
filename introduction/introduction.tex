@@ -22,7 +22,7 @@ reasonably simple formal reasoning systems. First-order logic seemed to satisfy
 both requirements.  This formalism does not only allow one to model simple
 logical relations such as ``if it rains, the road is muddy'' (or formally
 $\cst{rains} \imp \cst{muddy}$), but also to quantify over objects as in ``all
-people are mortal'' ($\forall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
+people are mortal'' ($\iforall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
 
 \paragraph{Automatic Theorem Proving}The initial study of first-order logic and the rules to reason about statements in
 it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
@@ -156,7 +156,7 @@ second stop is to support automatically synthesizing such functions.
 In higher-order logic we can make statements about statements. More precisely,
 it treats Boolean terms (formulas) as first-class citizens, enabling us to
 model some concepts in more natural manner. For example, we can naturally
-represent statements such as ``what Jasmin says is true'' as $\forall x. \,
+represent statements such as ``what Jasmin says is true'' as $\iforall x. \,
 \cst{says}(\cst{jasmin}, x) \imp x$. The last stop is to support Boolean terms
 as first-class citizens.
 \pagebreak[2]
