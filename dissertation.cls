@@ -94,7 +94,8 @@
     \RequirePackage{unicode-math}
 
     \setmainfont[Path = fonts/minion/, ItalicFont=MinionPro-It.otf, BoldFont=MinionPro-Semibold.otf, BoldItalicFont=MinionPro-SemiboldIt.otf]{MinionPro-Regular.otf}
-    \setsansfont[Scale=0.9, Path = fonts/nhup/, BoldFont=NeueHaasUnicaPro-Bold.ttf, ItalicFont=NeueHaasUnicaPro-Italic.ttf]{NeueHaasUnicaPro-Regular.ttf}
+    % \setsansfont[Scale=0.9, Path = fonts/nhup/, BoldFont=NeueHaasUnicaPro-Bold.ttf, ItalicFont=NeueHaasUnicaPro-Italic.ttf]{NeueHaasUnicaPro-Regular.ttf}
+    \setsansfont[Scale=0.9]{Nimbus Sans}
     \setmathfont[Path = fonts/libertinus/]{libertinusmath-regular.otf}
     \setmonofont[Scale=MatchLowercase, Path=fonts/inconsolata/]{Inconsolata-Regular.ttf}
     %% The default style for text is Tahoma (sans-serif).
