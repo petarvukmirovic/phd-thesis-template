@@ -18,6 +18,9 @@
 \RequirePackage{txfonts}
 \RequirePackage{mathptmx}
 \RequirePackage{prftree}
+\RequirePackage{version}
+\newcommand{\confrep}[2]{\begin{conf}#1\end{conf}\begin{rep}#2\end{rep}}
+
 
 %% English is the default language, but Dutch is used for some sections.
 \RequirePackage[dutch,english]{babel}
@@ -548,9 +551,10 @@
 %% title page. This is only necessary if multiple people contributed
 %% significantly to the chapter.
 \newcommand*\authors[1]{%
-    \begin{center}%
+    \vspace{2\baselineskip}%
+    \begin{flushright}%
         {\Large\bfseries #1}%
-    \end{center}%
+    \end{flushright}%
     \vspace{2\baselineskip}%
 }
 

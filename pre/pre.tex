@@ -111,21 +111,22 @@ $\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitu
 if $\sigma(x) \not= x$ implies that $\sigma(x)$ is ground.
 
 \section{Higher-Order Logic}
+\label{sec:pre:hol}
 
 In this thesis we use classic simply typed monomorphic higher-order logic with
 the choice operator (and some variations of this logic). Assuming a set of
 base types $T$ and a set of symbols $\Sigma$, let us
 define terms and types. Types are either base types $\tau \in T$, or function
-types $\tau_1 \rightarrow \tau_2$ where both $\tau_1$ and $\tau_2$ are types.
+types $\tau \rightarrow \upsilon$ where both $\tau$ and $\upsilon$ are types.
 Each symbol $\cst{f} \in \Sigma$ is assigned a type.
 
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 \dotsc$, or symbols $\cst{f}, \cst{g},\allowbreak \cst{a},\allowbreak \cst{b}
-\dotsc$. Furthermore, if $s$ and $t$ are terms of type $\tau_1 \rightarrow
-\tau_2$ and $\tau_1$, respectively, then $s \, t$ is a term of type $\tau_2$.
-Lastly, if $x$ is a bound variable of type $\tau_1$ and $s$ is a term of type
-$\tau_2$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau_1
-\rightarrow \tau_2$. The syntactic distinction between free and bound variables
+\dotsc$. Furthermore, if $s$ and $t$ are terms of type $\tau \rightarrow
+\upsilon$ and $\tau$, respectively, then $s \, t$ is a term of type $\upsilon$.
+Lastly, if $x$ is a bound variable of type $\tau$ and $s$ is a term of type
+$\upsilon$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau
+\rightarrow \upsilon$. The syntactic distinction between free and bound variables
 gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
 \cite{tn-93-patterns}. Note that there is no requirement that a symbol is not
 applied to terms of Boolean type as in first-order logic. Furthermore, all

@@ -1,3 +1,237 @@
 \chapter{Extending a Brainiac Prover to Lambda-Free Higher-Order Logic}
 \setheader{Extending a Brainiac Prover to Lambda-Free Higher-Order Logic}
 \label{ch:ehoh}
+
+\renewcommand{\confrep}[2]{#2}
+\includeversion{rep}
+\excludeversion{conf}
+
+\blfootnote{In this work I desgined, implemented and evaluated all changes to term representation, algorithms and indexing data structures.}
+
+\authors{Joint work with\\
+Jasmin~Blanchette, Simon~Cruanes and Stephan~Schulz}
+
+
+\begin{abstract}
+Decades of work have gone into developing efficient proof calculi, data
+structures, algorithms, and heuristics for first-order automatic theorem
+proving. Higher-order provers lag behind in terms of efficiency. Instead of
+developing a new higher-order prover from the ground up, we propose to start
+with the state-of-the-art superposition prover E and gradually enrich it with
+higher-order features. We explain how to extend the prover's data structures,
+algorithms, and heuristics to $\lambda$-free higher-order logic, a formalism
+that supports partial application and applied variables. Our extension
+outperforms the traditional encoding and appears promising as a stepping stone
+toward full higher-order logic.    
+\end{abstract}
+
+\newpage
+
+\section{Introduction}
+\label{sec:ehoh:introduction}
+
+\begin{sloppypar}
+Superposition provers such as E~\cite{scv-19-e23}, SPASS \cite{wdfksw-09-spass},
+and Vampire \cite{lkav-13-vampire} are among the most successful first-order
+reasoning systems. They serve as backends in various frameworks, including
+software verifiers (e.g., Why3 \cite{fp-13-why3}),
+%
+% \pagebreak[2]%
+automatic higher-order theorem provers (e.g., \hbox{Leo-III} \cite{sb-21-leo3},
+Satallax \cite{cb-12-satallax}), and \begin{rep}one-click \end{rep}``hammers'' in proof assistants
+(e.g., HOLyHammer in HOL Light \cite{ku-15-holyhammer}, Sledgehammer in
+Isabelle \cite{pb-12-sh}).
+
+
+Dec\-ades of research have gone
+into refining calculi, devising efficient data structures and algorithms,
+and developing heuristics to guide proof search\begin{rep}
+  \cite{ss-17-arcade}\end{rep}.
+This work has mostly focused on first-order logic with equality.
+\end{sloppypar}
+
+\looseness=-1
+Research on higher-order automatic provers has resulted
+in systems such as LEO \cite{cbmk-98-leo}, \textsc{Leo}-II
+\cite{bspt-15-leo2}, and Leo-III \cite{sb-21-leo3},
+based on resolution and paramodulation, and Satallax \cite{cb-12-satallax},
+based on \confrep{tableaux}{tableaux and SAT solving}. They
+feature a ``cooperative'' architecture, pioneered by LEO: They
+are full-fledged higher-order provers that regularly invoke an
+external first-order prover \confrep{}{with a low time limit as a terminal
+procedure, }in an attempt to finish the proof quickly using only
+first-order reasoning. However, the first-order backend will succeed
+only
+if all the necessary higher-order reasoning has been performed,
+meaning that much of the first-order reasoning is carried out by the
+slower higher-order prover. As a result, this architecture leads to
+suboptimal performance on largely first-order problems,
+such as those that often arise
+in interactive verification \cite{ns-13-leo2sh}. For example,
+at the 2017 installment of the CADE ATP System Competition (CASC)
+\cite{gs-17-casc}, Leo-III, which uses E as a backend, proved
+652 out of 2000 first-order problems in the Sledgehammer division, compared
+with 1185 for E on its own and 1433 for Vampire.
+
+To obtain better performance, we propose to start with a competitive
+first-order prover and extend it to full higher-order logic one
+feature at a time.  Our goal is a \emph{graceful} extension, so that
+the system behaves as before on first-order problems, performs mostly
+like a first-order prover on typical, mildly higher-order problems,
+and scales up to arbitrary higher-order problems, in keeping with the
+zero-overhead principle: \emph{What you don't use, you
+  don't pay for.}
+
+As a stepping stone toward full higher-order logic, we initially restrict our
+focus to a higher-order logic without \hbox{$\lambda$-expressions}
+(Sect.~\ref{sec:ehoh:logic}). Compared with first-order logic, its distinguishing
+features are partial application and applied variables. It
+is rich enough to express the recursive equations of higher-order
+combinators, such as $\cst{map}$ on lists:
+%
+\begin{align*}
+\cst{map} \> f \> \cst{nil} & \eq \cst{nil}
+&
+\cst{map} \> f \> (\cst{cons} \; x \; \mathit{xs}) & \eq
+\cst{cons} \; (f \> x) \; (\cst{map} \> f \> \mathit{xs})
+\end{align*}
+
+Our vehicle is E\begin{rep} \cite{ss-02-brainiac,scv-19-e23}\end{rep},
+a prover developed primarily by Schulz. It is written in C and offers
+good performance, with more emphasis on ``brainiac''
+heuristics than on raw speed. E regularly scores among the top
+systems at CASC and is usually the strongest open-source prover in
+the relevant divisions. It also serves as a backend for
+competitive higher-order provers. We refer to our extended version of
+E as Ehoh. It corresponds to a prerelease version of E~2.5 configured with the
+option \verb|--enable-ho|.%
+\footnote{\url{https://github.com/eprover/eprover/commit/80946ac}}
+%We plan to include the new higher-order inferences in the E 2.5 release.
+
+The main challenges we faced concerned the
+representation of types and terms
+(Sect.~\ref{sec:ehoh:types-and-terms}), the unification
+\confrep{algorithm}{and matching algorithms}
+(Sect.~\ref{sec:ehoh:unif-match}), and the indexing data structures
+(Sect.~\ref{sec:ehoh:indexing}). We also adapted the
+inference rules (Sect.~\ref{sec:ehoh:inferences})\confrep{ and}{,} the
+heuristics (Sect.~\ref{sec:ehoh:heuristics})\confrep{}{, and the
+  preprocessor (Sect.~\ref{sec:ehoh:preprocessing})}.
+
+\looseness=-1
+A central aspect of our work is a set of techniques we call
+\emph{prefix optimization}. Taking a traditional look at higher-order terms, they contain twice as many proper
+subterms as first-order terms; for example,
+$\cst{f}\;(\cst{g}\;\cst{a})\;\cst{b}$ contains not only the ``argument'' subterms
+$\cst{g}\;\cst{a}$, $\cst{a}$, $\cst{b}$ but also the ``prefix'' subterms
+$\cst{f}$, $\cst{f}\;(\cst{g}\;\cst{a})$, $\cst{g}$.
+\begin{rep}Many operations, including superposition and rewriting, require
+traversing all subterms of a term.\end{rep}
+Using the optimization, the prover traverses subterms recursively in a
+first-order fashion, considering all the prefixes of a given subterm
+together. %, at little additional cost.
+%
+Our experiments (Sect.~\ref{sec:ehoh:evaluation}) show that Ehoh is
+almost as fast as E on first-order problems and can also prove
+higher-order problems that do not require synthesizing
+$\lambda$-terms. As next steps, we plan to add support for
+$\lambda$-terms and higher-order unification.
+
+\section{Logic}
+\label{sec:ehoh:logic}
+
+\looseness=-1
+Our logic is a variant of the intensional $\lambda$-free Boolean-free higher-order
+logic (\lfhol{}) described by Bentkamp et al.\ %, Blanchette, Cruanes, and Waldmann
+\cite[Sect.~2]{bbcw-21-lfho}, which could also be called ``applicative
+first-order logic.'' In the spirit of FOOL \cite{kotelnikov-16-fool}, we
+%% kotelnikov-15-fool
+extend the syntax of this logic by erasing the distinction between terms and
+formulas, and its semantics by interpreting the Boolean type $o$ as a domain
+of cardinality~2. Functional extensionality can be obtained by adding
+suitable axioms \cite[Sect.~3.1]{bbcw-21-lfho}.
+
+\looseness=-1
+
+This logic differs from the higher-order logic described in
+Sect.~\ref{sec:pre:hol} three ways. First, $\lambda$-abstraction is disallowed.
+Second, logical connectives are not part of the set of symbols. Instead, there
+is a special inductive case in the definition of terms that defines formulas.
+Third, subterms are defined in a more traditional way. 
+
+\looseness=-1
+For completeness, we provide the definition of terms. Terms, ranged over by $s,t,u,v$, are either
+\emph{variables} $x, y, z, \dots$, (\emph{function}) \emph{symbols} $\cst{a},
+\cst{b}, \cst{c}, \cst{d},\allowbreak \cst{f},\allowbreak \cst{g}, \ldots{}$
+(often called ``constants'' in the higher-order literature), binary applications
+$s \; t$, or Boolean terms $\itrue$, $\ifalse$, $\inot s$, $s \mathbin{\iand}
+t$, $s \mathbin{\ior} t$, $s \mathbin{\iimplies} t$, $s \mathbin{\iequiv} t$,
+$\iforall x.\> s$, $\iexists x.\> s$, $s \mathrel{\ieq} t$. E and Ehoh clausify
+the input as a preprocessing step, producing a clause set in which the only
+proper Boolean subterms are variables, $\itrue$, and $\ifalse$. Note that we use
+lowercase letters for free variables as bound variables do not appear in
+clauses. A term's \emph{arity} is the number of extra arguments it can take. If
+$\iota$ is a base type, $\cst{f}$ has type $\iota \to \iota \to \iota$, and
+$\cst{a}$ has type $\iota$, then $\cst{f}$ is binary, $\cst{f}\;\cst{a}$ is
+unary, and $\cst{f}\;\cst{a}\;\cst{a}$ is nullary. Subterms are defined in the
+traditional higher-order way; for example, $s \; t$ has all subterms of $s$ and
+$t$ as subterms, in addition to $s \; t$ itself; as a consequence
+$\cst{f} \; \cst{a}$ is a subterm of $\cst{f} \; \cst{a} \;\cst{a}$.
+
+
+In this chapter, substitutions $\sigma$ are partial
+functions of finite domain from variables to terms, written $\{ x_1 \mapsto s_1,
+\ldots, x_m \mapsto s_m \}$, where each $s_i$ has the same type as $x_i$. The
+substitution $\sigma[x \mapsto s]$ maps $x$ to $s$ and otherwise coincides with
+$\sigma$. Applying $\sigma$ to a variable beyond $\sigma$'s domain is the
+identity. We deviated from the view of substitutions in Section \ref{sec:pre:hol}
+as it made proofs in Sections \ref{sec:ehoh:unif-match} and \ref{sec:ehoh:indexing}
+easier. It is easy to check that both views are equivalent.
+%Applying a substitution to a term~$t$ applies it homomorphically to $t$'s
+%variables.
+
+A well-known technique to support \lfhol{} %in first-order reasoning systems
+is to use the \emph{applicative encoding}:
+Every $n$-ary symbol is mapped to a nullary symbol, and
+application is represented by a distinguished binary symbol $\cst{@}.$ Thus,
+the \lfhol{} term $\cst{f} \; (x\; \cst{a}) \; \cst{b}$ is
+encoded as the first-order term $\cst{@}(\cst{@}(\cst{f}, \cst{@}(x,
+\cst{a})), \cst{b}).$ However, this representation is not graceful, since it
+also introduces $\cst{@}$'s for terms within \lfhol's first-order fragment. By
+doubling the size and depth of terms, the encoding clutters data
+structures and slows down term traversals.
+%By changing the root symbol of terms,
+%it impacts proof search heuristics in subtle ways.
+In our empirical evaluation, we find that the applicative encoding can
+decrease the success rate by up to \NumberOK{15\%} (Sect.~\ref{sec:ehoh:evaluation}).
+For these and further reasons, it
+is not ideal (Sect.~\ref{sec:ehoh:discussion-and-related-work}).
+
+
+
+\section{Types and Terms}
+\label{sec:ehoh:types-and-terms}
+
+\section{Unification and Matching}
+\label{sec:ehoh:unif-match}
+
+\section{Indexing Data Structures}
+\label{sec:ehoh:indexing}
+
+\section{Inference Rules}
+\label{sec:ehoh:inferences}
+
+\section{Heuristics}
+\label{sec:ehoh:heuristics}
+
+\section{Preprocessing}
+\label{sec:ehoh:preprocessing}
+
+\section{Evaluation}
+\label{sec:ehoh:evaluation}
+
+\section{Discussion and Related Work}
+\label{sec:ehoh:discussion-and-related-work}
+
+\section{Conclusion}
+\label{sec:ehoh:conclusion}
