@@ -180,10 +180,11 @@ set of formulas, must be transformed in a set of clauses. For all three
 discussed logics, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}.
 
+\looseness=-1
 An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em literal} $l$ is an equation $s \eq t$ or its negation (disequation) $s \noteq t$. A clause is a
 finite multiset of literals, interpreted and written disjunctively:\ $l_1 \llor
-\cdots \llor l_n$. All free variables occurring in the clause are implicitly
-universally quantified. Note that $\llor$ used to denote disjunction in clauses
+\cdots \llor l_n$. Free variables of the clauses are implicitly
+universally quantified. Note that $\llor$ denoting disjunction in clauses
 is different than formula-building $\ior$.
 
 In standard, non-clausal first-order logic, an atom is either
@@ -207,7 +208,6 @@ Before we introduce the rules of the calculus, we provide definitions of these a
 background concepts.
 
 \subsection{Term Order and Selection}
-
 Superposition calculus is parametrized by a {\em reduction ordering} $\succ$, an
 ordering on terms that has the following properties:
 

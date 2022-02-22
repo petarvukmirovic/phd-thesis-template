@@ -83,7 +83,7 @@
     %% The style for titles is small caps.
     \def\titlefont{\rmfamily}
     \def\titleshape{\scshape}
-    \def\titlestyle{\titlefont\titleshape\bfseries\sffamily}
+    \def\titlestyle{\titlefont\titleshape\bfseries}
     \if@print
         \def\headerstyle{\titlefont\titleshape}
         %\def\headerstyle{\titlefont\titleshape\bfseries}
@@ -96,9 +96,8 @@
     %% for monospace and Cambria for math.
     \RequirePackage{unicode-math}
 
-    \setmainfont[Path = fonts/minion/, ItalicFont=MinionPro-It.otf, BoldFont=MinionPro-Semibold.otf, BoldItalicFont=MinionPro-SemiboldIt.otf]{MinionPro-Regular.otf}
-    % \setsansfont[Scale=0.9, Path = fonts/nhup/, BoldFont=NeueHaasUnicaPro-Bold.ttf, ItalicFont=NeueHaasUnicaPro-Italic.ttf]{NeueHaasUnicaPro-Regular.ttf}
-    \setsansfont[Scale=0.9]{Nimbus Sans}
+    \setmainfont[Path = fonts/libertinus/, ItalicFont=libertinusserif-italic.otf, BoldFont=libertinusserif-bold.otf, BoldItalicFont=libertinusserif-bolditalic.otf]{libertinusserif-regular.otf}
+    \setsansfont[Path = fonts/libertinus/, BoldFont=libertinussans-bold.otf, ItalicFont=libertinussans-italic.otf]{libertinussans-regular.otf}
     \setmathfont[Path = fonts/libertinus/]{libertinusmath-regular.otf}
     \setmonofont[Scale=MatchLowercase, Path=fonts/inconsolata/]{Inconsolata-Regular.ttf}
     %% The default style for text is Tahoma (sans-serif).
@@ -112,7 +111,7 @@
     \else
         \def\titlestyle{\titlefont\titleshape}
     \fi
-    \def\headerstyle{\titlestyle}
+    \def\headerstyle{\sffamily}
 \fi
 
 \RequirePackage{paralist}
@@ -422,8 +421,8 @@
     \renewcommand*\footrulewidth{0pt}
     \fancyhead{\cropmarks}
     %\fancyfoot[C]{\titlefont\thepage}
-    \fancyhead[LE]{\cropmarks\lthumb\titlefont\color{thumb}\thepage}
-    \fancyhead[RO]{\cropmarks\rthumb\titlefont\color{thumb}\thepage}
+    \fancyhead[LE]{\cropmarks\lthumb\rmfamily\color{thumb}\thepage}
+    \fancyhead[RO]{\cropmarks\rthumb\rmfamily\color{thumb}\thepage}
 }
 
 %% Fancy style for the main matter.
@@ -452,7 +451,6 @@
 %% Change the headrule command (from fancyhdr.sty) to draw the line below the
 %% header in the title color.
 \renewcommand*\headrule{%
-    \selectfont\bfseries\rmfamily
     \if@fancyplain%
         \let\headrulewidth\plainheadrulewidth%
     \fi%
@@ -471,7 +469,7 @@
 %% right, followed by the part name on the next line in the title color.
 \titleformat{\part}[display]
     {\flushright\titlestyle}
-    {\fontsize{96pt}{96pt}\selectfont\bfseries\sffamily\thepart}
+    {\fontsize{96pt}{96pt}\selectfont\bfseries\thepart}
     {0pt}
     {\Huge\color{title}}
 %% Separate the title from the text by two empty lines.
@@ -483,7 +481,7 @@
 %% Chapter titles have the same layout as parts.
 \titleformat{\chapter}[display]
     {\flushright\titlestyle}
-    {\fontsize{84pt}{84pt}\selectfont\bfseries\sffamily\thechapter}
+    {\fontsize{84pt}{84pt}\selectfont\bfseries\thechapter}
     {0pt}
     {\Huge\color{title}}
 \titlespacing{\chapter}{0pt}{0pt}{2\baselineskip}
@@ -557,7 +555,6 @@
     \end{flushright}%
     \vspace{2\baselineskip}%
 }
-
 %% The epigraph environment can be used to to add a quote to the title page of
 %% a chapter.
 \newcommand\epigraph[3][2\baselineskip]{%
