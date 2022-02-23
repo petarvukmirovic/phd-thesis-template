@@ -73,3 +73,38 @@
 \newcommand\Fp{\mathcalx{F}\kern-.3ex\mathit{p}} %% TYPESETTING: hack
 \newcommand\FpRTL{\Fp'}
 
+\newtheorem{theorem}{Theorem}{\bfseries}{\slshape}
+\newtheorem{corollary}[theorem]{Corollary}{\bfseries}{\slshape}
+\newtheorem{lemma}[theorem]{Lemma}{\bfseries}{\slshape}
+% \newtheorem*{proof}{Proof}{\itshape}{\rmfamily}
+
+\newcommand\MyFunction[2]{\textbf{function} \textsc{#1}(#2) \textbf{is} \\}
+\newcommand\MyProcedure[2]{\textbf{procedure} \textsc{#1}(#2) \textbf{is} \\}
+\newcommand\MyIf[1]{\textbf{if} #1 \textbf{then} \\}
+\newcommand\MyIfWoThen[1]{\textbf{if} #1 \\}
+\newcommand\MyThen[1]{\phantom{\textbf{if}} \quad #1 \textbf{then} \\}
+\newcommand\MyElse{\textbf{else} \\}
+\newcommand\MyElsIf[1]{\textbf{else} \textbf{if} #1 \textbf{then} \\}
+\newcommand\MyForTo[2]{\textbf{for} #1 \textbf{to} #2 \textbf{do} \\}
+\newcommand\MyDo{\textbf{do} \\}
+\newcommand\MyForever{\textbf{forever} \textbf{do} \\}
+\newcommand\MyWhileOfDo[1]{\textbf{while} #1}
+\newcommand\MyForDownto[2]{\textbf{for} #1 \textbf{downto} #2 \textbf{do} \\}
+\newcommand\MyWhile[1]{\textbf{while} #1 \textbf{do} \\}
+\newcommand\MyReturn{\textbf{return} }
+
+\newcommand\q{\noindent\hbox{}\quad}
+\newcommand\qq{\q\q}
+\newcommand\qqq{\qq\q}
+\newcommand\qqqq{\qqq\q}
+\newcommand\qqqqq{\qqqq\q}
+\newcommand\qqqqqq{\qqqqq\q}
+\newcommand\qqqqqqq{\qqqqqq\q}
+\newcommand\qqqqqqqq{\qqqqqqq\q}
+\newcommand\qqqqqqqqq{\qqqqqqqq\q}
+
+\newenvironment{quotex}
+ {\list{}{\rightmargin0pt}%
+  \item\relax}
+ {\endlist}
+

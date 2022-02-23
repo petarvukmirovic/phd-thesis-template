@@ -402,8 +402,7 @@ first-order unification or matching, and decode the resulting
 substitution. To avoid the overhead, we generalize the first-order unification
 and matching procedures to operate directly on \lfhol{} terms.
 
-\ourpara{Unification}
-
+\subsection{Unification}
 We present our unification procedure as a \begin{rep}nondeterministic \end{rep}transition system
 that generalizes Baader and Nipkow \cite{bn-98-tr-and-all-that}.
 A unification problem consists of a finite set~$\mathit{S}$ of unification constraints $s_i
@@ -525,6 +524,280 @@ traversed in a first-order fashion; for each such subterm $\zeta \;
 of their having the same arity. \begin{rep}For first-order problems, we can only have $k =
 n$, since all functions are fully applied. \end{rep}Using this technique, Ehoh
 is virtually as efficient as E on first-order terms.
+
+\looseness=-1
+  The transition system introduced above always terminates with a correct
+  answer. Our proofs follow the lines of Baader and Nipkow.
+  The metavariable $\mathcalx{R}$ is used to range over constraint sets $\mathit{S}$
+  and the special value $\bot.$
+  The set of all unifiers of $\mathit{S}$ is denoted by $\Unifier(\mathit{S}).$
+  Note that $\Unifier(\mathit{S} \cup \mathit{S}') = \Unifier(\mathit{S}) \cap \Unifier(\mathit{S}').$
+  We let $\Unifier(\bot) = \emptyset.$
+  The notation $\mathit{S} \Unifarrow^{!} \mathit{S}'$ indicates that $\mathit{S}
+  \Unifarrow^{*} \mathit{S}'$ and $\mathit{S}'$ is a normal form (i.e., there exists no
+  $\mathit{S}''$ such that $\mathit{S}' \Unifarrow \mathit{S}''$).
+  A variable $x$ is \emph{solved} in $\mathit{S}$
+  if it occurs exactly once in $\mathit{S}$, in a constraint of the form $x \unif t.$
+
+  \begin{lemma}\label{lemma:ehoh:unif-preserve}
+    If $\mathit{S} \Unifarrow \mathcalx{R}$, then $\Unifier(\mathit{S}) = \Unifier(\mathcalx{R}).$
+  \end{lemma}
+  \begin{proof}
+    The rules \textsf{Delete}, \textsf{Decompose}, \textsf{Orient}, and
+    \textsf{Eliminate} are proved as in Baader and Nipkow.
+    \textsf{OrientXY} trivially preserves unifiers.
+    For \textsf{DecomposeX}, the core of the argument is as follows:
+    %
+    \begin{align*}
+    & \sigma \in \Unifier(\{ x \; \tuple{s}{{m}} \unif u \; \tuple{t}{{m}} \}) \\[-.5\jot]
+      \text{iff}\quad
+    & \sigma(x \; \tuple{s}{{m}}) = \sigma(u \; \tuple{t}{{m}}) \\[-.5\jot]
+      \text{iff}\quad
+    & \sigma(x) \; \sigma(s_1) \, \ldots \, \sigma(s_m)
+        = \sigma(u) \; \sigma(t_1) \, \ldots \, \sigma(t_m) \\[-.5\jot]
+      \text{iff}\quad
+    & \sigma(x) = \sigma(u){,}~ \sigma(s_1) = \sigma(t_1){,}\; \ldots{,}~ \text{and}~ \sigma(s_m) = \sigma(t_m) \\[-.5\jot]
+      \text{iff}\quad
+    & \sigma \in \Unifier(\{ x \unif u{,}\; s_1 \unif t_1, \ldots, s_{m} \unif t_{m}\})
+    \end{align*}
+
+    The proof of the problem's unsolvability if rule \textsf{Clash} or
+    \textsf{OccursCheck} is applicable carries over from Baader and Nipkow.
+    For \textsf{ClashTypeX}, the justification is that $\sigma(x \;
+    \tuple{s}{m}) = \sigma(u \; \tuple{t}{m})$ is possible only if
+    $\sigma(x) = \sigma(u)$, which requires $x$ and $u$ to have the same
+    type. Similarly, for \textsf{ClashLenXF}, if
+    $\sigma(x \; \tuple{s}{m}) = \sigma(\cst{f} \; \tuple{t}{n})$ with
+    $m > n$, we must have $\sigma(x \; \tuple{s}{{m-n}}) =
+    \sigma(x) \; \sigma(s_1) \, \dots \, \sigma(s_{m-n}) = \cst{f}$,
+    which is impossible.
+  \end{proof}
+\newpage
+  \begin{lemma}\label{lemma:ehoh:unif-normal-imp-solved}
+    If $\mathit{S}$ is a normal form, then $\mathit{S}$ is in solved form.
+  \end{lemma}
+  \begin{proof}
+    Consider an arbitrary unification constraint $s \unif t \in \mathit{S}.$ We show
+    that in all but one cases, a rule is applicable, contradicting the
+    hypothesis that $\mathit{S}$ is a normal form. In the remaining case, $s$ is a
+    solved variable in $\mathit{S}$.
+
+    \medskip
+    \noindent
+    \textsc{Case} $s = x$:
+    \begin{itemize}
+    \item \textsc{Subcase} $t = x$:
+      \textsf{Delete} is applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t \neq x$ and $x \in \Var(t)$:
+      \textsf{OccursCheck} is applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t \neq x$, $x \not \in \Var(t)$, and $x \in
+      \Var(\mathit{S} \setminus \{ s \unif t \})$:
+      \textsf{Eliminate} is applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t \neq x$, $x \not \in \Var(t)$,
+          and $x \notin \Var(\mathit{S} \setminus \{ s \unif t \})$:
+      The variable $x$ is solved in $\mathit{S}$.
+    \end{itemize}
+
+    \noindent
+    \textsc{Case} $s = x \; \tuple{s}{m}$ for $m > 0$:
+    \begin{itemize}
+    \item \textsc{Subcase} $t = \eta \; \tuple{t}{n}$ for $n \ge m$:
+      \textsf{DecomposeX} or \textsf{Clash\-TypeX} is applicable, depending on
+      whether $x$ and $\eta \; \tuple{t}{{n-m}}$ have the same type.
+
+%      \smallskip
+    \item \textsc{Subcase} $t = y \; \tuple{t}{n}$ for $n < m$:
+      \textsf{OrientXY} is applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t = \cst{f} \; \tuple{t}{n}$ for $n < m$:
+      \textsf{ClashLenXF} is applicable.
+    \end{itemize}
+
+    \noindent
+    \textsc{Case} $s = \cst{f} \; \tuple{s}{m}$:
+    \begin{itemize}
+    \item \textsc{Subcase} $t = x \; \tuple{t}{n}$:
+      \textsf{Orient} is applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t = \cst{f} \; \tuple{t}{n}$:
+      Due to well-typedness, $m = n$. \textsf{Decompose} is
+      applicable.
+
+%      \smallskip
+    \item \textsc{Subcase} $t = \cst{g} \; \tuple{t}{n}$:
+      \textsf{Clash} is applicable.
+    \end{itemize}
+
+    \noindent
+    Since each constraint is of the form $x \unif t$ where $x$ is solved in
+    $\mathit{S}$, the problem $\mathit{S}$ is in solved form.
+  \end{proof}
+
+  \begin{lemma}\label{lemma:ehoh:unif-idempotent-mgu}
+    If the constraint set $\mathit{S}$ is in solved form, then the associated
+    substitution is an idempotent MGU of $\mathit{S}.$
+  \end{lemma}
+  \begin{proof}
+    This lemma corresponds to Lemma~4.6.3 of Baader and Nipkow. Their proof
+    carries over to \lfhol{}.
+  \end{proof}
+
+  \begin{theorem}[Partial Correctness]\label{thm:ehoh:unif-partial-correctness}\,%
+    If $\mathit{S} \Unifarrow^{!} \bot$, then $\mathit{S}$ has no solutions.
+    If $\mathit{S} \Unifarrow^{!} \mathit{S}'\!$, then $\mathit{S}'$ is in solved form and the
+    associated substitution is an idempotent MGU of $\mathit{S}$.
+    \end{theorem}
+
+    \begin{proof}
+    The first part follows from Lemma~\ref{lemma:ehoh:unif-preserve}.
+    %applied transitively
+    The second part follows from Lemma \ref{lemma:ehoh:unif-preserve}
+    %applied transitively
+    and Lemmas
+    \ref{lemma:ehoh:unif-normal-imp-solved}~and~\ref{lemma:ehoh:unif-idempotent-mgu}.
+    \end{proof}
+
+      \newpage
+      \begin{theorem}[Termination]\label{thm:ehoh:unif-termination}\,%
+      The relation $\Unifarrow$ is well founded.
+      \end{theorem}
+    
+      \begin{proof}
+      We define an auxiliary notion of weight:
+      $\mathcalx{W}(\zeta \; \tuple{s}{m}) =
+        \allowbreak m + 1 + \sum_{i=1}^{m} \mathcalx{W}(s_i)$.
+      Well-foundedness is proved by exhibiting a measure function from
+      constraint sets to quadruples of natural numbers $(n_1, n_2, n_3, n_4)$,
+      where
+      $n_1$ is the number of unsolved variables in $\mathit{S}$;
+      $n_2$ is the sum of all term weights,
+      $\sum_{s \unif t \in \mathit{S}} \mathcalx{W}(s) + \mathcalx{W}(t)$;
+      $n_3$ is the number of right-hand sides with variable heads,
+      $|\{ s \unif x \; \overline{t} \in \mathit{S} \} |$; and
+      $n_4$ is the number of arguments to left-hand side variable heads,
+        $\sum_{x \> \tuple{s}{m} \unif t  \in \mathit{S}} m$.
+  
+      The following table shows that the application of each positive rule
+      lexicographically decreases the quadruple:
+  
+        \begin{center}
+          \begin{tabular}{l@{\qquad}l@{\quad}l@{\quad}l@{\quad}l@{\quad}}
+                              & $n_1$  & $n_2$ & $n_3$ & $n_4$ \\[\jot]
+          \textsf{Delete}     & $\geq$ & $>$   &       &       \\
+          \textsf{Decompose}  & $\geq$ & $>$   &       &       \\
+          \textsf{DecomposeX} & $\geq$ & $>$   &       &       \\
+          \textsf{Orient}     & $\geq$ & $=$   & $>$   &       \\
+          \textsf{OrientXY}   & $\geq$ & $=$   & $=$   & $>$   \\
+          \textsf{Eliminate}  & $>$    &       &       &
+          \end{tabular}
+        \end{center}
+  %
+  %    \noindent
+  %    \textsf{Eliminate}, by solving one variable, decreases $n_1.$
+  %    \textsf{Delete} removes a constraint from~$\mathit{S}$, decreasing the
+  %    weight.
+  %    \textsf{Decompose} reduces the weight by at least~2.
+  %    \textsf{Prefix} reduces the set weight by at least $m>0$, thanks to the
+  %    presence of $m$ in the definition of $\mathcalx{W}$.
+      The negative rules, which produce the special value $\bot$, cannot
+      contribute to an infinite $\Unifarrow$ chain.
+      %For example, the quadruples corresponding to the derivation
+      %starting from $\{x \> (z \> \cst{b} \> \cst{c}) \unif \cst{g} \> \cst{a} \> (y \> \cst{c})\}$
+      %given above are $(3,14,0,1) > (2,12,1,2) > (2, 12, 1, 1) > (1, 10, 1, 0) > (1, 8, 1, 0)$.
+  %    where $>$ denotes the lexicographic extension of $>$ on natural numbers.
+      \end{proof}
+  
+  A unification algorithm for \lfhol{} can be derived from the above transition
+  system, by committing to a strategy for applying the rules.
+  %
+  This algorithm closely follows the Ehoh implementation, abstracting away from
+  complications such as prefix optimization. We assume a flattened
+  representation of terms; as in Ehoh, each variable stores the term it is bound
+  to in its \textit{binding} field (Sect.~\ref{sec:ehoh:types-and-terms}).
+  We also rely on a \textsc{ApplySubst} function, which applies the
+  binding to the top-level variable. The algorithm assumes that the terms
+  to be unified have the same type. The pseudocode is as follows:
+
+  \begin{quotex}
+    \MyFunction{SwapNeeded}{Term $\mathit{s}$, Term $\mathit{t}$}
+    \q \MyReturn $\begin{aligned}[t]
+      & t.\mathit{head}.\mathit{isVar}() \\[-\jot]
+      & {\mathrel\land}\; (\lnot\, s.\mathit{head}.\mathit{isVar}()
+      \mathrel\lor s.\mathit{num\_args} > t.\mathit{num\_args})
+      \end{aligned}$
+    
+    \vskip 1.5\jot
+    
+    \MyFunction{Deref}{Term $\mathit{s}$}
+    \q \MyWhile{$s.\mathit{head}.\mathit{isVar}() \mathrel\land s.\mathit{head}.\mathit{binding} \neq \mathit{Null}$}
+    \qq $s \gets \textsc{ApplySubst}(s{,}\; s.\mathit{head}.\mathit{binding})$ \\
+    \q \MyReturn $s$
+    
+    \vskip 1.5\jot
+    
+    \MyFunction{GobblePrefix}{Term $x$, Term $t$}
+    \q $\mathit{res} \gets \mathit{Null}$ \\
+    \q \MyIf{$x.\mathit{type}.\mathit{args}$ is suffix of
+          $\mathit{t}.\mathit{head}.\mathit{type}.\mathit{args}$}
+    \qq $\mathit{pref\_len} \gets \mathit{t}.\mathit{head}.\mathit{type}.\mathit{arity} - x.\mathit{type}.\mathit{arity}$ \\
+    \qq \MyIf{$\mathit{pref\_len} \leq t.\mathit{num\_args}$}
+    \qqq $\mathit{res} \gets $
+                \textsc{Term}$(t.\mathit{head}$, $t.\mathit{args}[1 \,.\,.\, \mathit{pref\_len}])$ \\
+    \q \MyReturn $\mathit{res}$
+    
+    \vskip 1.5\jot
+    
+    \MyFunction{Unify}{Term $\mathit{s}$, Term $\mathit{t}$}
+    \q $\mathit{constraints} \gets \textsc{DoubleEndedQueue}()$ \\
+    \q $\mathit{constraints}.\mathit{prepend(s)}$ \\
+    \q $\mathit{constraints}.\mathit{prepend(t)}$
+    \\[\jot]
+    \q \MyWhile{$\lnot\, \mathit{constraints}.\mathit{isEmpty}()$}
+    \qq $t \gets \textsc{Deref}(\mathit{constraints}.\mathit{dequeue}())$ \\
+    \qq $s \gets \textsc{Deref}(\mathit{constraints}.\mathit{dequeue}())$
+    \\[\jot]
+    \qq \MyIf{$s \neq t$}
+    \qqq \MyIf{\textsc{SwapNeeded}$(s,t)$}
+    \qqqq $(t, s) \gets (s, t)$
+    \\[\jot]
+    \qqq \MyIf{$s.\mathit{head}.\mathit{isVar}()$}
+    \qqqq $x \gets s.\mathit{head}$ \\
+    \qqqq $\mathit{prefix} \gets \textsc{GobblePrefix}(x,t)$ \\
+    \qqqq \MyIf{$\mathit{prefix} \neq \mathit{Null}$}
+    \qqqqq $\mathit{start\_idx} \gets \mathit{prefix}.\mathit{num\_args} + 1$ \\
+    \qqqqq \MyIf{$x$ occurs in $\mathit{prefix}$}
+    \qqqqqq \MyReturn $\textit{False}$ \\
+    \qqqqq \MyElse
+    \qqqqqq $x.\mathit{binding} \gets \mathit{prefix}$ \\
+    \qqqq \MyElse
+    \qqqqq \MyReturn $\textit{False}$ \\
+    \qqq \MyElsIf{$s.\mathit{head} = t.\mathit{head}$}
+    \qqqq  $\mathit{start\_idx} \gets 1$ \\
+    \qqq \MyElse
+    \qqqq \MyReturn $\textit{False}$
+    \\[\jot]
+    \qqq \MyForTo{$i \gets \mathit{start\_idx}$}{$t.\mathit{num\_args}$}
+    \qqqq $\mathit{s\_arg} \gets s.\mathit{args}[i-\mathit{start\_idx}+1]$ \\
+    \qqqq $\mathit{t\_arg} \gets t.\mathit{args}[i]$ \\
+    \qqqq \MyIf{$(\mathit{s\_arg}.\mathit{head}.\mathit{isVar}() \lor \mathit{t\_arg}.\mathit{head}.\mathit{isVar}())$}
+    \qqqqq $\mathit{constraints}.\mathit{append}(t\_\mathit{arg})$ \\
+    \qqqqq $\mathit{constraints}.\mathit{append}(s\_\mathit{arg})$ \\
+    \qqqq \MyElse
+    \qqqqq $\mathit{constraints}.\mathit{prepend}(s\_\mathit{arg})$ \\
+    \qqqqq $\mathit{constraints}.\mathit{prepend}(t\_\mathit{arg})$
+    \\[\jot]
+    \q \MyReturn $\textit{True}$
+    \end{quotex}
+
+
 
 
 

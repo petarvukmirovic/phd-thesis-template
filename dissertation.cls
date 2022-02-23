@@ -14,6 +14,7 @@
 %% Import packages
 \RequirePackage{fontawesome}
 \RequirePackage{amsmath}
+\RequirePackage{amsthm}
 \RequirePackage{amssymb}
 \RequirePackage{txfonts}
 \RequirePackage{mathptmx}
