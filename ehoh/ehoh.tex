@@ -1965,6 +1965,212 @@ By Lemma \ref{lemma:fpindex-aux}, $s$ and $t$ are not unifiable.
 \section{Inference Rules}
 \label{sec:ehoh:inferences}
 
+Saturating provers show the unsatisfiability of a clause set
+by systematically adding logical consequences,
+% (up to simplification and redundancy),
+eventually deriving the empty clause
+as a witness of unsatisfiability. They implement two kinds of
+inference rules: \emph{Generating rules} produce new clauses and are
+needed for completeness, whereas \emph{simplification rules} delete
+existing clauses or replace them by simpler clauses. This
+simplification is crucial for success, and most modern provers spend a
+large part of their time on simplification. E's main loop, which applies the
+rules, implements the \relax{given clause} procedure, as described in
+Sect.~\ref{sec:pre:saturation}. 
+
+% The proof state is represented by two disjoint
+% subsets of clauses, the set of \emph{processed} clauses $P$ and the set of
+% \emph{unprocessed} clauses $U$. Initially, all clauses are unprocessed. At each
+% iteration of the loop, the prover heuristically selects a \emph{given clause}
+% from $U$, adds it to $P$, and performs all generating inferences between this
+% clause and all clauses in $P$. Resulting new clauses are added to $U$. This
+% maintains the invariant that all direct consequences between clauses in $P$ have
+% been performed. Simplification is performed on the given clause (using clauses
+% in $P$ as side premises), on clauses in $P$ (using the given clause), and on
+% newly generated clauses (again, using $P$).
+
+Ehoh is based on the same logical calculus as E, except that it is
+generalized to \lfhol{} terms. The standard inference rules and completeness
+proof of superposition with respect to intensional Boolean-free \lfhol{} fragment of our
+logic can be reused verbatim; the only changes concern the basic definitions of
+terms and substitutions \cite[Sect.~1]{bbcw-21-lfho}.
+\begin{rep}Refutational completeness of superposition for \lfhol{} terms has
+been formally proved by Peltier \cite{np-2016-sup-formalisation} using Isabelle.\end{rep}
+%
+We introduced support for first-class Boolean terms in Ehoh by extending the
+preprocessor, as explained in Sect.~\ref{sec:ehoh:preprocessing}.
+
+\ourpara{The Generating Rules}
+
+
+The superposition rules were introduced in Sect.~\ref{sec:pre:rules}. For completeness,
+we repeat them with slightly simplified notation, as we do not repeat side conditions:
+
+\hfill
+\begin{tabular}{ll}
+  \namedinference{SN}
+  {s \eq t \mathrel\vee C \qquad u[s'] \noteq v \mathrel\vee D}
+  {\sigma(u[t] \mathbin{\noteq} v \mathrel\vee C \mathrel\vee D)}
+  &
+  \namedinference{ER}{s \noteq s' \mathrel\vee C}{\sigma(C)} \\[2\jot]
+  \namedinference{SP}
+    {s \eq t \mathrel\vee C \qquad u[s'] \eq v \mathrel\vee D}
+    {\sigma(u[t] \mathbin{\eq} v \mathrel\vee C \mathrel\vee D)}
+  &
+  \namedinference{EF}{s \eq t \mathrel\vee  s' \eq u \mathrel\vee C}{\sigma(t \noteq u \mathrel\vee  s \eq u \mathrel\vee C)}
+\end{tabular}
+\hfill
+\kern\belowdisplayskip
+
+\noindent
+In each rule, $\sigma$ denotes the MGU of $s$ and $s'$.
+
+
+Equality resolution (ER) and equality factoring (EF) \begin{rep}are single-premise rules
+that \end{rep}work on the entire left- or right-hand side of a literal of
+the given clause. To generalize them, it suffices to disable prefix
+optimization for unification.
+\confrep{By contrast, t}{\par T}%
+he rules for superposition into negative and positive literals (SN~and~SP) are more
+complex. As two-premise rules, they require the prover to find a partner
+for the given clause. There are two cases to consider\confrep{.}{, depending on whether
+the given clause acts as the first or second premise in an inference.
+Moreover, since the rules operate on subterms~$s'$ of a clause, the prover
+must be able to efficiently locate all relevant subterms, including
+\lfhol{} prefix subterms.}
+%
+To cover the case where the given clause acts as the left premise, the prover
+relies on a fingerprint index to compute a set of clauses containing terms
+possibly unifiable with a side $s$ of a positive literal of the given clause.
+Thanks to our generalization of fingerprints, in Ehoh this candidate set is
+guaranteed to overapproximate the set of all possible inference partners. The
+unification algorithm is then applied to filter out unsuitable candidates.
+Thanks to prefix optimization, we can avoid polluting the
+index with all prefix subterms.
+
+When the given clause is the right premise, the prover traverses
+its subterms $s'$ looking for inference partners in another fingerprint index,
+which contains only entire left-~and right-hand sides of equalities. Like E,
+Ehoh traverses subterms in a first-order fashion. If prefix unification
+succeeds, Ehoh determines the unified prefix and applies the appropriate
+inference instance.
+
+\ourpara{The Simplifying Rules}
+
+Unlike generating rules, simplifying rules do not necessarily add
+conclusions to the proof state---they can also remove premises. E
+implements over a dozen simplifying rules, with unconditional
+rewriting and clause subsumption as the most significant
+examples. Here, we restrict our attention to a single rule, which best illustrates
+the challenges of supporting \lfhol:
+%
+\[\namedsimp{ES}{s \eq t \qquad u[\sigma(s)] \eq u[\sigma(t)] \mathrel\vee C}{s \eq t}\]
+%
+Given an equation $s \eq t$, equality subsumption (\infname{ES}) removes a clause
+containing a literal whose two sides are equal except that an instance of $s$
+appears on one side where the corresponding instance of $t$ appears on the
+other side.
+
+E maintains a perfect discrimination tree storing clauses of the form $s
+\eq t$ indexed by $s$ and $t$.
+%Each node corresponding to an indexed term
+%contains the pointer to unit clause it appears in.
+When applying \infname{ES},
+E considers each \begin{rep}positive \end{rep}literal $u \eq v$ of the given
+clause in turn. It starts by taking the left-hand side~$u$ as a query term.
+If an equation $s \eq t$ (or $t \eq s$) is found in the tree, with $\sigma(s)
+= u$, the prover checks whether $\sigma'(t) = v$ for some \confrep{}{(possibly
+nonstrict) }extension $\sigma'$ of~$\sigma$. If so, ES is
+applicable\confrep{}{, with a second premise of the form $\sigma(s) \eq
+\sigma(t) \mathrel\vee C$}.
+\begin{rep}\par\end{rep}
+To consider nonempty contexts, the prover traverses the subterms $u'$ and $v'$ of
+$u$ and $v$ in lockstep, as long as they appear under identical
+contexts. Thanks to prefix optimization, when Ehoh is given a subterm $u'$,
+it can find an equation $s \eq t$ in the tree such that
+$\sigma(s)$ is equal to some prefix of $u'$, with some arguments
+$\overline{u}$ remaining as unmatched. Checking for equality subsumption
+%
+then amounts to checking that $v' = \sigma'(t) \; \overline{u}$,
+for some extension $\sigma'$ of $\sigma$.
+
+For example, let
+$\cst{f} \; (\cst{g} \; \cst{a} \; \cst{b}) \eq \cst{f} \; (\cst{h} \; \cst{g} \; \cst{b})$
+be the given clause,
+and suppose that $x \; \cst{a} \eq \cst{h} \; x$ is indexed.
+Under context $\cst{f}\>[\phantom{.}]$, Ehoh considers the subterms
+$\cst{g} \; \cst{a} \; \cst{b}$ and $\cst{h} \; x \; \cst{b}$. It finds the
+prefix $\cst{g} \; \cst{a}$ of $\cst{g} \; \cst{a} \; \cst{b}$ in the
+%
+tree, with $\sigma = \{x \mapsto\nobreak \cst{g}\}$.
+The prefix $\cst{h} \; \cst{g}$ of $\cst{h} \; \cst{g} \; \cst{b}$ matches the
+indexed equation's right-hand side $\cst{h} \; x$ using the same substitution,
+and the remaining argument in both subterms,~$\cst{b}$, is identical.
+\begin{rep}Ehoh concludes that the given clause is redundant.\end{rep}
+
+\ourpara{Pragmatic Extensions}
+
+Since Ehoh is based on a mono\-morphic logic, the only way to support
+extensionality without changing the calculus is to add a set of extensionality
+axioms for every function type occurring in the problem
+\cite[Sect.~3.1]{bbcw-21-lfho}. The evaluation by Bentkamp et al.\ of such
+an approach was discouraging \cite[Sect.~6]{bbcw-21-lfho}, so we decided to
+support extensionality via inference rules in Ehoh. We implemented two well-known
+incomplete rules we had experimented with in the context of Zipperposition.
+
+The negative and positive extensionality (\infname{NE} and \infname{PE}) rules
+are defined as
+
+\vskip\abovedisplayskip
+\noindent\hfill
+  \namedinference{NE}{s \noteq t \mathrel\vee C}{s \; (\cst{sk} \; \overline{x}) \noteq t \; (\cst{sk} \; \overline{x}) \mathrel\vee C}%
+\qquad
+  \namedinference{PE}{s \; x \eq t \; x \mathrel\vee C}{s \eq t \mathrel\vee C}%
+\hfill\hbox{}
+\vskip\belowdisplayskip
+
+\noindent
+For \infname{NE}, $\overline{x}$ contains all the variables occurring in $s$ and
+$t$, the terms $s$ and $t$ are of function type, $\cst{sk}$ is a
+fresh Skolem symbol, % of appropriate type,
+and the literal $s \noteq t$ is eligible for
+resolution \cite[Sect.~5]{bbtvw-21-sup-lam}. For \infname{PE}, variable $x$
+does not occur in any of the $s$, $t$, or $C$, no literals are selected in $C$, and
+$s \; x \eq t \; x$ is a maximal literal.
+
+\begin{sloppypar}
+Finally, we introduced an injectivity recognition (IR) rule, which detects
+injectivity axioms and asserts the existence of the inverse function for
+injective function symbols:
+\end{sloppypar}
+
+\vskip\abovedisplayskip
+
+\noindent\hbox{}\hfill
+\namedinference{IR}{\cst{f} \; \tuple{x}{n} \noteq \cst{f} \; \tuple{y}{n} \mathrel\vee x_i \eq y_i} {\cst{sk} \; (\cst{f} \;\tuple{x}{n}) \; \overline{x}_J \, \eq\, x_i}\hfill\hbox{}
+
+\vskip\belowdisplayskip
+
+\noindent
+where $\textsf{sk}$ is a fresh Skolem symbol,
+$J$ is the largest subset of $\{1, \ldots, n$\} such that $x_j = y_j$ for every $j \in J$.
+We denote the subsequence of $\tuple{x}{n}$ indexed by $J$ by $\tuple{x}{J}$.
+Moreover, we require that
+$x_i \neq y_i$, all variables in $\tuple{x}{K} \cdot \tuple{y}{K}$ are distinct,
+where $K = \{1, \ldots, n\} \setminus J$,
+and neither $\tuple{x}{K}$ nor $\tuple{y}{K}$ shares variables with $\tuple{x}{J}$.
+For example, given $\cst{add} \; a \; b \noteq \cst{add} \; a \; b' \mathrel\lor a \eq b'$,
+\infname{IR} can derive the existence of the inverse
+$\cst{sk}_1$ characterized by $\cst{sk}_{1\!} \; (\cst{add} \; a \; b) \; a \eq b$.
+%As a second example, from the clause
+%$\cst{cons} \; x \; \mathit{xs} \noteq \cst{cons} \; y \; \mathit{ys}
+%\mathrel\lor x \eq y$, we can derive
+%$\cst{sk}_2 \; (\cst{cons} \; x \; \mathit{xs}) \eq x$.
+
+
+
+
+
 \section{Heuristics}
 \label{sec:ehoh:heuristics}
 

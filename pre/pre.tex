@@ -98,7 +98,8 @@ $t_i$ at position $p$, then $s$ is a subterm of $\cst{f}(\tuplen{t})$ at
 position $i.p$. A {\em context} is a term with zero or more subterms replaced by a
 hole $\square$. We write $C[\overline{u}_n]$ for the term resulting from filling
 in the holes of a context $C$ with the terms $\overline{u}_n$, left to right.
-We say a term is {\em ground} if it has no variables.
+We say a term is {\em ground} if it has no variables. By $u[s]$
+we denote that $s$ is a subterm of $u$. 
 
 {\em Substitutions} $\sigma, \varrho, \ldots$ are total mappings from variables to
 terms of the same type. Substitutions map only finitely many variables to terms
@@ -195,9 +196,10 @@ $\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
 $\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. 
 
 Applying substitution to a literal is reduced to applying it to both sides of
-the (dis)equa\-tion and it is extended pointwise to clauses. It is written in
-postfix notation as $\sigmacl{l}$ and $\sigmacl{C}$. We say $\sigmacl{C}$ is a
-ground instance of $C$ if $\sigma$ is a grounding substitution.
+the (dis)equa\-tion and it is extended pointwise to clauses. It is sometimes
+also written in postfix notation as $l\sigma$ and $C\sigma$. We say
+$\sigmacl{C}$ is a ground instance of $C$ if $\sigma$ is a grounding
+substitution.
 
 \section{Superposition}
 
@@ -265,7 +267,7 @@ general unifier is not guaranteed. Consider the constraint $X \,
 form $\{ X \mapsto \lamx{\cst{f}^i \, x} \}$ is a unifier, with $\cst{f}^i \, x$
 denoting iterated, $i$-fold application of $\cst{f}$. However, neither of these substitutions
 is more general than the other. To generalize most general
-unifiers to higher-order logic, the concept of tje {\em complete sets of unifiers} (CSU) was
+unifiers to higher-order logic, the concept of the {\em complete sets of unifiers} (CSU) was
 introduced.
 
 A (higher-order) unifier of a multiset of unification constraints $E$ is
@@ -287,6 +289,7 @@ unifiers as first-order or higher-order and ensure the context provides enough
 information.
 
 \subsection{Inference Rules}
+\label{sec:pre:rules}
 \newcommand{\mgu}{\ensuremath{\mathit{mgu}}}
 
 Before we spell out the inference rules of standard, first-order superposition
@@ -306,34 +309,34 @@ superposition are as follows:
 
 \begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
     \multicolumn{2}{l}{{\bf Equality resolution} (ER)} \\[\jot]
-    $\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}$ & where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible for resolution
+    $\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}$ & where $\sigma = \mgu(s,t)$, and $\sigmacl{s \noteq t}$ is eligible for resolution
 \end{tabular}
 
 \medskip
 
 \begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
     \multicolumn{2}{l}{{\bf Equality factoring} (EF)} \\[\jot]
-    $\namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}$ 
+    $\namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{t \noteq v \llor u \eq v \llor C}}$ 
         & where $\sigma = \mgu(s,u), \sigma(t) \not\succ \sigma(s)$ and 
-        $(s \eq t)\sigma$ is eligible for paramodulation
+        $\sigmacl{s \eq t}$ is eligible for paramodulation
 \end{tabular}
 
 \medskip
 
 \begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
     \multicolumn{2}{l}{{\bf Superposition into positive literals} (SP)} \\[\jot]
-    $\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}$ 
+    $\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{\sigmacl{u[p \leftarrow t] \eq v \llor C \llor D}}$ 
         & where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-        $(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable
+        $\sigmacl{s \eq t}$ is eligible for paramodulation, just like $\sigmacl{u \eq v}$ and $u|_p$ is not a variable
 \end{tabular}
 
 \medskip
 
 \begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
     \multicolumn{2}{l}{{\bf Superposition into negative literals} (SN)} \\[\jot]
-    $\namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}$ 
+    $\namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{\sigmacl{u[p \leftarrow t] \noteq v \llor C \llor D}}$ 
         & where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-         $(s \eq t)\sigma$ is eligible for paramodulation, $(u \noteq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable
+         $\sigmacl{s \eq t}$ is eligible for paramodulation, $\sigmacl{u \noteq v}$ is eligible for resolution, and $u|_p$ is not a variable
 \end{tabular}
 
 % \[
@@ -390,7 +393,7 @@ negative literals (\infname{RN}):
 
 \[
 \namedsimp{RN}{s \eq t \qquad u \noteq v \llor D}
-              {s \eq t \qquad (u[p \leftarrow \sigma(t)] \eq v \llor C \llor D)\sigma}
+              {s \eq t \qquad \sigmacl{u[p \leftarrow \sigma(t)] \eq v \llor C \llor D}}
 \]
 where $\sigma = \mgu(u|_p, s)$, and $\sigma(s) \succ \sigma(t)$.
 
@@ -406,6 +409,7 @@ operations within a theorem prover. This rule does not adhere to redundancy
 criterion, but can be justified using other mechanisms \cite{wtrb-20-sat-framework}.
 
 \subsection{The Saturation Procedure}
+\label{sec:pre:saturation}
 
 Superposition provers saturate the input problem with respect to the calculus's
 inference rules using the \emph{given clause procedure}
