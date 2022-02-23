@@ -243,12 +243,14 @@ structure more closely to determine the order.
 Superposition requires that at least one of the selected literals is negative. 
 
 \subsection{Unification}
+\label{sec:pre:unif}
 
 Calculi from the resolution family, including superposition, perform inferences
 only on unifiable terms. We say terms $s$ and $t$ are {\em unifiable} if there is a
 substitution $\sigma$ such that $\sigmaterm{s} = \sigmaterm{t}$; we further say
-$\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is an
-unordered pair of two terms of the same type. A \emph{most general unifier} is a
+$\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is a pair of two terms of the same type. 
+We always specify if the constraint should be interpreted as ordered or unordered.
+A \emph{most general unifier} is a
 unifier $\sigma$, such that for any other unifier $\theta$, there is a
 substitution $\varrho$ such that $\theta = \varrho\sigma$. When there is such a
 $\varrho$, we say $\sigma$ is more general than $\theta$. In first-order logic,

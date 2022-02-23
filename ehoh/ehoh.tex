@@ -2,6 +2,7 @@
 \setheader{Extending a Brainiac Prover to Lambda-Free Higher-Order Logic}
 \label{ch:ehoh}
 
+\DeclareMathAlphabet{\mathcalx}{OT1}{pzc}{m}{it}
 \renewcommand{\confrep}[2]{#2}
 \includeversion{rep}
 \excludeversion{conf}
@@ -176,7 +177,9 @@ $\cst{a}$ has type $\iota$, then $\cst{f}$ is binary, $\cst{f}\;\cst{a}$ is
 unary, and $\cst{f}\;\cst{a}\;\cst{a}$ is nullary. Subterms are defined in the
 traditional higher-order way; for example, $s \; t$ has all subterms of $s$ and
 $t$ as subterms, in addition to $s \; t$ itself; as a consequence
-$\cst{f} \; \cst{a}$ is a subterm of $\cst{f} \; \cst{a} \;\cst{a}$.
+$\cst{f} \; \cst{a}$ is a subterm of $\cst{f} \; \cst{a} \;\cst{a}$. With $\Var(x)$
+we denote the set of free variables of $x$ where $x$ ranges over terms, clauses,
+set of clauses or any other objects that contain terms.
 
 
 In this chapter, substitutions $\sigma$ are partial
@@ -186,9 +189,10 @@ substitution $\sigma[x \mapsto s]$ maps $x$ to $s$ and otherwise coincides with
 $\sigma$. Applying $\sigma$ to a variable beyond $\sigma$'s domain is the
 identity. We deviated from the view of substitutions in Section \ref{sec:pre:hol}
 as it made proofs in Sections \ref{sec:ehoh:unif-match} and \ref{sec:ehoh:indexing}
-easier. It is easy to check that both views are equivalent.
+easier. It is easy to check that both views are equivalent. We also consider unification 
+constraints $s \unif t$ as \emph{ordered} pairs.
 %Applying a substitution to a term~$t$ applies it homomorphically to $t$'s
-%variables.
+%variables. 
 
 A well-known technique to support \lfhol{} %in first-order reasoning systems
 is to use the \emph{applicative encoding}:
@@ -212,8 +216,318 @@ is not ideal (Sect.~\ref{sec:ehoh:discussion-and-related-work}).
 \section{Types and Terms}
 \label{sec:ehoh:types-and-terms}
 
+\looseness=-1
+The term representation is a central concern when building a theorem
+prover. Delicate changes to E's representation were needed to support
+partial application and especially applied variables. In contrast, the
+introduction of a higher-order type system had a less dramatic impact on the
+prover's code.
+%In this section we
+%describe changes we made to generalize E's term representation and how
+%we completely replaced FOL many-sorted type system with simple types
+%needed for \lfhol{}.
+
+\ourpara{Types} For most of its history, E supported only untyped first-order logic. Cruanes
+implemented support for atomic types for E 2.0
+\cite[p.\,117]{sc-15-simon-phd}. Symbols are declared
+with a type signature:
+$\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau.$
+Atomic types are represented by integers, leading to efficient type comparisons.
+
+\looseness=-1
+In \lfhol{}, a type signature is simply a type~$\tau$, in which the
+type constructor $\to$ can be nested---e.g., $(\iota \to \iota)\allowbreak
+\to \iota.$
+%
+A natural way to represent such types is to mimic their recursive
+structure using a tagged union. However, this leads to memory fragmentation;
+a simple operation such as querying the type of a function's $i$th
+argument would require dereferencing $i$ pointers. We prefer a
+flattened representation, in
+which a type $\tau_1 \rightarrow \cdots \rightarrow \tau_n \rightarrow \iota$
+is represented by a single node labeled with ${\rightarrow}$ and pointing to
+the array $(\tau_1,\dots,\tau_n,\iota).$
+
+Ehoh stores all types in a shared bank and
+implements perfect sharing, ensuring that types that are structurally the same
+are represented by the same object in memory. Type equality can then be
+implemented as a pointer comparison.
+
+\ourpara{Terms}
+
+In E, terms are stored as perfectly shared directed acyclic graphs\begin{rep}
+\cite{ls-01-shared}\end{rep}.
+%
+%\begin{rep}
+%-- or kill completely
+%Even though we could implement applicative encoding as a preprocessor outside of E
+%and feature full support for \lfhol{} in that way, we decided to generalize existing
+%data structures and algorithms and relax existing invariants that are valid
+%only for FOL terms. These generalizations and relaxations are largely dependent
+%on the way E deals with term representation.
+%\end{rep}
+%
+Each node, or \emph{cell}, contains 11~fields, including
+\verb|f_code|, an integer that identifies the term's head symbol (if ${\ge}\;0$)
+or variable (if ${<}\;0$); \verb|arity|, an integer corresponding to the number
+of arguments passed to the head; \verb|args|, an array of size
+\verb|arity| consisting of pointers to arguments; and \verb|binding|,
+which may store a substitution for a variable\begin{rep} (if
+\verb|f_code|$\;{<}\;0$)\end{rep}, used for unification and matching.
+
+In first-order logic, the arity of a variable is always 0, and the arity of a
+symbol is given by its type signature.
+In higher-order logic, variables may have function type and be applied, and
+symbols can be applied to fewer arguments than specified by their type
+signatures. A natural representation of \lfhol{} terms as tagged unions
+would distinguish between variables~$x$, symbols~$\cst{f}$, and binary
+applications $s \; t.$ However, this scheme suffers from memory
+fragmentation and linear-time access, as with the representation of types,
+affecting performance on purely or mostly first-order problems. Instead, we
+propose a flattened representation, as a generalization of E's existing data
+structures: Allow arguments to variables, for symbols let \verb|arity| be
+the number of \begin{conf}\emph{actual} arguments\end{conf}\begin{rep}actual
+arguments, %as opposed to the declared arity,
+and rename the field \verb|num_args|\end{rep}. This representation, often called
+``spine notation,'' % \cite{cervesato-pfenning-2003},
+is isomorphic to the standard definition of higher-order terms with binary
+application. It is employed in various higher-order reasoning systems,
+including Leo-III \cite{sb-21-leo3} and
+Zipperposition \cite{bbtvw-21-sup-lam}.
+
+%\begin{rep} This approach parallels our representation of types.\end{rep}
+
+A side effect of the flattened representation is that prefix subterms are not
+shared. For example, the terms $\cst{f}\;\cst{a}$ and $\cst{f}\;\cst{a}\;\cst{b}$
+correspond to the flattened cells $\cst{f}(\cst{a})$ and
+$\cst{f}(\cst{a}, \cst{b}).$ The argument subterm $\cst{a}$ is shared, but not
+the prefix $\cst{f}\;\cst{a}.$ Similarly,
+$x$ and $x\;\cst{b}$ are represented by two distinct cells, $x()$ and
+$x(\cst{b})$, and there is no connection between the two occurrences of~$x$.
+%
+In particular,
+despite perfect sharing, their \verb|binding| fields are unconnected, leading
+to inconsistencies.
+
+A potential solution would be to systematically traverse a
+clause and set the \verb|binding| fields of all cells of the form $x(\overline{s})$
+whenever a variable~$x$ is bound, but this would be inefficient and inelegant.
+Instead, we implemented a hybrid approach: Variables are applied by an
+explicit application operator
+\appvar{}, to ensure that they are always perfectly shared. Thus, $x\;\cst{b}\;\cst{c}$
+is represented by the cell $\appvar(x, \cst{b}, \cst{c})$, where $x$ is a shared
+subcell. This is graceful, since variables never occur applied in first-order
+terms.
+%
+The main drawback is that some normalization is necessary
+after substitution: Whenever a variable is instantiated by a symbol-headed term,
+the $\appvar$ symbol must be eliminated.
+Applying the substitution $\{x \mapsto \cst{f} \; \cst{a}\}$ to the cell
+$\appvar(x, \cst{b}, \cst{c})$ must produce $\cst{f}(\cst{a}, \cst{b}, \cst{c})$ and
+not $\appvar(\cst{f}(\cst{a}), \cst{b}, \cst{c})$, for consistency with other
+occurrences of $\cst{f} \; \cst{a} \; \cst{b} \; \cst{c}.$
+
+There is one more complication related to the \verb|binding| field. In E, it
+is easy and useful to traverse a term as if a substitution has been applied,
+by following all set \verb|binding| fields. In Ehoh, this is not enough,
+because cells must also be normalized. To avoid repeatedly creating the
+same normalized cells, we introduced a \verb|binding_cache| field
+that connects a $\appvar(x, \overline{s})$ cell with its substitution.
+%
+However, this cache can easily become stale when $x$'s \verb|binding| pointer is
+updated. To detect this situation, we store $x$'s \verb|binding|
+value in the $\appvar(x, \overline{s})$ cell's \verb|binding|
+field (which is otherwise unused).
+To find out whether the cache is valid, it suffices to check that the
+\verb|binding| fields of $x$ and $\appvar(x, \overline{s})$ are equal.
+
+\ourpara{Term Orders} Superposition provers rely on term orders to prune the search
+space. The order must be a simplification order that
+%can be extended to a simplification order that
+% That's true but pointless. It's equivalent to saying that you need a
+% simplification order and the prover may underapproximate it. -JB
+is total on variable-free
+terms. E implements both the Knuth--Bendix order (KBO) and the lexicographic path order
+(LPO). KBO is widely regarded as the more
+robust option for superposition.
+%
+In earlier work, Blanchette and colleagues have shown that only KBO can be
+generalized gracefully while preserving the necessary properties for
+superposition \cite{bbww-17-kbo,bww-17-rpo}. For this
+reason, we focus on KBO.
+
+E implements L\"ochner's linear-time algorithm for KBO
+\cite{bl-06-kbo}, which relies on the \relax{tupling} method to store
+intermediate results. % , avoiding repeated computations.
+It is straightforward to generalize the algorithm to compute the
+graceful \lfhol{} version of KBO \cite{bbww-17-kbo}.
+The main difference is that when comparing two terms $\cst{f} \; \tuple{s}{m}$
+and $\cst{f} \; \tuple{t}{n}$, because of partial application we may now
+have $m \not= n$; this required changing the implementation to
+perform a length-lexicographic comparison of the tuples $\tuple{s}{m}$ and
+$\tuple{t}{n}.$
+
+\ourpara{Input and Output Syntax} 
+E implements the TPTP \cite{gs-17-tptp} formats FOF and TF0, corresponding to
+untyped and mono\-morphic first-order logic, for both input and output. In
+Ehoh, we added support for the \lfhol{} fragment of TPTP TH0, which provides
+mono\-morphic higher-order logic. Thanks to the use of a standard format,
+Ehoh's proofs can immediately be parsed by Sledgehammer
+\cite{pb-12-sh}, which reconstructs them using a variety of
+techniques.
+There is ongoing work on increasing the level of detail of E's proofs, to
+facilitate proof interchange and independent proof checking
+\cite{rs-17-checkable};
+this will also benefit Ehoh.
+
 \section{Unification and Matching}
 \label{sec:ehoh:unif-match}
+
+Syntactic unification of \lfhol{} terms has a first-order flavor.
+It is decidable, and most general unifiers (MGUs) are unique up to variable
+renaming. For example, the unification constraint $\cst{f} \; (x \;
+\cst{a}) \unif x \; (\cst{f} \; \cst{a})$, used to illustrate an infinite set of 
+independent unifiers in full higher-order logic (Sect.~\ref{sec:pre:unif}), has the MGU 
+$\{x \mapsto \cst{f}\}$ in \lfhol{}.
+% in \lfhol{} the unification constraint $\cst{f} \; (y \;
+% \cst{a}) \unif y \; (\cst{f} \; \cst{a})$ has the MGU $\{y \mapsto \cst{f}\}$,
+% while in full higher-order logic infinitely many independent solutions exist as
+% described in Sect.~\ref{sec:pre:unif}. 
+Matching is a special case of unification
+where only the variables on the left-hand side can be instantiated.
+
+An easy but inefficient way to implement unification and matching for \lfhol{}
+is to apply the applicative encoding (Sect.~\ref{sec:ehoh:logic}), perform
+first-order unification or matching, and decode the resulting
+substitution. To avoid the overhead, we generalize the first-order unification
+and matching procedures to operate directly on \lfhol{} terms.
+
+\ourpara{Unification}
+
+We present our unification procedure as a \begin{rep}nondeterministic \end{rep}transition system
+that generalizes Baader and Nipkow \cite{bn-98-tr-and-all-that}.
+A unification problem consists of a finite set~$\mathit{S}$ of unification constraints $s_i
+\unif t_i$, where $s_i$ and $t_i$ are of the same type.
+A problem is in \emph{solved form} if it has the form $\{ x_1 \unif t_1,\allowbreak
+\ldots, x_n \unif t_n \}$, where the $x_i$'s are distinct and do not occur in
+the $t_j$'s. The corresponding unifier is
+$\{ x_1 \mapsto t_1,\allowbreak \ldots, x_n \mapsto t_n \}.$
+%
+The transition rules attempt to bring the input constraints into solved form.
+\begin{rep}They can be applied in any order and eventually reach a normal form, which is
+either an idempotent MGU expressed in solved form or the special
+value $\bot$, denoting unsatisfiability of the constraints.\end{rep}
+
+The first group of rules\confrep{ }{---the \emph{positive} rules---}consists
+of operations that focus on a single constraint and replace it with a new
+(possibly empty) set of constraints:
+
+\noindent
+\begin{tabular}{ll}
+  \textsf{Delete} & $\{ t \unif t \} \uplus \mathit{S} \Unifarrow \mathit{S}$ \\[\jot]
+  \textsf{Decompose} & $\{ \cst{f} \; \tuple{s}{m} \unif \cst{f} \; \tuple{t}{m} \} \uplus \mathit{S} \Unifarrow {} 
+                        \mathit{S} \cup \{ s_1 \unif t_1, \ldots, s_m \unif t_m \}$ \\[\jot]
+  \textsf{DecomposeX} & $\{ x \; \tuple{s}{{m}} \unif u \; \tuple{t}{{m}} \} \uplus \mathit{S} \Unifarrow {} 
+                         \mathit{S} \cup \{ x \unif u{,}\; s_1 \unif t_1, \ldots, s_{m} \unif t_{m} \}$  \\
+                      & if $x$ and $u$ have the same type and $m > 0$ \\[\jot]
+  \textsf{Orient}     & $\{ \cst{f} \; \overline{s} \unif x \; \overline{t} \} \allowbreak \uplus \mathit{S}
+                         \Unifarrow \mathit{S} \cup \{ x \; \overline{t} \unif \cst{f} \; \overline{s} \}$ \\[\jot]
+  \textsf{OrientXY}   &  $\{ x \; \tuple{s}{m} \unif y \; \tuple{t}{n} \} \allowbreak \uplus \mathit{S}
+                         \Unifarrow \mathit{S} \cup \{ y \; \tuple{t}{n} \unif x \; \tuple{s}{m} \}$  \\
+                      &   if $m > n$ \\[\jot]
+  \textsf{Eliminate}  & $\{ x \unif t \} \uplus \mathit{S} \Unifarrow \{ x \unif t \} \cup \{ x \mapsto t \}(\mathit{S})$ \\
+                      &   if $x \in \Var(\mathit{S}) \setminus \Var(t)$
+\end{tabular}
+
+
+The \textsf{Delete}, \textsf{Decompose}, and \textsf{Eliminate} rules are
+essentially as for first-order terms. The \textsf{Orient} rule is generalized
+to allow applied variables and complemented by a new \textsf{Orient\-XY} rule.
+\textsf{DecomposeX}, also a new rule, can be seen as a variant of
+\textsf{Decompose} that analyzes applied variables; the term $u$ may be an
+application.
+
+The rules of the second group\confrep{ }{---the \emph{negative}
+rules---}detect unsolvable constraints:
+%
+% \begin{description}[labelwidth=\widthof{\rm\textsf{OccursCheck}}]
+% \item[\rm\textsf{Clash}]
+%   $\{ \cst{f} \; \overline{s} \unif \cst{g} \; \overline{t} \} \uplus \mathit{S} \Unifarrow \bot$%
+%   \quad if $\cst{f} \not= \cst{g}$
+
+% \smallskip
+% \item[\rm\textsf{ClashTypeX}]
+%   \begin{tabular}[t]{@{}l@{}}
+%     $\{ x \; \tuple{s}{m} \unif u \; \tuple{t}{m} \} \allowbreak \uplus \mathit{S} \Unifarrow \bot$ \\
+%     if $x$ and $u$ have different types
+%   \end{tabular}
+
+% \smallskip
+% \item[\rm\textsf{ClashLenXF}]
+%   $\{ x \; \tuple{s}{m} \unif \cst{f} \; \tuple{t}{n} \} \allowbreak \uplus \mathit{S} \Unifarrow \bot$%
+%   \quad if $m > n$
+
+% \smallskip
+% \item[\rm\textsf{OccursCheck}]
+%   $\{ x \unif t \} \uplus \mathit{S} \Unifarrow \bot$%
+%   \quad if $x \in \Var(t)$ and $x \not= t$
+% \end{description}
+%
+
+\noindent
+\begin{tabular}{ll}
+  \textsf{Clash} &   $\{ \cst{f} \; \overline{s} \unif \cst{g} \; \overline{t} \} \uplus \mathit{S} \Unifarrow \bot$; if $\cst{f} \not= \cst{g}$ \\[\jot]
+  \textsf{ClashTypeX} & $\{ x \; \tuple{s}{m} \unif u \; \tuple{t}{m} \} \allowbreak \uplus \mathit{S} \Unifarrow \bot$ ; if $x$ and $u$ have different types \\[\jot]
+  \textsf{ClashLenXF} & $\{ x \; \tuple{s}{m} \unif \cst{f} \; \tuple{t}{n} \} \allowbreak \uplus \mathit{S} \Unifarrow \bot$; if $m > n$ \\[\jot]
+  \textsf{OccursCheck}     & $\{ x \unif t \} \uplus \mathit{S} \Unifarrow \bot$;  if $x \in \Var(t)$ and $x \not= t$
+\end{tabular}
+
+\begin{rep}\textsf{Clash} and \textsf{OccursCheck} are essentially as in
+Baader and Nipkow. \textsf{ClashTypeX} and \textsf{ClashLenXF}
+are variants of \textsf{Clash} for applied variables.\end{rep}
+
+\newcommand\unifARROW[1]{\rlap{\ensuremath{\Unifarrow_{#1}\;}}\phantom{\Unifarrow_\textsf{DecomposeX}\;}}
+
+The derivation below demonstrates the computation of MGUs for the
+unification problem
+$\{x \> (z \> \cst{b} \> \cst{c}) \unif \cst{g} \> \cst{a} \> (y \> \cst{c})\}$:
+%
+\begin{align*}
+& \{ \relax{x \> (z \> \cst{b} \> \cst{c})  \unif  \cst{g} \>  \cst{a} \>  (y \> \cst{c})}\}
+\\[-1\jot]
+\unifARROW{\textsf{DecomposeX}}
+& \{ \relax{x \unif \cst{g} \> \cst{a}}{,}\; z \> \cst{b} \> \cst{c} \unif y \> \cst{c} \}
+\\[-1\jot]
+\unifARROW{\textsf{OrientXY}}
+& \{ x \unif \cst{g} \> \cst{a}{,}\; \relax{y \> \cst{c} \unif z \> \cst{b} \> \cst{c}} \}
+\\[-1\jot]
+\unifARROW{\textsf{DecomposeX}}
+& \{ x \unif \cst{g} \> \cst{a}{,}\; \relax{y  \unif z \> \cst{b}}{,}\;  \cst{c} \unif  \cst{c} \}
+\\[-1\jot]
+\unifARROW{\textsf{Delete}}
+& \{ x \unif \cst{g} \> \cst{a}{,}\; y  \unif z \> \cst{b} \}
+\end{align*}
+
+E stores open constraints in a double-ended
+queue. Constraints are processed from the front. New constraints are
+added at the front if they involve complex
+terms that can be dealt with swiftly by \textsf{Decompose} or
+\textsf{Clash}, or to the back if one side is a variable. \begin{rep}This
+delays instantiation of variables %(with a possible increase in term size)
+and allows E to detect structural clashes early. \end{rep}%
+
+During proof search, E repeatedly needs to test a term~$s$ for unifiability
+not only with some other term $t$ but also with $t$'s subterms.
+Prefix optimization speeds up this test: The subterms of $t$ are
+traversed in a first-order fashion; for each such subterm $\zeta \;
+\tuple{t}{n}$, at most one prefix $\zeta \;
+\tuple{t}{k}$, with $k \le n$, is possibly unifiable with $s$, by virtue
+of their having the same arity. \begin{rep}For first-order problems, we can only have $k =
+n$, since all functions are fully applied. \end{rep}Using this technique, Ehoh
+is virtually as efficient as E on first-order terms.
+
+
+
 
 \section{Indexing Data Structures}
 \label{sec:ehoh:indexing}
