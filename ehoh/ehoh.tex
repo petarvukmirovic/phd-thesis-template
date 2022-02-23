@@ -297,6 +297,7 @@ Zipperposition \cite{bbtvw-21-sup-lam}.
 
 %\begin{rep} This approach parallels our representation of types.\end{rep}
 
+\looseness=-1
 A side effect of the flattened representation is that prefix subterms are not
 shared. For example, the terms $\cst{f}\;\cst{a}$ and $\cst{f}\;\cst{a}\;\cst{b}$
 correspond to the flattened cells $\cst{f}(\cst{a})$ and
@@ -2178,14 +2179,924 @@ $\cst{sk}_1$ characterized by $\cst{sk}_{1\!} \; (\cst{add} \; a \; b) \; a \eq 
 \section{Heuristics}
 \label{sec:ehoh:heuristics}
 
+E's heuristics are largely independent of the logic used and work
+unchanged for Ehoh. Yet, in preliminary experiments, we noticed that E proved
+some \lfhol{} benchmarks quickly using the applicative encoding
+(Sect.~\ref{sec:ehoh:introduction}), whereas Ehoh timed out.
+\begin{rep}There were enough such problems to prompt us to take a
+closer look. \end{rep}%
+Based on these observations, we extended the heuristics\confrep{}{ to exploit
+\lfhol{}-specific features}.
+
+\ourpara{Term Order Generation}
+The superposition calculus is parameterized by a term
+order\begin{rep}---typically an instance of KBO or LPO\end{rep} (Sect.~\ref{sec:pre:order}).
+E can generate a \emph{symbol weight} function (for KBO) and a \emph{symbol
+precedence} (for KBO and LPO) based on criteria such as the symbols'
+frequencies\confrep{}{, their arities,} and whether they appear in the conjecture.
+
+In preliminary experiments, we discovered that the presence of an explicit
+application operator \appvar{} can be beneficial for some problems.
+\begin{rep}
+%A small example will help illustrate this behavior.
+Let $\cst{a} : \iota_1$,
+$\cst{b} : \iota_2$, $\cst{c} : \iota_3$, $\cst{f} : \iota_1 \to \iota_2 \to
+\iota_3$, $x : \iota_2 \to \iota_3$, $y : \iota_2$, and $z : \iota_3$, and
+consider the clauses
+%
+$\cst{f} \; \cst{a} \; y \noteq \cst{c}$ and
+$x \; \cst{b} \eq z$,
+%
+where the first one is the negated conjecture. Their applicative encoding
+is
+%
+$\cst{@}_{\iota_2,\iota_3}(\cst{@}_{\iota_1,\iota_2\to\iota_3}(\cst{f}, \cst{a}), y) \noteq \cst{c}$ and
+$\cst{@}_{\iota_2,\iota_3}(x, \cst{b}) \eq z$,
+%
+where $\cst{@}_{\tau,\upsilon}$ is a type-indexed family of
+symbols representing the application of a function of type $\tau
+\to \upsilon$.
+\end{rep}%
+With the applicative encoding, generation schemes can take the symbols
+$\cst{@}_{\tau,\upsilon}$ into account, thereby exploiting the type
+information carried by such symbols.\begin{rep} Since $\cst{@}_{\iota_2,\iota_3}$ is a
+conjecture symbol, some weight generation scheme could give it a low weight,
+which would also impact the second clause. By contrast, the native \lfhol{}
+clauses share no symbols; the connection between them is hidden in the types
+of variables and symbols, which are ignored by the heuristics.
+
+\end{rep}
+
+To simulate the behavior observed on applicative problems,
+we introduced four generation schemes that extend E's existing
+symbol-frequency-based schemes by partitioning the symbols by type. To each
+symbol, the new schemes assign a frequency equal to the sum of all
+symbol frequencies for its class.\confrep{}{ Each new scheme is inspired by a similarly
+named type-agnostic scheme in E, without \texttt{type} in its name:
+%
+\begin{sloppypar}
+\begin{itemize}
+\item \texttt{typefreqcount} assigns as each symbol's weight the
+  number of occurrences of symbols of the same type.
+
+\smallskip
+\item \texttt{typefreqrank} sorts the frequencies calculated by the function
+  \texttt{typefreqcount} in increasing order and assigns each symbol a weight
+  corresponding to its rank.
+
+\smallskip
+\item \texttt{invtypefreqcount} is \texttt{typefreqcount}'s inverse. If
+  \texttt{typefreqcount} would assign a weight $w$ to a symbol, it assigns $M
+  - w + 1$, where $M$ is the maximum symbol weight according to
+  \texttt{typefreqcount}.
+
+\smallskip
+\item \texttt{invtypefreqrank} is \texttt{typefreqrank}'s inverse.
+  It sorts the frequencies in decreasing order.
+\end{itemize}
+\end{sloppypar}}
+%
+\looseness=-1
+We designed four more schemes (whose names begin with \verb|comb| instead of \verb|type|) that combine E's type-agnostic
+and Ehoh's type-aware approaches\confrep{.}{ using a linear equation.}
+
+To generate symbol precedences, E can sort symbols by weight
+%(breaking ties by arity or the first occurrence in the input problem, for example)
+and use the symbol's position in the sorted array as the basis for precedence.
+To reflect the type information introduced by the applicative encoding, we
+implemented four type-aware precedence generation schemes.
+%\begin{rep}, called
+%\texttt{typefreq}, \texttt{invtypefreq}, \texttt{combfreq}, and
+%\texttt{invcombfreq}, that sort the symbols by weight according to
+%\texttt{typefreqcount}, \texttt{invtypefreqcount}, \texttt{combfreqcount},
+%and \texttt{invcombfreqcount}, respectively\end{rep}.
+%
+Ties are broken by comparing the symbols' number of occurrences and, if
+necessary, the position of their first occurrence in the input.
+
+\ourpara{Literal Selection}
+
+
+The side conditions of the superposition rules SN and SP
+(Sect.~\ref{sec:pre:rules}) rely on a literal
+selection function to restrict the set of \emph{inference literals},
+thereby reducing the search space. Given a clause, a literal selection
+function returns a (possibly empty) subset of its literals. For
+completeness, any nonempty subset selected must contain at least
+one negative literal. If no literal is selected, all \emph{maximal}
+literals become inference literals.
+%Given a clause $L_1 \lor \cdots \lor L_n$, a literal selection function
+%returns either $\{L_i\}$ for some $i$ or $\emptyset$.
+The most widely used function is probably
+\texttt{SelectMaxLComplexAvoidPosPred}, which we abbreviate to
+\texttt{SelectMLCAPP}. It selects at most one negative literal, based
+on size, absence of variables, and maximality of the literal in the clause.
+%It
+%also avoids negative literals that share a predicate symbol with a
+%positive literal in the same clause.
+
+\begin{rep}
+  Intuitively, applied variables can potentially be unified with more terms than
+  terms with rigid heads. This makes them prolific in terms of possible
+  inference partners, a behavior we might want to avoid. On the other hand, shorter proofs
+  might be found if we prefer selecting applied variables. To cover both
+  scenarios, we implemented selection functions that prefer or defer selecting
+  applied variables. % and that break ties using \texttt{SelectMLCAPP}.
+  
+  Let $\mathit{max}(L)=1$ if $L$ is a maximal literal of the clause it appears
+  in; otherwise, $\mathit{max}(L) = 0$. Let $\mathit{appvar(L)} = 1$ if $L$ is a
+  literal where either side is an applied variable; otherwise,
+  $\mathit{appvar(L)} = 0$. Based on these definitions, we devised the following
+  selection functions, both of which rely on \texttt{SelectMLCAPP} to break
+  ties:
+  %
+  \begin{itemize}
+  \item \texttt{SelectMLCAPPAvoidAppVar} selects a negative literal $L$ with
+    the maximal value of $(\mathit{max}(L){,}\; 1-\mathit{appvar}(L))$
+    according to the lexicographic order.
+  
+  \smallskip
+  \item \texttt{SelectMLCAPPPreferAppVar} selects a negative literal $L$ with the
+    maximal value of $(\mathit{max}(L){,}\; \mathit{appvar}(L))$
+    according to the lexicographic order.
+  \end{itemize}
+  %
+  %The presence of $\mathit{max}(L)$ as the first criterion is motivated by
+  %initial experiments.
+  \end{rep}
+
+  \ourpara{Clause Selection}
+
+  Selection of the given clause is a critical choice point.
+  %To ensure completeness every candidate clause should be selected
+  %eventually\confrep{}{, unless it is identified as redundant and
+  %discarded before its turn has come}. Ignoring a candidate forever
+  %would compromise E's completeness guarantee.
+  E heuristically assigns \emph{clause priorities} and \emph{clause weights} to
+  the candidates.
+  The priorities provide a crude partition, whereas the weights order the clauses
+  within a partition.
+  E's main loop visits, in round-robin fashion, a set of priority queues. From a given
+  queue, the clause with the highest priority and the smallest weight is selected.
+  \begin{rep}%
+  Typically, one of the queues will use the clauses' age as priority, to ensure
+  fairness.
+  \end{rep}
+  
+  E provides template weight functions that allow users to fine-tune parameters
+  such as weights assigned to variables or function symbols. The most widely
+  used template is \texttt{ConjectureRelativeSymbolWeight}\confrep{}{, which we abbreviate
+  to \texttt{CRSWeight}}. It computes term and clause weights according to
+  eight parameters, notably \textit{conj\_mul}, a multiplier
+  applied to the weight of conjecture symbols.
+  %
+  % conj_multiplier, fweight, cweight, pweight, vweight, max_term_multiplier, max_literal_multiplier, pos_multiplier
+  % [, app_var_multiplier]
+  %
+  %\begin{description}[labelwidth=\widthof{\rm\textit{appv\_mul}\,}]
+  %  \item[\rm\textit{conj\_mul}]
+  %    multiplier applied to the weight of conjecture symbols;
+  %  \item[\rm\textit{fweight}] weight of a nonnullary function symbol;
+  %  \item[\rm\textit{cweight}] weight of a nullary function symbol;
+  %  \item[\rm\textit{pweight}] weight of a predicate symbol;
+  %  \item[\rm\textit{vweight}] weight of a variable;
+  %  \item[\rm\textit{maxt\_mul}]
+  %    multiplier applied to the weight of maximal terms in a literal;
+  %  \item[\rm\textit{maxl\_mul}]
+  %    multiplier applied to the weight of maximal literals in a clause;
+  %  \item[\rm\textit{pos\_mul}]
+  %    multiplier applied to the weight of positive literals in a clause.
+  %\end{description}
+  %
+  This template works well for some applicatively encoded problems.
+  Let $\cst{a} : \iota$, $\cst{f} : \iota \to \iota$, $x : \iota$, and $y :
+  \iota \to \iota$, and consider the clauses
+  $y \; x \noteq x$ and
+  $\cst{f} \; \cst{a} \eq \cst{a}$,
+  where the first one is the negated conjecture. Their encoding
+  is
+  $\cst{@}_{\iota,\iota}(y, x) \noteq x$ and
+  $\cst{@}_{\iota,\iota}(\cst{f}, \cst{a}) \eq \cst{a}$.
+  %
+  The encoded clauses share $\cst{@}_{\iota,\iota}$, whose weight
+  will be multiplied by \textit{conj\_mul}---usually a factor in the
+  interval $(0, 1)$. By contrast, the native \lfhol{} clauses share no symbols,
+  and the heuristic would fail to notice that $\cst{f}$ and $y$ have the same
+  type, giving a higher weight to the second clause.
+  To mitigate this, we coded a new type-aware template,
+  \CRS\texttt{TypeWeight}, that
+  %\confrep{}{behaves like \CRS\texttt{Weight} except that it }
+  applies the \textit{conj\_mul} multiplier to all symbols whose type
+  occurs in the conjecture. \begin{rep}For the example above, since $\iota \to
+  \iota$ appears in the conjecture, it would notice the relation between the
+  conjecture variable $y$ and the symbol $\cst{f}$ and multiply $\cst{f}$'s
+  weight by \textit{conj\_mul}.
+  
+  Natively supporting \lfhol{} allows the prover to recognize
+  applied variables. It may make sense to extend clause weight templates to either
+  penalize or promote clauses with such variables. To
+  support this extension, we added the following parameter to \texttt{CRSTypeWeight},
+  as well as to some other E's weight
+  function templates:
+  \textit{appv\_mul} is a multiplier applied to terms $s = x \; \tuple{t}{n}$, where $s$
+    is either side of the literal and $n>0$. %, and $x$ is a variable.
+  %
+  In addition, we implemented a new clause priority scheme,
+  \texttt{ByAppVarNum}, that separates the clauses by the number of top-level
+  applied variables occurring in the clause, favoring those containing fewer
+  such variables.
+  \end{rep}
+
+\ourpara{Configurations and Modes}
+A combination of parameters, including term order, literal
+selection, and clause selection, is called a \emph{configuration}.
+%
+%It is generally acknowledged that most provable problems arising in practice
+%can be proved quickly in at least one configuration; but the configuration
+%space being infinite, there is no easy way to find this configuration.
+%
+%determines whether a proof can be found in reasonable time. It is very
+%laborious and difficult to manually choose correct parameters.
+%
+For years, E has provided an \emph{auto} mode that analyzes the input
+problem and chooses a configuration known to perform well on similar problems.
+More recently, E has been extended with an \emph{autoschedule} mode that
+applies a portfolio of configurations in sequence on the given problem\confrep{.}{,
+restarting the prover for each configuration.
+%Time slicing approaches tend to perform better in practice, even if each
+%configuration is given a shorter time slice.
+
+}
+Configurations that are suitable for a wide range of problems have emerged over
+time. One of them is the configuration that is most often chosen by E's \emph{auto}
+mode. We call it \emph{boa} (``best of \emph{auto}'')\begin{conf}.\end{conf}\begin{rep}:
+%
+%%% TYPESETTING: TEMPORARILY DISABLED LEFTMARGIN (?)
+\begin{description}[labelwidth=\widthof{Precedence generation:}]
+  \item[\rm Term order:] KBO
+  \item[\rm Weight generation:] \texttt{invfreqrank}
+  \item[\rm Precedence generation:] \texttt{invfreq}
+  \item[\rm Literal selection:] \texttt{SelectMLCAPP}
+  \item[\rm Clause selection:] ~ \\
+\verb|1.CRSWeight(SimulateSOS, 0.5, 100, 100, 100, 100, 1.5, 1.5, 1),| \\
+\verb|4.CRSWeight(ConstPrio, 0.1, 100, 100, 100, 100, 1.5, 1.5, 1.5),| \\
+\verb|1.FIFOWeight(PreferProcessed),| \\
+\verb|1.CRSWeight(PreferNonGoals, 0.5, 100, 100, 100, 100, 1.5, 1.5, 1),| \\
+\verb|4.Refinedweight(SimulateSOS, 3, 2, 2, 1.5, 2)|
+\end{description}
+%
+The clause selection scheme consists of five queues, each of which is
+specified by a weight function template. The prefixes $n$\texttt{.} next to
+the template names indicate that the queue will be visited $n$ times in the round-robin scheme
+before moving to the next one. The first argument to each
+template is the clause priority scheme.
+
+
+
+
+  
+
 \section{Preprocessing}
 \label{sec:ehoh:preprocessing}
+
+E's preprocessor transforms first-order formulas into clausal
+normal form, before the main loop is started. % and inference rules are applied.
+As explained in Sect.~\ref{sec:pre:clauses}, E also encodes all literals
+as equations.
+Beyond turning the problem into a
+conjunction of disjunctive clauses, the preprocessor eliminates quantifiers,
+introducing Skolem symbols for essentially existential quantifiers.
+
+For first-order logic, skolemization preserves both satisfiability
+(unprovability) and unsatisfiability (provability). In contrast, for
+higher-order logics without the axiom of choice, naive skolemization is
+unsound, because it introduces symbols that can be used to instantiate
+higher-order variables.
+%
+One solution proposed by Miller \cite[Sect.~6]{dm-87-compact-proofs} is to ensure that
+Skolem symbols are always applied to a minimum number of arguments.
+%Accordingly, the version of \lfhol{} introduced by Bentkamp et al.\
+%\cite{bbcw-21-lfho} distinguishes between mandatory and optional
+%arguments.
+However, to keep the implementation simple, we have decided to
+ignore this issue and consider all arguments as optional, including those to
+Skolem symbols. In Chapter \ref{ch:ehoh2} we extend Ehoh's logic to full higher-order logic
+with the axiom of choice, which addresses the issue.
+%TODO_PHD: Once Ehoh 2 paper is done, add reference to the section about choice here.
+
+There is another transformation performed by preprocessing that is
+problematic, but for a different reason. \emph{Definition unfolding} is the
+process of replacing equationally defined symbols with their definitions and
+removing the defining equations. A \relax{definition} is a clause of the form
+$\cst{f} \; \tuple{x}{m} \eq t$, where the variables $\tuple{x}{m}$ are distinct,
+$\cst{f}$ does not occur in the right-hand side $t$, and $\Var(t) \subseteq
+\{x_1,\dots,x_m\}$.
+This transformation preserves unsatisfiability (provability) for first-~and
+higher-order logic, but not for \lfhol{}, making Ehoh incomplete. The reason
+is that by removing the definitional clause, we also remove a symbol $\cst{f}$
+that otherwise could be used to instantiate a higher-order quantifier.
+For example, the clause set
+$\{\cst{f}\;x \eq x{,}\; \cst{f}\;(y\;\cst{a}) \noteq \cst{a}\}$ is unsatisfiable,
+whereas $\{y\;\cst{a} \noteq \cst{a}\}$ is satisfiable in \lfhol{}. (In full
+higher-order logic, the second clause set would be unsatisfiable thanks to
+the $\{y \mapsto \lambda x.\; x\}$ instance and $\beta$-conversion.)
+%
+For the moment, we have simply disabled definition unfolding in Ehoh. We will
+enable it again once we have added support for $\lambda$-terms.
+
+Higher-order logic treats formulas as terms of Boolean type, erasing
+the distinction between terms and formulas. As a consequence, formulas might appear
+as arguments not only to logical connectives but also to function symbols
+or applied variables---e.g., $\cst{p} \> (\cst{a} \iand \cst{b})$,
+$y \> (\inot\, \cst{a})$.
+We call such formulas \emph{nested}. Kotelnikov et al.\
+\cite{kotelnikov-16-fool} describe a modification to
+Vampire's clausification algorithm to support nested formulas. We adapt
+their approach to the clausification algorithm
+\cite{nw-01-small-cnf} used by E. Given a formula $\varphi$ to
+clausify, the following procedure removes nested formulas:
+%
+\begin{enumerate}
+  \item\label{item:rec}
+    Let $\chi = \varphi|_{p}$ be the leftmost outermost nested formula that is different from
+    $\itrue$, $\ifalse$, or a variable $x$, if one exists;
+    otherwise, skip to step~\ref{item:clausif}.
+    Let $p = q.r$ where $q$ is the longest strict prefix of $p$ such that $\psi = \varphi|_q$ is a formula.
+    Let $\psi' = (\chi \mathrel{\iimplies} \psi[\itrue]_r)
+    \mathrel{\iand} (\inot\chi \mathrel{\iimplies} \psi[\ifalse]_r)$.
+    Replace $\varphi$ by $\varphi[\psi']_q$ and repeat this step.
+  \item\label{item:clausif}
+    Apply all the steps of E's clausification algorithm up to and
+    including skolemization.
+  \item Skolemization might replace Boolean variables by new terms with
+    predicate symbol heads. To remove them, follow step \ref{item:rec}.
+  \item Perform the remaining steps of E's clausification algorithm,
+    resulting in a set of clauses.
+  \item Let $C$ be a clause that contains a literal $L$ of the form $x \eq \itrue$ or $x \noteq \itrue$, where $x$
+    is a Boolean variable, if one exists; otherwise, terminate.
+    Delete $C$ if it also contains the complement of $L$.
+    Otherwise, replace $C$ with the clause $C[x \mapsto \ifalse]$
+    if $L$ is of the form $x \eq \itrue$ and else $C[x \mapsto \itrue]$.
+    Trivial literals $\ifalse \eq \itrue$ and $\itrue \noteq \itrue$ are removed from
+    the resulting clause. Repeat this step.
+\end{enumerate}
+
+%Like the approach by Kotelnikov et al., our approach effectively interprets
+%all by hoisting them to the level above the atom in
+%which they appear. This then reduces the problem to one that first-order
+%provers can understand.
+
+As an example, consider the formula $\cst{f} \; x \mathrel{\ieq} x \mathrel{\iimplies} \cst{p} \;
+(\cst{a} \iand \cst{b})$. Step~\ref{item:rec} moves
+the subterm $\cst{a} \iand \cst{b}$ outward, yielding
+  $\cst{f} \; x \mathrel{\ieq} x \mathrel{\iimplies}
+    ((\cst{a} \iand \cst{b}) \mathrel{\iimplies} \cst{p} \>\itrue)
+    \mathrel{\iand}
+    ({\inot}\,(\cst{a} \iand \cst{b}) \mathrel{\iimplies} \cst{p} \>\ifalse)$.
+This formula can be clausified further as usual.
+
+\begin{sloppypar}
+\begin{theorem}[Total Correctness]\,%
+The above procedure always terminates and produces a set of clauses that is
+equisatisfiable with the original formula $\varphi$ in \lfhol{} with
+interpreted Booleans and that contains no nested formulas other than
+$\itrue$, $\ifalse$, and variables.
+\end{theorem}
+\end{sloppypar}
+
+\newcommand{\tmeasure}{\ensuremath{\mathcalx{W}}}
+
+\begin{proof}
+It is easy to see that steps 1,~3, and~5
+produce equivalent formulas or clauses. Moreover, steps 1~and~3 remove all
+offending nested formulas (i.e., other than $\itrue$,
+$\ifalse$, and variables). In conjunction with the standard
+clausification algorithm, which preserves and reflects satisfiability, our
+procedure gives correct results when it terminates.
+
+To prove termination, we will use a measure function~$\tmeasure$ to natural
+numbers that decreases with each application of step 1~or~3.
+Steps 2~and~4 rely on a terminating algorithm, whereas each
+application of step~5 decreases the size of a clause. We define $\tmeasure$ by
+$\tmeasure(\forall x. \> s) = \tmeasure(\exists x. \> s) = \tmeasure(s)$;
+$\tmeasure(\zeta \, \tuple{s}{n}) = \sum_{i=1}^{n}{\tmeasure(s_i)}$ if
+$\zeta$ is a logical connective (including $\itrue$ and
+$\ifalse$); and $\tmeasure(\zeta \, \tuple{s}{n}) = 3^k (1 +
+\sum_{i=1}^{n}{\tmeasure(s_i)})$ otherwise, where
+$k$ is the number of offending outermost nested formulas in $\zeta \, \tuple{s}{n}$.
+We must show $\tmeasure(\psi) > \tmeasure(\psi')$. By definition,
+$\psi$ is of the form $\zeta \,
+\tuple{s}{n}$, where $\zeta$ is not a logical connective.
+Thus $\tmeasure(\psi) = 3^k (1 +
+\sum_{i=1}^{n}{\tmeasure(s_i)})$. Steps 1~and~3 substitute
+$\itrue$ or $\ifalse$, of measure 0, for a nested formula $\chi$
+(including $\chi$'s own nested formulas) in $\psi$.
+Clearly, the longer $r$ is, the more $\tmeasure(\psi')$
+decreases. Taking $\left|r\right|=1$, we get the upper bound $2 \tmeasure(\chi)
++ 2 \cdot 3^{k-1} (1 + \sum_{i=1}^{n}\tmeasure(s_i) - \tmeasure(\chi))$ for
+$\tmeasure(\psi')$, which is less than $\tmeasure(\psi) = 3^k (1 +
+\sum_{i=1}^{n}{\tmeasure(s_i)})$.
+\end{proof}
+
+The output may contain $\itrue$, $\ifalse$, or Bool\-ean
+variables as nested formulas. Since E was first developed as an untyped prover,
+unification of a variable with a Boolean constant was disallowed to avoid
+unsoundness. We needed to undo this in Ehoh. Ehoh must also remove trivial
+literals $\ifalse \eq \itrue$ and $\itrue \noteq
+\itrue$ that emerge during proof search.
+\end{rep}
 
 \section{Evaluation}
 \label{sec:ehoh:evaluation}
 
+%In this section, we consider the following questions:
+How useful are Ehoh's new heuristics? And how does Ehoh perform compared with
+E, used directly or in tandem with the
+applicative encoding, and compared with other provers?
+To answer the first question, we evaluated each new parameter independently. From
+the empirical results, we derived a new configuration optimized for \lfhol{}.
+For the second question, we compared Ehoh's success
+rate\begin{rep} and speed\end{rep} on \lfhol{} problems with
+native higher-order provers and
+on applicatively encoded problems with E. We also included first-order
+benchmarks to measure Ehoh's overhead.
+
+We set a CPU time limit of 60\,s per problem.
+\begin{rep}%
+This is more than allotted by interactive proof tools such as Sledgehammer, or
+by cooperative provers such as Leo-III and Satallax, but less than the 300\,s
+of~CASC \cite{gs-17-casc}.
+\end{rep}%
+The experiments were performed on StarExec \cite{sst-14-starexec}
+nodes equipped with Intel Xeon E5-2609\,0 CPUs clocked at 2.40\,GHz.
+
+\ourpara{Heuristics Tuning}
+
+We used the \emph{boa} configuration as the basis to evaluate the new
+heuristic schemes. For each heuristic parameter we tuned, we changed only its
+value while keeping the other parameters the same as for \emph{boa}.
+\begin{rep}This gives an idea of how each parameter affects overall
+performance.\end{rep}
+All heuristic parameters were tested on a 5012~problem suite generated
+using Sledgehammer, consisting of four variants of the Judgment Day
+\cite{bn-10-sh} suite.\begin{rep} The problems were given in native
+\lfhol{} syntax.\end{rep} The experiments described in this subsection were
+carried out using an earlier E version (2.3).\begin{conf}
+%, exploiting its support for partial application and applied variables.
+Our main findings are as follows:
+%
+\begin{itemize}
+\item The combination of the weight generation scheme \texttt{invtypefreqrank}
+  and the precedence generation scheme \texttt{invtypefreq} performs best.
+
+\smallskip
+\item The literal selection heuristics \texttt{SelectMLCAPP},
+  \texttt{SelectMLCAPPPreferAppVar}, and \texttt{SelectMLCAPPAvoidAppVar} give
+  virtually the same results.
+
+\smallskip
+\item The clause selection function
+  \texttt{ConjectureRelativeSymbolTypeWeight} with \texttt{ConstPrio} priority
+  and an \textit{appv\_mul} factor of 1.41 performs best.
+\end{itemize}
+
+\looseness=-1
+We derived a new configuration from \textit{boa}, called \textit{hoboa},
+by enabling the features identified in the first and third points. Below, we
+present a more detailed evaluation of \textit{hoboa}, along with other
+configurations, on a larger benchmark suite. T%
+\end{conf}%
+
+%invtypefreqrank and invtypefreq weight and precedence generation schemes
+%as the best. For clause evaluation, we picked CRSTypeWeight with ConstPrio priority and applied variable multiplier of 1.41. Lastly, for literal selection we picked SelectMLCAPPAvoidAppVar.
+
+%\ourpara{Term Order Generation}
+
+Evaluating the new weight and pre\-cedence generation heuristics amounted to testing
+each possible combination of frequency-based schemes, including E's original
+type-agnostic schemes. Figure~\ref{fig:ehoh:term-eval} shows the number of
+solved (i.e., proved or disproved) problems for each combination. In this and
+the following figures, the underlined number is for \emph{boa}, whereas bold
+singles out the best value. In the names of the generation schemes, we abbreviated
+\texttt{inv} to \texttt{i}, \texttt{type} to \texttt{t}, \texttt{freq} to
+\texttt{f}, \texttt{comb} to \texttt{cm}, \texttt{count} to \texttt{cn}, and
+\texttt{rank} to~\texttt{r}.
+
+\newcommand\EHOHHLINE{\\[.5\jot]\hline\noalign{\vskip.75\jot}}
+\begin{figure}[t]
+\center
+    \begin{tabular}{@{}l@{\kern1em}c@{\kern.625em}c@{\kern.625em}c@{\kern.625em}c@{\kern.625em}c@{\kern.625em}c@{}}
+    ~                         & \texttt{f} & \texttt{if} & \texttt{tf} & \texttt{itf} & \texttt{cmf} & \texttt{icmf}
+\EHOHHLINE
+    \texttt{fcn}        & 2294             & 2288                & 2287                 & 2297                    & 2290                 & 2287                    \\
+    \texttt{ifcn}     & 2371             & 2373               & 2374                 & 2370                    & 2369                 & 2377                    \\
+    \texttt{fr}         & 2326             & 2317                & 2323                 & 2329                    & 2322                 & 2318                    \\
+    \texttt{ifr}      & 2383             & \underline{2379}                & 2376                 & 2380                    & 2381                 & 2381                    \\
+    \texttt{tfcn}    & 2305             & 2314                & 2301                 & 2306                    & 2302                 & 2311                    \\
+    \texttt{itfcn} & 2386             & 2381                & 2389                 & 2388                    & 2384                 & 2379                    \\
+    \texttt{tfr}     & 2326             & 2334                & 2322                 & 2334                    & 2321                 & 2336                    \\
+    \texttt{itfr}  & 2390             & 2382                & 2390                 & \phantom{2394}\llap{\textbf{2394}}                    & 2387                 & 2386                    \\
+    \texttt{cmfcn}    & 2273             & 2281                & 2271                 & 2285                    & 2269                 & 2280                    \\
+    \texttt{icmfcn} & 2380             & 2375                & 2382                 & 2379                    & 2380                 &  2375                   \\
+    \texttt{cmfr}     & 2321             & 2313                & 2319                 & 2321                    & 2318                 & 2312                    \\
+    \texttt{icmfr}  & 2368             & 2378                & 2371                 & 2378                    & 2368                 & 2380                    \\
+    \end{tabular}
+    \caption{Evaluation of weight and precedence generation schemes}
+    \label{fig:ehoh:term-eval}
+\end{figure}
+
+Figure~\ref{fig:ehoh:term-eval} indicates that including type information in
+the generation schemes results in a somewhat higher number of solved problems
+compared with E's type-agnostic schemes. Against our expectations, Ehoh's
+combined schemes appear to be less efficient than the type-aware schemes.
+
+% \begin{sloppypar}
+  The literal selection function has little impact on performance: Ehoh
+  solves 2379 problems with \texttt{SelectMLCAPP} or
+  \texttt{SelectMLCAPPAvoid}\-\texttt{AppVar}, and one less with
+  \texttt{SelectMLCAPPPreferAppVar}.
+% \end{sloppypar}
+
+Clause selection is the heuristic component that we extended the most. We must
+assess the effect of a new heuristic weight function, a multiplier for the
+occurrence of top-level applied variables, and clause priority based on the
+number of top-level applied variables.
+
+\begin{figure}[t]
+  \center
+  \begin{tabular}{@{}l@{\hskip 1em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{}}
+  ~ & 0.25 & 0.35 & 0.5 & 0.7 & 1 & 1.41 & 2 & 2.82 & 4
+\EHOHHLINE
+\texttt{W} &
+  2311 & 2341 & 2363 & 2374 & \phantom{2379}\llap{\underline{\textbf{2379}}} & 2376 & 2377 & 2376 & 2377 \\
+\texttt{TW} &
+  2331 & 2331 & 2360 & 2371 & 2372 & 2374 & 2373 & 2373 & 2372
+  \end{tabular}
+  \caption{Evaluation of weight function and \textit{appv\_mult} factor}
+  \label{fig:ehoh:clauseweight-fun-eval}
+\end{figure}
+
+To test the effect of the new type-based weight function, we replaced
+\emph{boa}'s queue, which uses
+\texttt{4.CRS\-Weight(}\ldots\texttt{)}, with the queue ordered by
+\texttt{4.CRSTypeWeight(}\ldots\texttt{)}. We call the original
+heuristic \texttt{W} and the type-aware alternative \texttt{TW}.
+%
+We chose nine values for testing the effect of the applied
+variable multiplier \textit{appv\_mult}.
+%
+Figure \ref{fig:ehoh:clauseweight-fun-eval} summarizes the results of combining
+\texttt{W} or \texttt{TW} with the different
+\textit{appv\_\allowbreak mult} values. Applying a multiplier smaller than
+1, which corresponds to preferring literals containing applied variables, can
+lose dozens of solutions. Overall, using the type-aware heuristic seems
+slightly detrimental.
+
+\begin{sloppypar}
+Finally, we evaluated the new clause priority function \texttt{ByAppVarNum}, by replacing
+\verb|4.CRSWeight(ConstPrio,|\allowbreak\ldots\verb|)| with \verb|4.CRSWeight(ByAppVarNum,|\ldots\verb|)| in
+\emph{boa}'s specification. \texttt{ConstPrio} assigns each clause the
+same priority. The results are inconclusive.
+\end{sloppypar}
+
+The results presented above give an idea of how each parameter influences
+performance. We also evaluated their performance in combination, to derive an
+alternative to \emph{boa} for \lfhol{}.
+% to find out which combination is best as design an efficient higher-order heuristic,
+%
+For each category of parameters, we chose either \emph{boa}'s value of the
+parameter in \emph{boa} (``Old'') or the best performing newly implemented
+parameter (``New'').
+Based on the results above, for term orders, we chose the combination of
+\texttt{invtypefreqrank} and \texttt{invtypefreq}; for clause selection, we
+chose \texttt{CRSType}\-\texttt{Weight} with \texttt{ConstPrio} priority and
+an \emph{appv\_mult} factor of 1.41; for literal selection, we chose
+\texttt{SelectMLC}\-\texttt{APP}\-\texttt{AvoidAppVar}.
+
+\begin{figure}[t]
+  \center
+  \begin{tabular}{@{}l@{\hskip 1em}l@{\hskip 1em}l@{\hskip 1em}c@{}}
+  Term order & Literal selection & Clause weight & Solved
+\EHOHHLINE
+  Old   & Old        & Old   & \underline{2379}                      \\
+  Old   & Old        & New   & 2374                      \\
+  Old   & New        & Old   & 2379                      \\
+  Old   & New        & New   & 2373                      \\
+  New   & Old        & Old   & 2394                      \\
+  New   & Old        & New   & \phantom{2397}\llap{\textbf{2397}}             \\
+  New   & New        & Old   & 2395                      \\
+  New   & New        & New   & \phantom{2397}\llap{\textbf{2397}}
+\end{tabular}
+  \caption{Evaluation of combinations of new parameters}
+  \label{fig:ehoh:new-modes}
+\end{figure}
+
+Figure \ref{fig:ehoh:new-modes} shows the number of solved problems for all
+combinations of these parameters. From the two configurations that solve 2397
+problems, we selected the ``New Old New'' combination as our suggested
+``higher-order best of \emph{auto},'' or \emph{hoboa}, configuration.
+
+\ourpara{Main Evaluation}
+
+We now present a more detailed evaluation of \textit{hoboa},
+along with other configurations, on a larger benchmark suite.
+Our raw data are publicly
+available.%
+\footnote{\url{https://doi.org/10.5281/zenodo.4045452}}
+
+The benchmarks are divided into four sets:
+%
+(1)~1147 first-order TPTP \cite{gs-17-tptp} problems belonging
+  to the FOF (untyped) and TF0 (monomorphic) categories, excluding arithmetic;
+(2)~5012 Sledgehammer-generated problems from the Judgment Day
+  \cite{bn-10-sh} suite, targeting the mono\-morphic first-order
+  logic embodied by TPTP TF0;
+(3)~all 955 monomorphic higher-order problems from the TH0 category of the
+  TPTP belonging to our extension of \lfhol{};
+(4)~5012 Judgment Day problems targeting the \lfhol{} fragment of TPTP TH0.
+
+\begin{rep}The TPTP includes benchmarks from various areas of
+computer science and mathematics. It is the de facto standard for evaluating
+automatic provers, but it has few higher-order problems.
+%
+\end{rep}%
+For the first group of benchmarks, we randomly selected 1000 FOF problems
+(out of 8172)
+and all monomorphic TFF problems that are parsable by E\confrep{}{ within 60\,s
+(amounting to 147 out of 231 monomorphic TFF problems)}.
+%
+Both groups of Sledgehammer problems include two subgroups of 2506 problems,
+generated to include 32 or 512 Isabelle lemmas (SH32 and SH512), to
+represent both small and large problems.
+% arising in interactive
+%verification.
+Each subgroup consists of two sub-sub\-groups of 1253
+problems, generated by using either $\lambda$-lifting or SK-style combinators
+to encode $\lambda$-expressions.
+
+\looseness=-1
+To ascertain the effectiveness of our approach, we evaluated Ehoh against
+E used on applicative encodings of problems (denoted by \appE{}). For reference,
+we also evaluated the following versions of higher-order provers that competed in the
+THF division of the 2019 edition of CASC \cite{gs-19-casc27}:\
+CVC4
+1.8 prerelease \cite{brotb-19-ho-smt}, Leo-III 1.4 \cite{sb-21-leo3},
+Satallax 3.4 \cite{cb-12-satallax}, Vampire 4.4 \cite{br-19-restricted-unif},
+and Zipperposition 1.6 \cite{bbtvw-21-sup-lam}.
+Like at CASC, we used different versions of Vampire for first-order
+and higher-order problems. Similarly, Zipperposition does not use E as backend when
+it is run on first-order problems
+and uses different heuristics on first-~and higher-order problems.
+The genuine higher-order provers have
+the unfair advantage that they can instantiate higher-order
+variables with $\lambda$-terms. % (or equivalent SK-style combinator terms).
+Thus, some formulas that are
+provable by these systems may be nontheorems for \appE{} and Ehoh\confrep{}{, or
+they may require tedious reasoning about $\lambda$-lifted functions or SK-style
+combinators}.
+An example is the conjecture $\exists f.\>\forall x\> y.\; f\>x\;y \eq
+\cst{g}\;y\;x$, whose proof requires taking $\lambda x\> y.\; \cst{g}\;y\;x$
+as the witness for~$f$.
+
+We ran all provers except Satallax (which only supports THF) on first-order
+benchmarks to measure the overhead introduced by our extensions, as
+well as that entailed by the applicative encoding.
+Figure~\ref{fig:main-eval} gives the number of problems each system proved.
+In each column, bold highlights the best E value and the best value
+overall.
+We considered the E modes \emph{auto} (a) and
+\emph{autoschedule} (as) and the configurations \emph{boa} (b) and
+\emph{hoboa} (hb).
+
+\begin{figure}[t]
+\center
+\begin{tabular}{@{}l@{\hskip 1.5em}r@{\hskip 1em}r@{\hskip 1em}r@{\hskip 1.5em}r@{\hskip 1em}r@{\hskip 1em}r@{}}
+                            & \multicolumn{3}{@{}c@{\hskip 1.5em}}{First-order} & \multicolumn{3}{@{}c@{}}{Higher-order} \\[.3\jot]
+                      & TPTP              & SH32              & SH512        & TPTP            & SH32             & SH512
+\EHOHHLINE
+E a              			& 624                & 938              & 1237        &                 &               &          \\
+E as             			& \textbf{665}                & \textbf{957}              & \textbf{1298}        &                 &               &          \\
+E b              			& 550                & 943              & 1242        &                 &               &          \\[\jot]
+\appE{} a  		 			  & 531                & 932              & 1111        &  686            & 952           & 1125   \\
+\appE{} as 		 			  & 571                & 949              & 1148        &  692            & 969           & 1164   \\
+\appE{} b  		 			  & 536                & 943              & 1227        &  690            & 959           & 1267   \\[\jot]
+Ehoh a           			& 624                & 939              & 1236        &  694            & 966           & 1235   \\
+Ehoh as          			& \textbf{665}                & \textbf{957}              & 1296        &  \textbf{699}            & \textbf{988}  & \textbf{1309}   \\
+Ehoh b           			& 550                & 943              & 1242        &  697            & 967           & 1262   \\
+Ehoh hb          			& 504                & 947              & 1231        &  693            & 975           & 1267
+\EHOHHLINE
+CVC4            			& 567                & 956              & 1361        &  745            & 973           & \textbf{1351} \\%[\jot]
+Leo-III          			& 548                & 960              & 1239        &  \textbf{834}   & 967           & 1266 \\%[\jot]
+Vampire          			& \textbf{728}       & \textbf{968}     & \textbf{1401} &  805          & 979           & 1214 \\%[\jot]
+Satallax         			&                    &                  &             &  827            & 871           & 1019 \\%[\jot]
+Zipperposition  			& 496                & 933              & 1187        &  815            & 976           & 1069
+\end{tabular}
+\caption{Number of proved problems}
+\label{fig:main-eval}
+\end{figure}
+
+We observe the following.
+%
+First, comparing the Ehoh row with the E row, we see that Ehoh's
+  overhead is barely noticeable---the difference is at most \NumberOK{two}
+  problems.
+  %The raw evaluation data reveal that Ehoh's time overhead is about \NumberNOK{3.7\%}.
+%
+Second, Ehoh outperforms the applicative encoding on both first-order
+  and higher-order problems. Nevertheless, the raw evaluation data reveal that
+  there are quite a few higher-order problems that \appE{}
+  proves faster than Ehoh. %\confrep{}{, because the applicative encoding impacts the
+%  heuristics in subtle ways}.
+%
+Third, it is advantageous to use the higher-order versions of the
+  Sledgehammer problems, although the difference in success rate is
+  small, especially for SH512.
+%
+Fourth, the new \emph{hoboa} %configuration
+  outperforms \emph{boa} on
+  higher-order problems, suggesting that it could be worthwhile to re-train
+  \emph{auto} and \emph{autoschedule} based on \lfhol{} benchmarks
+  and to design further heuristics.
+%
+Fifth, Ehoh cannot compete against the best higher-order systems, but this
+  is no surprise given that it does not yet support $\lambda$-expressions and
+  higher-order unification.
+
+\begin{rep}
+Next to the success rate, the time in which a prover gives an
+answer is also an important consideration. Figure \ref{fig:timing} compares
+the average running times, in seconds, of the various systems on the problems
+that all of the applicable systems proved.
+%We can conclude that classical higher-order provers, Leo-III and
+%Satallax, take considerably more time than Ehoh on average.
+Clearly, Ehoh incurs little overhead on first-order problems. The raw
+evaluation data reveal that for \emph{boa}, it takes Ehoh \NumberOK{2747}\,s
+to prove all first-order problems that E, @+E, and Ehoh can all prove using this
+configuration, compared with \NumberOK{2728}\,s for E, amounting to a
+\NumberOK{0.7}\% overhead. For comparison, @+E needs \NumberOK{3939}\,s---%
+a \NumberOK{44}\% overhead.
+
+\begin{figure}[ht!]
+\center
+\begin{tabular}{@{}l@{\hskip 1.5em}r@{\hskip 1em}r@{\hskip 1em}r@{\hskip 1.5em}r@{\hskip 1em}r@{\hskip 1em}r@{}}
+                            & \multicolumn{3}{@{}c@{\hskip 1.5em}}{First-order} & \multicolumn{3}{@{}c@{}}{Higher-order} \\[.3\jot]
+                            & TPTP             & SH32            & SH512          & TPTP             & SH32             & SH512
+\EHOHHLINE
+E a                         & 0.22          & 0.15             & 0.54          &                  &                  &             \\
+E as                        & 0.38          & 0.20             & 0.74          &                  &                  &             \\
+E b                         & 0.43          & \textbf{0.07}    & 0.56          &                  &                  &             \\[\jot]
+\appE{} a                   & 0.61          & 0.18             & \textbf{0.38}          &  0.03            & 0.21             & \textbf{0.32}       \\
+\appE{} as                  & 0.91          & 0.18             & 0.39          &  0.06            & 0.25             & 0.33        \\
+\appE{} b                   & 0.53          & 0.12             & 0.81          &  0.09            & 0.20             & 0.54        \\[\jot]
+Ehoh a                      & \textbf{0.21}          & 0.15             & 0.54          &  0.03            & 0.08             & 0.51        \\
+Ehoh as                     & 0.38          & 0.20             & 0.73          &  0.07            & 0.14             & 0.60        \\
+Ehoh b                      & 0.42          & \textbf{0.07}             & 0.58          &  \textbf{0.02}            & \textbf{0.07}    & 0.37        \\
+Ehoh hb                     & 0.69          & 0.12             & 1.06          &  0.10            & 0.13             & 0.56
+\EHOHHLINE
+CVC4                        & 3.02          & 1.58             & 1.75          &  1.22            & 2.44             & 1.65 \\%[\jot]
+Leo-III                     & 1.33          & 0.52             & 5.63          &  0.49            & 0.89             & 6.54 \\%[\jot]
+Vampire                     & 0.67          & 0.43             & 1.50          &  0.76            & 1.89             & 4.84 \\%[\jot]
+Satallax                    &               &                  &               &  2.45            & 5.22             & 10.12 \\%[\jot]
+Zipperposition              & 3.81          & 1.60             & 5.09          &  0.76            & 2.21             & 6.31
+\end{tabular}
+\caption{Average running times on the problems proved by all systems}
+\label{fig:timing}
+\end{figure}
+\end{rep}
+
 \section{Discussion and Related Work}
 \label{sec:ehoh:discussion-and-related-work}
 
+\begin{rep}
+  Our working hypothesis is that it is possible to extend %existing
+  first-order provers to higher-order logic without slowing them down unduly.
+  Our research program is two-pronged:
+  On the theoretical side, we are
+  investigating higher-order extensions of superposition
+  \cite{bbcw-21-lfho,bbtvw-21-sup-lam,vn-20-bools};
+  on the practical side, we are implementing such extensions in a
+  state-of-the-art prover.
+  %TODO_PHD: another reference
+  
+  The work described in this chapter required modifying many parts of the E
+  prover. The invariant that variables cannot be applied and that symbols are always
+  passed the same number of arguments were entrenched in E's code,
+  requiring hundreds of modifications. Nonetheless,
+  %with a good understanding of the prover's inner working,
+  %% Obvious, since Stephan is a coauthor. --JB
+  we found the generalization manageable and are now in a position to add
+  support for $\lambda$-terms and higher-order unification.
+  \end{rep}
+  
+  \begin{sloppypar}
+  Traditionally, most higher-order provers were designed from the ground up
+  to target higher-order logic. Two
+  exceptions are Otter-$\lambda$ by Beeson \cite{mb-04-lam-logic} and
+  Zipperposition by Cruanes et al.\ %, Vukmirovi\'c, and colleagues
+  \cite{sc-15-simon-phd,bbtvw-21-sup-lam}. \hbox{Otter-$\lambda$}
+  adds $\lambda$-terms and second-order unification to
+  the superposition prover Otter\begin{rep} \cite{mcc-03-otter}\end{rep}.
+  % The approach is pragmatic. , with little emphasis on completeness.
+  Zipperposition, also based on superposition, was extended
+  to Bool\-e\-an-free higher-order logic by Bentkamp et al.\
+  \cite{bbtvw-21-sup-lam}. Its performance is a far cry from E's, but
+  it is easier to modify.
+  Vukmirovi\'c et al.\ also used it to test and evaluate higher-order unification
+  procedures \cite{vbn-21-unif} and Boolean reasoning
+  \cite{vn-20-bools}.
+  Zipperposition now includes Ehoh as a backend in a cooperative
+  architecture.
+  Finally, there is recent work by the developers of Vampire
+  % br-20-full-sup-w-combs
+  \cite{br-19-restricted-unif} and of the SMT
+  (satisfiability modulo theories) solvers CVC4 and veriT
+  \cite{brotb-19-ho-smt} to extend their provers to higher-order logic.
+  \end{sloppypar}
+  
+  %Automation of higher-order logic moved in two main directions---building native higher-order provers and
+  %translations into first-order logic.
+  Native higher-order reasoning was pioneered by Rob\-in\-son
+  \cite{ar-69-hol}, Andrews \cite{pa-71-type-theory}, and Huet
+  \cite{gh-73-hol}.\begin{rep} Andrews \cite{pa-01-classical-ty-thy} and Benz\-m\"uller and Miller
+  \cite{bm-14-automation-ho} provide excellent surveys.\end{rep}
+  TPS, by Andrews et al.~\cite{abinpx-96-tps}, was
+  based on expansion proofs and lets users specify proof outlines.
+  The Leo \confrep{}{family of }systems, developed by Benzm\"uller and his colleagues,
+  \confrep{are}{is} based on resolution and paramodulation.
+  LEO~\cite{cbmk-98-leo} \begin{rep}supported extensionality
+  on the calculus level and \end{rep}introduced the cooperative paradigm to
+  integrate first-order provers.
+  Leo-III \cite{sb-21-leo3} expands the cooperation with
+  SMT solvers
+  and introduces term orders\confrep{}{ in a pragmatic, incomplete way}.
+  Brown's Sat\-al\-lax \cite{cb-12-satallax} is based on a
+  complete higher-order tableau calculus,
+  guided by a SAT solver; later versions also cooperate with E and Ehoh.
+  Another noteworthy sys\-tem is Lindblad's agsy\-HOL \cite{fl-14-agsyhol}.
+  It is based on a focused sequent calculus driven by a generic narrowing engine.
+  
+  
+  An alternative to all of the above is to reduce higher-order logic to first-order
+  logic via a translation. Robinson \cite{ar-70-hol}
+  outlined this approach decades before tools such as
+  \begin{conf}Sledgehammer \cite{pb-12-sh} and
+  HOLyHammer \cite{ku-15-holyhammer}\end{conf}%
+  \begin{rep}Miz$\mathbb{AR}$ \cite{urs-13-atp},
+  Sledgehammer \cite{pb-12-sh},
+  HOLyHammer \cite{ku-15-holyhammer}, and
+  CoqHammer \cite{ck-18-coqhammer}\end{rep}
+  popularized it in proof assistants.
+  In addition to performing an applicative encoding, such translations must
+  eliminate the \hbox{$\lambda$-expressions}\begin{rep}
+  \cite{mp-08-trans,lc-16-lam-trans}\end{rep} and encode the type
+  information\begin{rep} \cite{bkpu-16-hammering-types}\end{rep}.
+  %
+  \begin{rep}%
+  In practice, on problems with a large first-order component, translations
+  perform very well compared with the existing native provers
+  \cite{ns-13-leo2sh}. Largely thanks to Sledgehammer, Isabelle often came
+  in close second at CASC, even defeating Satallax in 2012
+  \cite{gs-13-cascj6}.
+  \end{rep}
+  
+  By removing the need for the applicative encoding, our work reduces
+  the translation gap. The encoding buries the \lfhol{} terms' heads under
+  layers of $\cst{@}$ symbols. %\confrep{}{, which impacts the heuristics that inspect terms}.
+  Terms double in size, cluttering the data structures, and twice as many
+  subterm positions must be considered for inferences. Moreover, the encoding is
+  incompatible with interpreted operators, notably for arithmetic.
+  \begin{rep}A common remedy is to introduce proxies to connect an
+  uninterpreted nullary symbol with its interpreted counterpart
+  (e.g., %$\cst{add}$ and $+$ in
+  $\cst{@}(\cst{@}(\cst{add}, x), y) \eq x + y$), but this is clumsy. \end{rep}A further
+  complication is that in a monomorphic logic, $\cst{@}$ is not a single symbol
+  but a family of symbols $\cst{@}_{\tau,\upsilon}$, which must be
+  correctly introduced and recognized. Finally, the encoding must be undone in
+  the proofs. While it should be possible to base a higher-order
+  prover on such an encoding, the prospect is aesthetically and
+  technically unappealing, and performance would likely suffer.
+  
+
 \section{Conclusion}
 \label{sec:ehoh:conclusion}
+
+Despite considerable progress since the 1970s, higher-order automated
+reasoning has not yet assimilated some of the most successful methods for
+first-order logic with equality, such as superposition. We presented a
+graceful extension of a state-of-the-art first-order theorem prover to a
+fragment of higher-order logic devoid of $\lambda$-terms. Our work
+covers both theoretical and practical aspects. Experiments show promising
+results on $\lambda$-free higher-order problems and very little overhead for
+first-order problems, as we would expect from a graceful generalization.
+
+\begin{sloppypar}
+Despite its lack of support for $\lambda$-terms, Ehoh is already deployed
+as a backend in the leading higher-order provers Satallax and
+Zipperposition. Ehoh also forms the basis of our work toward stronger
+higher-order automation. Our aim is to turn it into a prover that excels on
+proof obligations arising in interactive verification, which tend to be
+large but \relax{only mildly higher-order} \cite{ns-13-leo2sh}.
+In Chapter \ref{ch:ehoh2} we describe the extension of Ehoh to full higher-order logic.
+It was heavily inspired by the techniques implemented in Zipperposition, which made it
+dominate the CASC competition in 2020 and 2021.
+\end{sloppypar}
