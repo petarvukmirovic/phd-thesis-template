@@ -41,6 +41,7 @@
 \newcommand{\sigmacl}[1]{\ensuremath{\substcl{\sigma}{#1}}}
 
 \newcommand\unif{\mathrel{\smash{\stackrel{\lower.1ex\hbox{\ensuremath{\scriptscriptstyle ?}}}{=}}}}
+\newcommand\MATCH{\mathrel{{\scriptstyle\lesssim}^{\scriptscriptstyle{?\!}}}}
 %\newcommand\UNIF{=^?}
 
 
@@ -61,6 +62,7 @@
 
 \newcommand{\ourpara}[1]{\paragraph{#1}}
 
+\newcommand{\hooklongrightarrow}{\lhook\joinrel\longrightarrow}
 \newcommand\Unifarrow{\Longrightarrow}
 \newcommand\Matcharrow{\Longrightarrow}
 \newcommand\Pdtarrow{\leadsto}
@@ -69,14 +71,26 @@
 \newcommand\Var{\mathcalx{V}\!\mathit{ar}} %% TYPESETTING: hack
 \newcommand\Term{\mathcalx{T}\kern-.4ex\mathit{erm}} %% TYPESETTING: hack
 \newcommand\Gfpf{\mathcalx{G}\mathit{fpf}}
-\newcommand\GfpfRTL{\Gfpf'}
+\newcommand\GfpfRTL{\Gfpf\kern.3ex'}
 \newcommand\Fp{\mathcalx{F}\kern-.3ex\mathit{p}} %% TYPESETTING: hack
 \newcommand\FpRTL{\Fp'}
+
+\newcommand{\cmark}{\text{\ding{51}}}
+\newcommand{\xmark}{\text{\ding{55}}}
+
+\renewcommand\AA{{\textsf{A}}}
+\newcommand\BB{{\textsf{B}}}
+\newcommand\NN{{\textsf{N}}}
+
+\def\cpp{C\nobreak\raisebox{.1ex}{+}\nobreak\raisebox{.1ex}{+}}
+\newcommand\appE{\ensuremath{\cst{@}{+}\text{E}}}
 
 \newtheorem{theorem}{Theorem}{\bfseries}{\slshape}
 \newtheorem{corollary}[theorem]{Corollary}{\bfseries}{\slshape}
 \newtheorem{lemma}[theorem]{Lemma}{\bfseries}{\slshape}
 % \newtheorem*{proof}{Proof}{\itshape}{\rmfamily}
+\numberwithin{theorem}{chapter}
+
 
 \newcommand\MyFunction[2]{\textbf{function} \textsc{#1}(#2) \textbf{is} \\}
 \newcommand\MyProcedure[2]{\textbf{procedure} \textsc{#1}(#2) \textbf{is} \\}

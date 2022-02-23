@@ -797,13 +797,1170 @@ is virtually as efficient as E on first-order terms.
     \q \MyReturn $\textit{True}$
     \end{quotex}
 
+\subsection{Matching}
+
+Given $s$ and $t$, the matching problem consists of finding a
+substitution $\sigma$ such that $\sigma(s) = t.$
+We then write that ``$t$ is an instance of $s$'' or
+``$s$~generalizes~$t$.'' %and call $\sigma$ a \emph{generalizing substitution}.
+We are interested in most general generalizations (MGGs).
+Matching can be reduced to unification by treating variables in $t$ as
+nullary symbols \cite{bn-98-tr-and-all-that}, but E implements it
+separately.
+
+Matching can be specified abstractly as a transition system on matching constraints
+$s_i \MATCH t_i$ consisting of the
+unification rules \textsf{Decompose},
+\textsf{DecomposeX},
+\textsf{Clash},
+\textsf{ClashTypeX},
+\textsf{ClashLenXF}
+(with $\MATCH$ instead of $\unif$)
+and augmented with
+
+\noindent
+\begin{tabular}{ll}
+  \textsf{Double} &   $\{ x \MATCH t{,}\; x \MATCH t' \} \uplus \mathit{S} \Matcharrow \bot$; if $t \not= t'$  \\[\jot]
+  \textsf{ClashLenXY} & $\{ x \; \tuple{s}{m} \MATCH y \; \tuple{t}{n} \} \allowbreak \uplus \mathit{S} \Matcharrow \bot$; if $x \not= y$ and $m > n$ \\[\jot]
+  \textsf{ClashFX} & $\{ \cst{f} \; \overline{s} \MATCH x \; \overline{t} \} \uplus \mathit{S} \Matcharrow \bot$
+\end{tabular}
 
 
-
-
+The matching relation is sound, complete, and well founded. Interestingly, a
+\textsf{Delete} rule would be unsound for matching. Consider the problem
+$\{ x \MATCH x, x \MATCH \cst{g} \; x \}$. Applying \textsf{Delete} to the
+first constraint would yield the solution $\{ x \MATCH \cst{g} \; x \}$, even
+though the original problem is clearly unsolvable.
 
 \section{Indexing Data Structures}
 \label{sec:ehoh:indexing}
+
+Superposition provers like E work by saturation. Their main loop
+heuristically selects a clause and searches for potential inference
+partners among a possibly large set of other clauses. Mechanisms such
+as simplification and subsumption also require locating terms in a
+large clause set. For example, when E derives a new equation
+$s \eq t$, if $s$ is larger than $t$ according to the term order, it
+will rewrite all instances $\sigma(s)$ of $s$ to $\sigma(t)$ in
+existing clauses.
+
+To avoid iterating over all terms (including subterms) in large clause
+sets, superposition provers store the potential inference partners in
+indexing data structures. A term index stores a set of terms $\mathit{S}.$
+Given a \emph{query term}
+%
+$t$, a query returns all terms $s \in \mathit{S}$ that satisfy a given
+\emph{retrieval condition}:\ $\sigma(s) = \sigma(t)$ ($s$~and $t$ are
+unifiable), $\sigma(s) = t$ ($s$ generalizes~$t$), or $s = \sigma(t)$
+($s$ is an instance of $t$), for some substitution~$\sigma.$
+\emph{Perfect} indices return exactly the subset of terms satisfying
+the retrieval condition. In contrast, \emph{imperfect} indices return
+a superset of eligible terms, and the retrieval condition needs to be
+checked for each candidate.
+
+E relies on two term indexing data structures, perfect discrimination
+trees \cite{mcc-92-pdts} and fingerprint indices
+\cite{ss-12-fp-indexing}, that needed to be generalized to
+\lfhol. It also uses feature vector indices
+\cite{ss-2013-feature-vector} to speed up subsumption and
+related techniques, but these require no changes to work
+with \lfhol{}.
+
+\subsection{Discrimination Trees}
+
+\looseness=-1
+Discrimination trees \cite{mcc-92-pdts} are tries in which every
+node is labeled with a symbol or a variable. A path from the root to
+a leaf corresponds to a ``serialized term''---a term expressed without
+parentheses and commas. Consider the following discrimination trees $D_1$ and
+$D_2$:
+%
+\begin{align*}
+ & \vcenter{\hbox{\begin{tikzpicture}[level distance=2.25em, sibling distance=5em,
+%  edge from parent path={(\tikzparentnode.south) -- ++(0,-0.5em)
+%   -| (\tikzchildnode.north)},
+  every node/.style = {shape=circle, minimum size=1.75em, draw, align=center}]
+  \node {\phantom{x}}
+    child { node {$\cst{f}$}
+      child { node %[fill=verylightgray]
+        {$\cst{a}$} }
+    }
+    child { node % [fill=verylightgray]
+      {$\cst{g}$}
+      child { node {$\cst{a}$}
+        child { node % [fill=verylightgray]
+          {$\cst{a}$} }
+      }
+      child[sibling distance=2.5em] { node {$\cst{b}$}
+        child { node %[fill=verylightgray]
+          {$\cst{a}$} }
+        child { node %[fill=verylightgray]
+          {$\cst{b}$} }
+      }
+    }
+    ;
+\end{tikzpicture}
+}}
+&&
+  \vcenter{\hbox{\begin{tikzpicture}[level distance=2.25em, sibling distance=5em,
+%  edge from parent path={(\tikzparentnode.south) -- ++(0,-0.5em)
+%   -| (\tikzchildnode.north)},
+  every node/.style = {shape=circle,
+    draw, align=center}]
+  \node {\phantom{x}}
+    child { node {$\cst{f}$}
+      child { node %[fill=verylightgray]
+        {$x$} }
+    }
+    child { node % [fill=verylightgray]
+      {$\cst{g}$}
+      child { node {$\cst{a}$}
+        child { node % [fill=verylightgray]
+          {$\cst{a}$} }
+      }
+      child[sibling distance=2.5em] { node {$y$}
+        child { node %[fill=verylightgray]
+          {$\cst{a}$} }
+        child { node %[fill=verylightgray]
+          {$x$} }
+      }
+    }
+    child[sibling distance=3.75em] { node {$x$} }
+    ;
+\end{tikzpicture}
+}}
+\end{align*}
+%
+Assuming $\cst{a}, \cst{b}, x, y : \iota$, $\cst{f} : \iota \to \iota$,
+and $\cst{g} : \iota^2 \to \iota$,
+$D_1$ represents the term set
+$\{
+\cst{f}(\cst{a})
+{,}\allowbreak\;
+\cst{g}(\cst{a}, \cst{a})
+{,}\allowbreak\;
+\cst{g}(\cst{b}, \cst{a})
+{,}\allowbreak\;
+\cst{g}(\cst{b}, \cst{b})
+\}$,
+and $D_2$ represents the term set
+$\{
+\cst{f}(x)
+{,}\allowbreak\;
+\cst{g}(\cst{a}, \cst{a})
+{,}\allowbreak\;
+\cst{g}(y, \cst{a})
+{,}\allowbreak\;
+\cst{g}(y, x)
+{,}\;
+x
+\}$.
+%
+E uses perfect discrimination trees for finding generalizations of
+query terms. Thus, if the query term is
+$\cst{g}(\cst{a}, \cst{a})$, it would follow the path $\cst{g}.\cst{a}.\cst{a}$
+in~$D_1$ and return $\{\cst{g}(\cst{a}, \cst{a})\}.$
+For~$D_2$, it would also explore paths labeled with
+variables, binding them as it proceeds, and return $\{
+\cst{g}(\cst{a}, \cst{a}){,}\allowbreak\; \cst{g}(y, \cst{a}){,}\allowbreak\; \cst{g}(y, x){,}\; x \}.$
+
+It is crucial for this data structure that distinct terms always give rise to
+distinct serialized terms. Conveniently, this property also holds for \lfhol{}
+terms. Suppose that two distinct \lfhol{} terms yield the same serialization.
+Clearly, they must disagree on parentheses; one will have the subterm $s\; t\;
+u$ where the other has $s\; (t\; u).$ However, these two subterms cannot both
+be well typed.
+
+\looseness=-1
+When generalizing the data structure to \lfhol, we face a complication
+due to partial application. First-order terms can only be stored in leaf nodes,
+but in Ehoh we must also be able to represent partially applied terms,
+such as $\cst{f}$, $\cst{g}$, or $\cst{g}\;\cst{a}$ (assuming, as above, that
+$\cst{f}$ is unary and $\cst{g}$ is binary). Conceptually, this can be solved
+by storing a Boolean on each node indicating whether it is an accepting state.
+In the implementation, the change is more subtle, because several parts of E's
+code implicitly assume that only leaf nodes are accepting.
+
+\newcommand\TermStack{\ensuremath{T}}
+\newcommand\BTStack{\ensuremath{P}}
+
+The main difficulty specific to \lfhol{} concerns applied variables. To
+enumerate all generalizing terms, E needs to backtrack from child to
+parent nodes. This is achieved using two stacks that store subterms of
+the query term:
+\TermStack{} %(\texttt{term\_\allowbreak stack})
+stores the terms that
+must be matched in turn against the
+current subtree, and
+\BTStack{} %(\texttt{term\_\allowbreak proc})
+stores, for each node from
+the root to the current subtree, the corresponding processed term.
+
+Let $[a_1, \dots, a_n]$ denote an $n$-item stack with $a_1$ on top. Given a
+query term $t$, the matching procedure starts at the root with $\sigma =
+\emptyset$, $\TermStack{} = [t]$, and $\BTStack = []$.
+%
+The procedure advances by repeatedly moving to a suitable child node:
+%
+\begin{enumerate}
+\item[A.] If the node is labeled with a symbol $\cst{f}$ and the top item
+  $t$ of \TermStack{} is \confrep{}{of the form }$\cst{f}(\tuple{t}{n})$,
+  replace $t$ by $n$~new items $t_1,\dots,t_n$, and push $t$ onto \BTStack.
+
+\smallskip
+\item[B.] If the node is labeled with a variable $x$, there are two subcases.
+  If $x$ is already bound, check that $\sigma(x) = t$;
+  otherwise, extend $\sigma$ so that $\sigma(x) = t.$ Next, pop the term $t$
+  from \TermStack{} and push it onto \BTStack.
+\end{enumerate}
+
+%
+The goal is to reach an accepting node. If the query term and all the terms
+stored in the tree are first-order, \TermStack{} will then be empty, and the
+entire query term will have been matched.
+%
+Backtracking works in reverse: Pop a term $t$ from \BTStack; if the current
+node is labeled with an $n$-ary symbol, discard \TermStack{}'s topmost
+$n$~items; push $t$ onto \TermStack. Undo any variable bindings.
+
+As an example, looking up $\cst{g}(\cst{b}, \cst{a})$ in the tree $D_1$
+would result in the following succession of stack states, starting from the
+root $\varepsilon$ along the path $\cst{g}.\cst{b}.\cst{a}$:
+%
+\[\begin{array}{@{}l@{\kern1.5em}l@{\kern1em}l@{\kern1em}l@{\kern1em}l@{}}
+& \varepsilon & \cst{g} & \cst{g}.\cst{b} & \cst{g}.\cst{b}.\cst{a} \\[.5\jot]
+\sigma{:} & \emptyset & \emptyset & \emptyset & \emptyset \\
+\TermStack{:} & [\cst{g}(\cst{b}, \cst{a})] & [\cst{b}, \cst{a}] & [\cst{a}] & [\,] \\
+\BTStack{:} & [\,] & [\cst{g}(\cst{b}{,}\; \cst{a})] & [\cst{b}{,}\; \cst{g}(\cst{b}{,}\; \cst{a})] & [\cst{a}{,}\; \cst{b}{,}\; \cst{g}(\cst{b}, \cst{a})]
+\end{array}\]
+%
+Backtracking amounts to moving leftward:
+To get back from $\cst{g}$ to the root, we pop $\cst{g}(\cst{b}, \cst{a})$
+from \BTStack, we discard two items from \TermStack{}, and we push
+$\cst{g}(\cst{b}, \cst{a})$ onto \TermStack{}.
+
+To adapt the procedure to \lfhol{}, the key idea is that an applied variable
+is not very different from an applied symbol. A node labeled with an $n$-ary
+head~$\zeta$ matches a prefix~$t'$ of the $k$-ary term $t$
+popped from \TermStack{} and leaves $n - k$ arguments $\overline{u}$ to be
+pushed back, with $t = t' \; \overline{u}.$ If $\zeta$ is a variable, it must
+be bound to the prefix~$t'$ assuming $\zeta$ and $t'$ are of same type.
+%
+Backtracking works analogously: Given the arity $n$ of the node label $\zeta$
+and the arity $k$ of the term $t$ popped from \BTStack{}, we discard the
+topmost $n - k$ items $\overline{u}$ from \BTStack.
+
+\looseness=-1
+To illustrate the procedure, we consider the tree $D_2$ but change $y$'s type
+to $\iota \to \iota.$ This tree stores
+$\{
+\cst{f}\; x
+{,}\allowbreak\;
+\cst{g}\; \cst{a}\; \cst{a}
+{,}\allowbreak\;
+\cst{g}\; (y\; \cst{a})
+{,}\allowbreak\;
+\cst{g}\; (y\; x)
+{,}\allowbreak\;
+x
+\}.$
+Let $\cst{g}\; (\cst{g}\;\cst{a}\;\cst{b})$ be the query term.
+We have the following sequence of substitutions $\sigma$ and stacks
+$\TermStack, \BTStack$:
+%
+\[\begin{array}{@{}l@{\kern1em}l@{\kern1em}l@{\kern1em}l@{}}
+\varepsilon & \cst{g} & \cst{g}.y & \cst{g}.y.x \\[.5\jot]
+\emptyset & \emptyset & \{y \mapsto \cst{g}\> \cst{a}\} & \{y \mapsto \cst{g}\> \cst{a}{,}\; x \mapsto \cst{b}\} \\[0pt]
+[\cst{g}\> (\cst{g}\> \cst{a}\> \cst{b})] & [\cst{g}\> \cst{a}\> \cst{b}] & [\cst{b}] & [\,] \\[0pt]
+[\,] & [\cst{g}\> (\cst{g}\> \cst{a}\> \cst{b})] & [\cst{g}\> \cst{a}\> \cst{b}{,}\;\cst{g}\> (\cst{g}\> \cst{a}\> \cst{b})] & [\cst{b}{,}\;\cst{g}\> \cst{a}\> \cst{b}{,}\;\cst{g}\> (\cst{g}\> \cst{a}\> \cst{b})]
+\end{array}\]
+
+\confrep{}{When backtracking from $\cst{g}.y$ to $\cst{g}$, by comparing
+$y$'s arity of $n = 1$ with $\cst{g}\; \cst{a}\; \cst{b}$'s arity of $k = 0$,
+we determine that one~item must be discarded from \TermStack{}. }%
+Finally, to avoid traversing twice as many subterms as in the first-order
+case, we can optimize prefixes: Given a
+query term $\zeta\;\tuple{t}{n}$, we can also match prefixes
+$\zeta\;\tuple{t}{k}$, where $k < n$, by allowing \TermStack{} to be nonempty when we reach an accepting node.
+%If accepting nodes correspond to legal prefixes, the stack will then contain
+%exactly the remaining arguments: $[t_{k+1},\dots,t_n].$
+
+\newcommand\quadruple{\mathcalx{Q}}
+Similarly to unification and matching, we present finding generalizations
+in a perfect discrimination tree as a transition system. States
+are quadruples $\quadruple = (\overline{t}, \overline{b}, \mathit{D}, \sigma)$, where
+$\overline{t}$ is a list of terms, $\overline{b}$ is a list of tuples storing
+backtracking information, $\mathit{D}$ is a discrimination
+(sub)tree, and $\sigma$ is a substitution.
+
+%With $+$ we denote list append operation, and with
+%$::$ we denote operation of prepending single element to list.
+
+Let $D$ be a perfect discrimination tree. $\Term(D)$ denotes the set of terms
+stored in $D$. The function $D|_\zeta$ returns the child of $D$ labeled with
+$\zeta$, if it exists. Child nodes are themselves perfect discrimination
+(sub)trees. Given any node $D$, if the node is accepting, then the value stored
+on that node is defined as $\mathit{val}(D) = (s, d)$, where $s$ is the
+accepted term and $d$ is some arbitrary data;
+%(typically, an equation whose one side is~$s$)
+otherwise, $\mathit{val}(D)$ is undefined.
+
+%We label the tree nodes using BFS, starting with 0 as label for
+%root node.
+
+%With $\mathcalx{R}$ we denote $(\overline{t}, \overline{b}, D, \sigma)$ or
+%$(\mathit{v}, \sigma)$ or $\bot$.
+
+Starting from an initial state $([t], [\,], D, \emptyset)$, where $t$ is the query
+term and $D$ is an entire discrimination tree, the following transitions are
+possible:
+% \begin{description}[labelwidth=\widthof{\rm\textsf{AdvanceX}}]
+%   \item[\rm\textsf{AdvanceF}]
+%     $ ( \cst{f} \> \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+%         \Pdtarrow
+%         (\tuple{s}{m} \cdot \overline{t}{,}\;
+%         (\cst{f} \> \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_\cst{f}{,}\; \sigma)
+%       $\quad
+%       if $D{|}_\cst{f}$ is defined
+  
+%   \smallskip
+%   \item[\rm\textsf{AdvanceX}]
+%     $ ( s \; \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+%         \Pdtarrow {}$ \\
+%     $(\tuple{s}{m} \cdot \overline{t}{,}\; (s \; \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_x{,}\; \sigma[x \mapsto s])
+%       $\\
+%       if $D{|}_x$ is defined, $x$ and $s$ have the same type, and
+%       $\sigma(x)$ is either undefined or equal to $s$
+  
+%   \smallskip
+%   \item[\rm\textsf{Backtrack}]
+%     $ ( \tuple{s}{m} \cdot \overline{t}{,}\; (s, D_0, \sigma_0) \cdot \overline{b}{,}\; D{,}\; \sigma)
+%         \Pdtarrow %\\\hphantom{\rm\textsf{AdvanceX}}%
+%       (s \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D_0{,}\; \sigma_0)$ \\
+%       if $D_0{|}_\zeta = D$ and $m = \textit{arity}(\zeta) - \textit{arity}(s)$
+  
+%   \smallskip
+%   \item[\rm\textsf{Success}]
+%     $ ( [\,]{,}\; \overline{b}{,}\; D{,}\; \sigma )
+%         \Pdtarrow (\mathit{val}(D){,}\; \sigma)$ \\
+%     if~$\mathit{val}(D)$ is defined
+% \end{description}
+
+\noindent
+\begin{tabular}{ll}
+  \textsf{AdvanceF} & $ ( \cst{f} \> \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+           \Pdtarrow
+           (\tuple{s}{m} \cdot \overline{t}{,}\;
+           (\cst{f} \> \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_\cst{f}{,}\; \sigma)
+         $ \\
+                   & if $D{|}_\cst{f}$ is defined \\[\jot]
+  \textsf{AdvanceX} & $( s \; \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma ) 
+                      \Pdtarrow {} 
+                      (\tuple{s}{m} \cdot \overline{t}{,}\; (s \; \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_x{,}\; \sigma[x \mapsto s])$ \\
+                    & if $D{|}_x$ is defined, $x$ and $s$ have the same type,\\ & and
+                    $\sigma(x)$ is either undefined or equal to $s$ \\[\jot]
+  \textsf{Backtrack} & $ ( \tuple{s}{m} \cdot \overline{t}{,}\; (s, D_0, \sigma_0) \cdot \overline{b}{,}\; D{,}\; \sigma)
+                      \Pdtarrow
+                      (s \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D_0{,}\; \sigma_0)$  \\
+                      & if $D_0{|}_\zeta = D$ and $m = \textit{arity}(\zeta) - \textit{arity}(s)$ \\[\jot]
+  \textsf{Success}    & $ ( [\,]{,}\; \overline{b}{,}\; D{,}\; \sigma ) \Pdtarrow (\mathit{val}(D){,}\; \sigma)$ \\
+                      & if~$\mathit{val}(D)$ is defined
+\end{tabular}
+
+Above, $\cdot$ denotes prepending an element or a list to a list.
+%
+Intuitively, \textsf{AdvanceF} and \textsf{AdvanceX} move deeper in
+the tree, generalizing cases A and B above to \lfhol{} terms.
+\textsf{Backtrack} can be used to return to a previous state.
+\textsf{Success} extracts the term~$t$ and data~$d$ stored in
+an accepting node.
+
+\newcommand\BDTARROW[1]{\rlap{\ensuremath{\Pdtarrow_{#1}\;}}\phantom{\Pdtarrow_\textsf{AdvanceX}\;}}
+
+The following derivation illustrates how to locate a generalization of
+$\cst{g}\; (\cst{g}\;\cst{a}\;\cst{b})$ in the tree $D_2$:\pagebreak[2]
+%
+\begin{align*}
+ & ([\cst{g} \; (\cst{g} \; \cst{a} \; \cst{b})]{,}\;  [\,]{,}\;  D{,}\;  \emptyset) \\[-1\jot]
+ \BDTARROW{\textsf{AdvanceF}}&
+ ([\cst{g} \; \cst{a} \; \cst{b}]{,}\;  [(\cst{g} \; (\cst{g} \; \cst{a} \; \cst{b}), D, \emptyset)]{,}\;  D{|}_{\cst{g}}{,}\;  \emptyset)\\[-1\jot]
+ \BDTARROW{\textsf{AdvanceX}}&
+ ([\cst{b}]{,}\;  [(\cst{g} \; \cst{a} \; \cst{b}, D{|}_{\cst{g}}, \emptyset), \ldots]{,}\;  D{|}_{\cst{g}.y}{,}\;  \{y \mapsto \cst{g} \; \cst{a} \}) \\[-1\jot]
+ \BDTARROW{\textsf{AdvanceX}}&
+ ([\,]{,}\;  [(\cst{b}, D{|}_{\cst{g}.y}, \{y \mapsto \cst{g} \; \cst{a} \}), \ldots]{,}\; D{|}_{\cst{g}.y.x}{,}\; \{ y \mapsto \cst{g} \; \cst{a}{,}\; x \mapsto \cst{b} \}) \\[-1\jot]
+ \BDTARROW{\textsf{Success}}& ((\cst{g} \; (y \; x), d){,}\; \{ y \mapsto \cst{g} \; \cst{a}{,}\; x \mapsto \cst{b} \})
+\end{align*}
+
+Let ${\Pdtarrow_{\mathsf{Advance}}} = {\Pdtarrow_{\mathsf{AdvanceF}}} \cup
+{\Pdtarrow_{\mathsf{AdvanceX}}}$.
+%and ${\Pdtarrow_{\mathsf{NoBacktrack}}} = {\Pdtarrow_{\mathsf{Advance}}} \cup
+%{\Pdtarrow_{\mathsf{Success}}}$.
+It is easy to show that \textsf{Backtrack} undoes an \textsf{Advance}
+transition: % and can be avoided when starting from an initial state.
+
+\begin{lemma}\label{lemma:ehoh:backtrack-inverses-advance} If $\quadruple \Pdtarrow_{\mathsf{Advance}} \quadruple'$, then
+  $\quadruple' \Pdtarrow_{\mathsf{Backtrack}} \quadruple$.
+  \end{lemma}
+\begin{proof}
+For both \textsf{Advance} steps, we show that \textsf{Backtrack} restores the state
+properly. If \textsf{AdvanceF} was applied, we have
+%
+\begin{align*}
+  ( \cst{f} \> \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+& \Pdtarrow_{\mathsf{AdvanceF}}
+  (\tuple{s}{m} \cdot \overline{t}{,}\;
+      (\cst{f} \> \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_\cst{f}{,}\; \sigma)
+\\[-\jot]
+& \Pdtarrow_{\mathsf{Backtrack}}
+  ( \overline{t'}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+\end{align*}
+We must show that $\overline{t'} = \cst{f} \> \tuple{s}{m} \mathrel{\cdot} \overline{t}$.
+Let $k = \textit{arity}(\cst{f})$ and $l = \textit{arity}(\cst{f} \> \tuple{s}{m})$.
+By definition of $k$, we have $m = k - l$, as in \textsf{Backtrack}'s side
+condition. Thus, $\overline{t'} = \cst{f} \> \tuple{s}{m} \mathrel{\cdot}
+\overline{t}$. The other case is
+\begin{align*}
+  ( s \; \tuple{s}{m} \mathrel{\cdot} \overline{t}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+& \Pdtarrow_{\mathsf{AdvanceX}}
+  (\tuple{s}{m} \cdot \overline{t}{,}\; (s \; \tuple{s}{m}, D, \sigma) \cdot \overline{b}{,}\; D{|}_x{,}\; \sigma')
+\\[-\jot]
+& \Pdtarrow_{\mathsf{Backtrack}}
+  ( \overline{t'}{,}\; \overline{b}{,}\; D{,}\; \sigma )
+\end{align*}
+where $\sigma' = \sigma[x \mapsto s]$.
+Again, we must show that $\overline{t'} = s \; \tuple{s}{m} \mathrel{\cdot} \overline{t}$. Terms
+$x$ and $s$ must have the same type for \textsf{AdvanceX} to be applicable; therefore, they have the same arity. Then, we conclude $m=
+\textit{arity}(s) - \textit{arity}(s \; \tuple{s}{m} ) =  \textit{arity}(x) - \textit{arity}(s \; \tuple{s}{m} )$, as in \textsf{Backtrack}'s
+side condition. Thus, $\overline{t'} = s \; \tuple{s}{m} \mathrel{\cdot} \overline{t}$.
+\end{proof}
+
+\begin{lemma}\label{lemma:ehoh:advance-inverses-backtrack}
+  If $\quadruple \Pdtarrow_{\mathsf{Advance}} \quadruple'
+  \Pdtarrow_{\mathsf{Backtrack}} \quadruple''$, then
+  $\quadruple'' = \quadruple$.
+  \end{lemma}
+\begin{proof}
+  By Lemma~\ref{lemma:ehoh:backtrack-inverses-advance}, $\quadruple'
+  \Pdtarrow_{\mathsf{Backtrack}} \quadruple$. Furthermore, \textsf{Backtrack} is
+  clearly functional. Thus, $\quadruple'' = \quadruple$.
+\end{proof}
+
+\begin{lemma}\label{lemma:ehoh:backtrack-remove}
+  Let $\quadruple = ([t], [\,], D, \emptyset)$. If $\quadruple
+  \Pdtarrow^* \quadruple'$, then $\quadruple \Pdtarrow_{\mathsf{Advance}}^*\allowbreak
+  \quadruple'$.
+\end{lemma}
+  
+\begin{proof}
+  \looseness=-1
+  Let $\quadruple = \quadruple{}_{\,\,0} \Pdtarrow \cdots \Pdtarrow \quadruple{}_{\,\,n} = \quadruple'$.
+  Let $i$ be the index of the first transition of the form $\quadruple{}_{\,\,i} \Pdtarrow_{\mathsf{Backtrack}}
+  \quadruple{}_{\,\,i+1}$. Since $\quadruple{}_{\,\,0}$'s backtracking stack is empty, we must
+  have $i \not= 0$. Hence, we have $\quadruple{}_{\,\,i-1} \Pdtarrow_{\mathsf{Advance}}
+  \quadruple{}_{\,\,i} \Pdtarrow_{\mathsf{Backtrack}} \quadruple{}_{\,\,i+1}$. By
+  Lemma~\ref{lemma:ehoh:advance-inverses-backtrack}, $\quadruple{}_{\,\,i-1} =
+  \quadruple{}_{\,\,i+1}$. Thus, we can shorten the derivation to $\quadruple{}_{\,\,0}
+  \Pdtarrow \cdots \Pdtarrow \quadruple{}_{\,\,i-1} = \quadruple{}_{\,\,i+1} \Pdtarrow
+  \cdots \Pdtarrow \quadruple{}_{\,\,n}$,
+  thereby eliminating one \textsf{Backtrack} transition. By repeating this
+  process, we eliminate all \textsf{Backtrack} transitions.
+\end{proof}
+
+\begin{lemma}\label{lemma:ehoh:termination-pdt}
+  There exist no infinite chains of the form
+  $\quadruple{}_{\,\,0} \Pdtarrow_\mathsf{Advance}\allowbreak \quadruple{}_{\,\,1} \Pdtarrow_\mathsf{Advance}
+  \cdots$.
+\end{lemma}
+\begin{proof}
+  With each \textsf{Advance} transition, the height of the discrimination tree
+  decreases by at least one.
+\end{proof}
+
+
+Perfect discrimination trees match a single term against a set of terms. To
+prove them correct, we will connect them to the transition system
+$\Matcharrow$ for matching (Sect.~\ref{sec:ehoh:unif-match}). This connection\pagebreak[2] will
+help us show that whenever a discrimination tree stores a generalization of a
+query term, this generalization can be found.
+%
+To express the refinement, we introduce an intermediate transition
+system, $\Matchiiarrow$, that focuses on a single pair of terms (like
+$\Matcharrow$) but that solves the constraints in a depth-first, left-to-right
+fashion and builds the substitution incrementally (like $\Pdtarrow$).
+Its initial states are of the form $([s \MATCH t], \emptyset)$. Its transitions
+are as follows:
+
+\noindent
+\begin{tabular}{ll}
+  \textsf{Decompose} & $ (\cst{f} \; \tuple{s}{m} \MATCH \cst{f} \; \tuple{t}{m} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow {} ( (s_1 \MATCH t_1, \ldots, s_m \MATCH t_m) \cdot \overline{c}, \sigma ) $ \\[\jot]
+  \textsf{DecomposeX} & $(x \; \tuple{s}{{m}} \MATCH u \; \tuple{t}{{m}} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow {} ( (s_1 \MATCH t_1, \ldots, s_m \MATCH t_m) \cdot \overline{c}, \sigma[x \mapsto u] )$ \\
+                    & if $x$ and $u$ have the same type and either $\sigma(x)$ is undefined or $\sigma(x)=u$ \\[\jot]
+  \textsf{Success} & $ ([\,], \, \sigma) \Matchiiarrow  \sigma $ \\[\jot]
+  \textsf{Clash}    & $ (\cst{f} \; \tuple{s}{m} \MATCH \cst{g} \; \tuple{t}{n} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot $ \\[\jot]
+  \textsf{ClashTypeX}    & $(x \; \tuple{s}{{m}} \MATCH u \; \tuple{t}{{m}} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\
+                         & if~$x$ and $u$ have different types  \\[\jot]
+  \textsf{ClashLenXF}    & $(x \; \tuple{s}{{m}} \MATCH \cst{f} \; \tuple{t}{{n}} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\
+                         & if~$m > n$  \\[\jot]
+  \textsf{ClashLenXY}    & $(x \; \tuple{s}{{m}} \MATCH y \; \tuple{t}{{n}} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\
+                         & if~$x \neq y$ and $m > n$ \\[\jot]
+  \textsf{ClashFX}    & $(\cst{f} \; \overline{s} \MATCH x \; \overline{t}  \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\[\jot]
+  \textsf{Double}    & $(x \; \tuple{s}{{m}} \MATCH u \; \tuple{t}{{m}}  \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\
+                     & if $x$ and $u$ have the same type, $\sigma(x)$ is defined, and $\sigma(x) \neq u$ \\[\jot]
+\end{tabular}
+
+\newcommand\AlphaMatch[1]{\alpha(#1)}
+
+We need an auxiliary function to convert $\Matchiiarrow$ states to
+$\Matcharrow$ states.
+Let
+$\AlphaMatch{\{ x_1 \mapsto s_1,\allowbreak \ldots, x_m \mapsto s_m \}}
+ = \{ x_1 \MATCH s_1,\ldots,\,\allowbreak x_m \MATCH s_m \}$,
+$\AlphaMatch{\overline{c}, \sigma} =
+\{ c \mid c \in \overline{c} \} \mathrel\cup \AlphaMatch{\sigma}$, and
+$\AlphaMatch{\bot} = \bot$.
+%
+Moreover, let $\mathcal{S}$ range over states of the form $(\overline{c}, \sigma)$ and
+$\mathcalx{R}$ additionally range over special states of the form $\sigma$ or
+$\bot$.
+
+
+\begin{lemma}\label{lemma:ehoh:match-refinement}
+  If $\mathcal{S} \Matchiiarrow \mathcalx{R}$,
+  then $\AlphaMatch{\mathcal{S}} \Matcharrow^* \AlphaMatch{\mathcalx{R}}$.
+\end{lemma}
+\begin{proof}
+By case distinction on $\mathcalx{R}$. Let $\mathcal{S} = (\overline{c}, \sigma)$.
+
+\medskip
+
+\begin{sloppypar}%
+  \noindent
+  \textsc{Case} $\mathcalx{R} = (\overline{c'}, \sigma')$:\enskip
+  Only $\Matchiiarrow_{\mathsf{Decompose}}$ and
+  $\Matchiiarrow_{\mathsf{DecomposeX}}$ are possible.
+  If $\Matchiiarrow_{\mathsf{Decompose}}$ is applied, then $\Matcharrow_{\mathsf{Decompose}}$
+  is applicable and results in $\AlphaMatch{\mathcalx{R}}$.
+  If $\Matchiiarrow_{\mathsf{DecomposeX}}$ is applied,
+  we have either $m>0$, and $\Matcharrow_{\mathsf{DecomposeX}}$ is applicable,
+  or $m = 0$, and $\AlphaMatch{\overline{c'},\sigma'} = \AlphaMatch{\mathcal{S}}$,
+  which implies that the two states are connected by an idle transition of
+  $\Matcharrow^*$.
+  \end{sloppypar}
+  
+  \medskip
+  
+  \noindent
+  \textsc{Case} $\mathcalx{R} = \bot$:\enskip
+  All the $\Matchiiarrow$ rules resulting in $\bot$ except for \textsf{Double}
+  have the same side conditions as the corresponding $\Matcharrow$ rules.
+  $\Matchiiarrow_{\mathsf{Double}}$ corresponds to
+  $\Matcharrow_{\mathsf{Double}}$ if $m=0$. If $m \neq 0$, we need
+  an intermediate $\Matcharrow_{\mathsf{DecomposeX}}$ step before
+  $\Matcharrow_{\mathsf{Double}}$ can be applied to derive $\bot$. Since
+  $\Matchiiarrow_{\mathsf{Double}}$ is applicable, $\sigma(x) = u'
+  \neq u$. Hence, $x \MATCH u'$ must be present in $\AlphaMatch{\overline{c},
+  \sigma}$. $\Matcharrow_{\mathsf{DecomposeX}}$ will augment this set with
+  $x \MATCH u$, enabling $\Matcharrow_{\mathsf{Double}}$.
+  
+  \medskip
+  
+  \noindent
+  \textsc{Case} $\mathcalx{R} = \sigma$:\enskip
+  The only possible rule is $\Matchiiarrow_{\mathsf{Success}}$,
+  with $\overline{c}=[\,]$. Since $\AlphaMatch{\mathcal{S}} = \AlphaMatch{\sigma}$,
+  this transition corresponds to an idle transition of $\Matcharrow^*$.
+\end{proof}
+
+\begin{lemma}\label{lemma:ehoh:refined-match-partial-correctness}\,%
+  If $\mathcal{S} \Matchiiarrow^{!} \mathcalx{R}$, then $\mathcalx{R}$ is either
+  some substitution $\sigma'$ or $\bot$.
+  If $\mathcal{S} \Matchiiarrow^{!} \sigma'$, then $\sigma'$ is the MGG
+  of~$\AlphaMatch{\mathcal{S}}$.
+  If $\mathcal{S} \Matchiiarrow^{!} \bot$, then $\AlphaMatch{\mathcal{S}}$ has
+  no solutions.
+  \end{lemma}
+\begin{proof}
+  %Let $\mathcal{S} = (\overline{c}, \sigma)$.
+  
+  First, we show that states $\mathcal{S}' = (\overline{c'}, \sigma')$ cannot be
+  normal forms, by exhibiting transitions from such states. If $\overline{c'} =
+  [\,]$, the $\Matchiiarrow_{\mathsf{Success}}$ rule would apply. Otherwise, let
+  $\overline{c'} = c_1 \cdot \overline{c''}$ and consider the matching problem
+  $\{c_1\} \cup \AlphaMatch{\sigma'}$. If this problem is in solved form, $c_1$
+  is a constraint corresponding to a solved variable, and we can apply
+  $\Matchiiarrow_{\mathsf{DecomposeX}}$ to move the constraint into the
+  substitution. Otherwise, some $\Matcharrow$ rule can be applied. It
+  necessarily focuses on $c_1$, since the constraints from
+  $\AlphaMatch{\sigma'}$ correspond to solved variables. In all cases except for
+  $\Matcharrow_{\mathsf{DecomposeX}}$, a homologous
+  $\Matchiiarrow$ rule  can be applied to $\mathcal{S}'$. If $\Matcharrow_{\mathsf{DecomposeX}}$
+  would make $\Matcharrow_{\mathsf{Double}}$ applicable, then we can apply $\Matchiiarrow_{\mathsf{Double}}$ to $\mathcal{S}'$;
+  otherwise, $\Matchiiarrow_{\mathsf{DecomposeX}}$ is applicable.
+  
+  Second, by Lemma \ref{lemma:ehoh:match-refinement},
+  if $\mathcal{S} \Matchiiarrow^{!} \sigma'$, then
+  $\AlphaMatch{\mathcal{S}} \Matcharrow^* \AlphaMatch{\sigma'}$.
+  By construction, $\AlphaMatch{\sigma'}$ is in solved form.
+  Therefore, $\AlphaMatch{\mathcal{S}} \Matcharrow^{!} \AlphaMatch{\sigma'}$.
+  By completeness of $\Matcharrow$, the substitution corresponding to
+  $\AlphaMatch{\sigma'}$---that is, $\sigma'$---is the MGG of~$\AlphaMatch{\mathcal{S}}$.
+  
+  Third, by Lemma~\ref{lemma:ehoh:match-refinement}, if $\mathcal{S}
+  \Matchiiarrow^{!} \bot$, then $\AlphaMatch{\mathcal{S}} \Matcharrow^{!} \bot$.
+  By soundness of $\Matcharrow$, $\AlphaMatch{\mathcal{S}}$ has
+  no solutions.
+\end{proof}
+
+
+\begin{lemma}\label{lemma:ehoh:refined-match-termination}\,%
+  The relation $\Matchiiarrow$ is well founded.
+  \end{lemma}
+\begin{proof}
+  By Lemma \ref{lemma:ehoh:match-refinement}, every $\Matchiiarrow$ transition
+  corresponds to zero or more $\Matcharrow$ transitions.
+  Since $\Matcharrow$ is well founded,
+  the only transitions that can violate well-foundedness of $\Matchiiarrow$ are
+  the ones that take idle $\Matcharrow^*$ transitions:
+  $\Matchiiarrow_{\mathsf{DecomposeX}}$ for $m=0$ and
+  $\Matchiiarrow_{\mathsf{Success}}$. The latter is terminal, so it cannot
+  contribute to infinite chains.
+  As for $\Matchiiarrow_{\mathsf{DecomposeX}}$, with $m=0$,
+  it decreases the following measure~$\mu$, which the other rules nonstrictly
+  decrease, with respect to the multiset extension of $<$ on natural numbers:
+  $\mu([s_1 \MATCH t_1, \ldots, s_m \MATCH t_m], \sigma) =
+    \{\left|s_1\right|, \ldots \left|s_m\right|\}$,
+  where $\left|s\right|$ denotes the syntactic size of $s$.
+\end{proof}
+  
+\begin{lemma}\label{lemma:ehoh:refined-matching-solution}
+  If term $s$ generalizes $t$, then $([s \MATCH t], \emptyset) \Matchiiarrow^! \sigma$,
+  where $\sigma$ is the MGG of $s \MATCH t$.
+\end{lemma}
+\begin{proof}
+By Lemma \ref{lemma:ehoh:refined-match-termination}, there exists a normal form
+$\mathcalx{R}$ starting from $\mathcal{S} = ([s \MATCH t],\allowbreak \emptyset)$. Since $s
+\MATCH t$ is solvable, by Lemma~\ref{lemma:ehoh:refined-match-partial-correctness},
+and soundness of $\Matchiiarrow$ (a consequence of Lemma \ref{lemma:ehoh:match-refinement}
+and soundness of $\Matcharrow$),
+$\mathcalx{R}$ must be the MGG for $s$ and~$t$.
+\end{proof}
+
+
+\begin{lemma}\label{lemma:ehoh:pdt-complete-help}
+  If there exists a term $s \in \Term(D)$ that generalizes the query term~$t$,
+  then there exists a derivation $([t], [\,],\allowbreak D,\allowbreak \emptyset) \Pdtarrow^! ((s, d),
+  \sigma)$. %, where $\sigma$ is the MGG for $s$ and $t$.
+  \end{lemma}
+  \begin{proof}
+    By Lemma \ref{lemma:ehoh:refined-matching-solution}, we know that $(s \MATCH t,
+    \emptyset) \Matchiiarrow^! \sigma$ for each $s \in \Term(D)$ generalizing $t$.
+    This means that there exists a derivation
+    $([s \MATCH t], \emptyset) = (\overline{c_0}, \sigma_0) \Matchiiarrow \cdots \Matchiiarrow (\overline{c_n}, \sigma_n)\allowbreak \Matchiiarrow \sigma$.
+    The $n$ first transitions must be \textsf{Decompose} or \textsf{DecomposeX},
+    and the last transition must be \textsf{Success}.
+
+    We show that there exists a derivation of the form
+    $([t], [\,],\allowbreak D, \emptyset) = \quadruple{}_{\,\,0}\allowbreak \Pdtarrow \cdots
+    \Pdtarrow \quadruple{}_{\,\,n} \Pdtarrow ((s, d),\sigma)$, where $\quadruple{}_{\,\,i} =
+    (\overline{t_i}, \overline{b_i}, \allowbreak D_i, \sigma_i)$ for each $i$.
+  %
+    We define $\overline{t_i}$, $\overline{b_i}$, and $D_i$ as follows, for $i > 0$.
+    The list $\overline{t_i}$ consists of the right-hand sides of the
+    constraints~$\overline{c_i}$, in the same order.
+    %todo:
+    Let $\mathit{hd}$ be the function that extracts the head of a list. We set
+          $b_i = (\mathit{hd}(\overline{t_{i-1}}),\allowbreak D_{i-1}, \sigma_{i-1})$. We know that $\overline{c_{i-1}}$ is
+          nonempty, since there exists a transition $(\overline{c_{i-1}}, \sigma_{i-1}) \Matchiiarrow (\overline{c_i}, \sigma_i)$%
+          ; thus, $\overline{t_{i-1}}$ is nonempty.
+    If an accepting node storing~$s$ was reached in $n$~steps, the
+      serialization of $s$ must be of the form $\zeta_1.\cdots.\zeta_n$. Take $D_i
+      = D_{i-1}{|}_{\zeta_i}$.
+  
+    The sequence of states $\quadruple{}_{\,\,i}$ forms a
+    derivation:
+    If $(\overline{c_i},\allowbreak \sigma_i)\allowbreak \Matchiiarrow_\textsf{Decompose}
+    (\tuple{c}{{i+1}},\allowbreak \sigma_{i+1})$, then $\quadruple{}_{\,\,i}
+    \Pdtarrow_\textsf{AdvanceF} \allowbreak \quadruple{}_{\,\,i+1}$.
+    If $(\overline{c_i},\allowbreak \sigma_i) \Matchiiarrow_\textsf{DecomposeX}
+    (\tuple{c}{{i+1}},\allowbreak \sigma_{i+1})$, then $\quadruple{}_{\,\,i}
+    \Pdtarrow_\textsf{AdvanceX} \quadruple{}_{\,\,i+1}$.
+    If $(\overline{c_n},\allowbreak \sigma_n) \Matchiiarrow_\textsf{Success} \sigma$, then
+    $\quadruple{}_{\,\,n} \Pdtarrow_\textsf{Success} ((s, d),\allowbreak \sigma)$.
+\end{proof}
+  
+\begin{lemma}\label{lemma:ehoh:pdt-soundi}
+  If $([t], [\,], D, \emptyset) \Pdtarrow^+ ((s, d), \sigma)$, then $s \in \Term(D)$
+  and $\sigma$ is the MGG of $s \MATCH t$.
+  \end{lemma}
+  
+  \begin{proof}
+  Let $([t], [\,], D, \emptyset) =
+  \quadruple{}_{\,\,0} \Pdtarrow \cdots \Pdtarrow \quadruple{}_{\,\,n}
+  \Pdtarrow ((s, d), \sigma)$ be a derivation, where $\quadruple{}_{\,\,i} =
+  (\overline{t_i}, \overline{b_i},\allowbreak D_i, \sigma_i)$ for each $i$. Without loss of
+  generality, by Lemma \ref{lemma:ehoh:backtrack-remove}, we can assume that the
+  derivation contains no \textsf{Backtrack} transitions.
+  
+  The first conjunct, $s \in \Term(D)$, clearly holds
+  %by definition --- some invariant must be needed here
+  for any term found
+  from an initial state. To prove the second conjunct, we first introduce a
+  function $\mathit{preord}$ that defines the preorder decomposition of a list
+  of terms:
+  $\mathit{preord}([\,]) = [\,]$ and
+  $\mathit{preord}(\zeta \; \tuple{s}{n} \cdot \overline{xs}) =
+  (\zeta{,}\; \tuple{s}{n} \cdot \overline{xs}) \cdot \mathit{preord}(\tuple{s}{n} \cdot \overline{xs})$.
+  %
+  Given a term~$s$, $\mathit{preord}([s])$ gives a sequence
+  $(\zeta_1, \tuple{u}{1}), \dots, \allowbreak
+  (\zeta_n, \tuple{u}{n})$.
+  Since $s \in \Term(D)$,
+  the sequence $D_0, \ldots, D_n$ follows the preorder serialization of $s$:
+  $D_i = D_{i-1}|_{\zeta_i}$ for $i > 0$.
+  
+  Next, we show that there exists a derivation of the form
+  $([s \MATCH t], \emptyset) = \mathcal{S}_0 \Matchiiarrow
+  \cdots \Matchiiarrow \mathcal{S}_n \Matchiiarrow \sigma$, where
+  $\mathcal{S}_i = (\overline{c_i}, \sigma_i)$. We define $\overline{c_i}$, for $i>0$,
+  as the list of constraints whose left-hand sides are the elements of $\overline{u_i}$
+  and right-hand sides are the elements of $\overline{t_i}$, in the order they appear in the respective lists.
+  By inspecting the definition of $\mathit{preord}$
+  and the changes each \textsf{Advance} step makes
+  to the head of $\overline{t_i}$, we can see that $\overline{u_i}$ and $\overline{t_i}$  have the same length.
+  The sequence of states $\mathcal{S}_i$ forms a derivation:
+  %
+  If $\quadruple{}_{\,\,i} \Pdtarrow_\textsf{AdvanceF} \quadruple{}_{\,\,i+1}$, then $\mathcal{S}_i \Matchiiarrow_\textsf{Decompose} \mathcal{S}_{i+1}$.
+  If $\quadruple{}_{\,\,i} \Pdtarrow_\textsf{AdvanceX} \quadruple{}_{\,\,i+1}$, then $\mathcal{S}_i\allowbreak \Matchiiarrow_\textsf{DecomposeX} \mathcal{S}_{i+1}$.
+  If $\quadruple{}_{\,\,n} \Pdtarrow_\textsf{Success} \sigma$, then
+  $\mathcal{S}_n\allowbreak \Matchiiarrow_\textsf{Success} \sigma$.
+\end{proof}
+  
+\begin{theorem}[Total Correctness]\label{theorem:ehoh:pdt-complete}\,%
+  Let $D$ be a perfect discrimination tree and $t$ be a term.
+  The sets $\{ s \in \Term(D) \mid \exists \sigma.\; \sigma(s) = t \}$
+  and $\{ s \mid \exists d, \sigma.\; ([t], [\,], D, \emptyset) \allowbreak
+  \Pdtarrow^! ((s, d), \sigma) \}$ are equal.
+\end{theorem}
+\begin{proof}
+  This follows from Lemmas \ref{lemma:ehoh:pdt-complete-help} and \ref{lemma:ehoh:pdt-soundi}.
+\end{proof}
+
+The theorem tells us that given a term~$t$, all generalizations $s$ stored
+in the perfect discrimination tree can be found, but it does not exclude
+nondeterminism. Often, both \textsf{AdvanceF} and \textsf{AdvanceX} are
+applicable. To find all generalizations, we need to follow both transitions.
+But for some applications, it is enough to find a single generalization.
+
+To cater for both types of applications, E provides iterators that store the
+state of a traversal. After an iterator is initialized
+with the root node $D$ and the query term $t$, each call to
+\textsc{FindNextVal} will move the iterator to the next node that generalizes
+the query term and stores a value, indicating an accepting node. After all
+such nodes have been traversed, the iterator is set to point to
+$\mathit{Null}$.
+
+The following definitions constitute the high-level interface for
+iterating through values incrementally or for obtaining all values of nodes that
+store generalizations of the query term in $D$.
+
+
+\begin{quotex}
+  \MyFunction{InitIter}{PDTNode $D$, Term $t$}
+  \q $i \gets \textsc{Iterator}()$ \\
+  \q $(i.\mathit{node}, i.\mathit{t\_stack}, i.\mathit{t\_proc}, i.\mathit{c\_iter}) \gets (D, [t], [\,], \textit{Start})$ \\
+  \q \MyReturn $i$
+  
+  \vskip 1.5\jot
+  
+  \MyProcedure{FindNextVal}{Iterator $i$}
+  \q \MyDo
+  \qq \textsc{FindNextNode}($i$) \\
+  \q \MyWhileOfDo{$i.\mathit{node} \not= \mathit{Null} \mathrel\land
+    \\ \qqq  (\lnot\, i.\mathit{t\_stack}.\mathit{isEmpty}()
+    \mathrel\lor \lnot\, i.\mathit{node}.\mathit{has\_val}())$}
+  
+  \vskip 1.5\jot
+  
+  \MyFunction{AllVals}{PDTNode $D$, Term $t$}
+  \q $\mathit{i} \gets \textsc{InitIter}(D, t)$ \\
+  \q $\textsc{FindNextVal}(i)$ \\
+  \q $\mathit{res} \gets \emptyset$ \\
+  \q \MyWhile{$\mathit{i.node} \neq \mathit{Null}$}
+  \qq $\mathit{res} \gets \mathit{res} \cup \{ \mathit{i.node.val()} \}$ \\
+  \qq $\textsc{FindNextVal}(i)$
+  \\[\jot]
+  \q \MyReturn $\mathit{res}$
+  \end{quotex}
+  
+  The core functionality is implemented in \textsc{FindNext\-Node}, presented below. This
+  procedure moves the iterator to the next node that has not been explored in the
+  search for generalization, or \textit{Null} if the entire tree has been
+  traversed. It first goes through all child nodes labeled with a variable before
+  possibly visiting the child node labeled with a function symbol. We assume that
+  we can iterate through the children of a node using a function
+  \textsc{NextVarChild} that, given a tree node and iterator through children,
+  advances the iterator to the child representing the next variable. Furthermore, we
+  assume that the iterator can also be in the distinguished states \textit{Start}
+  and \textit{End}.
+  \textit{Start} indicates that no child has been visited yet; \textit{End}
+  indicates that we have visited all children. Finally, the expression
+  $n.\mathit{child}(\zeta)$ returns a child of the node $n$ labeled $\zeta$ if
+  such a child exists or $\mathit{Null}$ otherwise.
+  
+  \begin{quotex}
+  \MyProcedure{FindNextNode}{Iterator $i$}
+  \q \MyIf{$i.\mathit{t\_stack.isEmpty}()$}
+  \qq \textsc{BacktrackToVar}($i$)
+  \\[\jot]
+  \q $\mathit{advanced} \gets \mathit{False}$ \\
+  \q \MyWhile{$i.\mathit{node} \neq \mathit{Null} \mathrel\land \lnot\, \mathit{advanced}$}
+  %\qq \MyIf{$i.\mathit{c\_iter} < \textit{End}$}
+  \qq \MyWhile{$i.\mathit{c\_iter} \neq \textit{End} \mathrel\land \lnot\, \mathit{advanced}$}
+  \qqq $i.\mathit{c\_iter} \gets \textsc{NextVarChild}(i.\mathit{node}, i.\mathit{c\_iter})$ \\
+  \qqq \MyIf{$i.\mathit{c\_iter} \neq \textit{End}$}
+  \qqqq $x \gets i.\mathit{c\_iter}.\mathit{var}()$ \\
+  \qqqq $t \gets i.\mathit{t\_stack}.\mathit{top}()$ \\
+  \qqqq $\mathit{s} \gets \textsc{GobblePrefix}(x, t)$ \\
+  \qqqq \MyIf{$\mathit{s} \neq \mathit{Null} \mathrel\land \\ \qqqqqq
+                (x.\mathit{binding} = \mathit{Null} \mathrel\lor x.\mathit{binding} = \mathit{s})$}
+  \qqqqq $i.\mathit{t\_stack}.\mathit{pop}()$ \\
+  \qqqqq \MyForDownto{$j \gets t.\mathit{num\_args}$\\\qqqqqqq\ignorespaces}{$\mathit{s}.\mathit{num\_args}+1$}
+  \qqqqqq $i.\mathit{t\_stack}.\mathit{push}(t.\mathit{args}[j])$ \\
+  \qqqqq \MyIf{$x.\mathit{binding} = \mathit{Null}$}
+  \qqqqqq $x.\mathit{binding} \gets \mathit{s}$ \\
+  \qqqqqq $i.\mathit{t\_proc}.\mathit{push}
+                      ( (t, i.\mathit{node}, i.\mathit{c\_iter}, \mathit{True} ) )$ \\
+  \qqqqq \MyElse
+  \qqqqqq $i.\mathit{t\_proc}.\mathit{push}
+                      ( (t, i.\mathit{node}, i.\mathit{c\_iter}, \mathit{False}) )$
+  \\[\jot]
+  \qqqqq $ \mathit{i.\mathit{node}} \gets i.\mathit{node}.child(x)$ \\
+  \qqqqq $ \mathit{advanced} \gets \mathit{True}$
+  \\[\jot]
+  \qq $t \gets i.\mathit{t\_stack}.\mathit{top}()$ \\
+  \qq \MyIf{$i.\mathit{c\_iter} = \textit{End} \mathrel\land
+          \lnot\, t.\mathit{head}.\mathit{isVar}()  \\ \qqq \mathrel\land
+          D.\mathit{child}(t.\mathit{head}) \neq \mathit{Null}$}
+  \qqq $i.\mathit{t\_stack}.\mathit{pop}()$ \\
+  \qqq \MyForDownto{$j \gets t.\mathit{num\_args}$}{$1$}
+  \qqqq $i.\mathit{t\_stack}.\mathit{push}(t.\mathit{args}[j])$ \\
+  \qqq $i.\mathit{t\_proc}.\mathit{push}
+              ( (t, i.\mathit{node}, \mathit{End}, \mathit{False}) )$ \\
+  \qqq $\mathit{i.\mathit{node}} \gets i.\mathit{node}.\mathit{child}(t.\mathit{head})$ \\
+  \qqq $\mathit{advanced} \gets \mathit{True}$
+  \\[\jot]
+  \qq \MyIf{$\lnot\, \mathit{advanced}$}
+  \qqq \textsc{BacktrackToVar}$(i)$ \\
+  \qq \MyElse
+  \qqq $i.\mathit{c\_iter} \gets \textit{Start}$
+  
+  \vskip 2\jot
+  
+  \MyProcedure{BacktrackToVar}{Iterator $i$}
+  \q \MyForever
+  \qq \MyIf{$i.\mathit{t\_proc}.\mathit{isEmpty}()$}
+  \qqq $i.\mathit{node} \gets \mathit{Null}$ \\
+  \qqq \MyReturn \\
+  \qq \MyElse
+  \qqq $(t, D, \mathit{c\_iter}, \mathit{var\_unbound}) \gets i.\mathit{t\_proc}.\mathit{pop}()$ \\
+  \qqq $\mathit{label\_arity} \gets i.\mathit{node}.\mathit{label}.\mathit{type}.\mathit{arity}$ \\
+  \qqq $\mathit{t\_arity} \gets t.\mathit{type}.\mathit{arity}$
+  \\[\jot]
+  \qqq \MyForTo{$i \gets 1$}{$\mathit{label\_arity} - \mathit{t\_arity}$}
+  \qqqq $i.\mathit{t\_stack}.\mathit{pop}()$
+  \\[\jot]
+  \qqq $i.\mathit{t\_stack}.\mathit{push}(t)$ \\
+  \qqq $i.\mathit{node} \gets D$ \\
+  \qqq $i.\mathit{c\_iter} \gets \mathit{c\_iter}$
+  \\[\jot]
+  \qqq \MyIf{$\mathit{var\_unbound}$}
+  \qqqq $i.\mathit{node}.\mathit{label}.\mathit{binding} \gets \mathit{Null}$
+  \\[\jot]
+  \qqq \MyIf{$\mathit{c\_iter} \neq\textit{End}$}
+  \qqqq \MyReturn
+  \end{quotex}
+  
+The pseudocode uses a slightly different representation of backtracking tuples
+than ${\Pdtarrow}$. In the \textsf{AdvanceX} rule,
+$\sigma$ changes only if the variable~$x$ was previously not bound.
+Instead of creating and storing substitutions explicitly, we simply remember
+whether the variable was bound in this step or not, in the
+$\mathit{var\_unbound}$ tuple component. Then we rely on the label~$x$ of the
+current node and its \textit{binding} field to carry the substitutions.
+Similarly, since our strategy is to traverse the tree by first visiting the
+variable-labeled child nodes, we need to remember how far we have come with
+this traversal. We store this information in the $\mathit{c\_iter}$ tuple
+component.
+
+\subsection{Fingerprint Indices}
+\looseness=-1
+Fingerprint indices \cite{ss-12-fp-indexing} trade perfect indexing for
+a compact memory representation and more flexible retrieval conditions.
+The basic idea is to compare terms by looking only at a few
+predefined sample positions. If we know that term $s$ has
+symbol $\cst{f}$ at the head of the subterm at~2.1 and term $t$ has
+$\cst{g}$ at the same position, we can immediately conclude that $s$ and $t$
+are not unifiable.
+
+% They are
+% based on the idea that when one samples a term position only the following
+% situations may happen: position corresponds to
+% a variable or a complex term; position is invalid---but under some substitution it
+% can become valid; position is invalid and no substitution makes it valid.
+
+Let $\AA$ (``at a variable''),
+$\BB$ (``below a variable''), and
+$\NN$ (``nonexistent'') be distinguished symbols\begin{rep}
+not present in the signature, and let $q < p$ denote that position $q$ is a proper prefix of $p$\end{rep}
+(e.g., $\varepsilon < 2 < 2.1$). Given a term $t$ and a position~$p$, the
+\emph{fingerprint function} $\Gfpf$ is defined as
+\[
+  \Gfpf(t,p) =
+  \begin{cases}
+    \cst{f} & \text{if $t|_p$ has a symbol head $\cst{f}$} \\[-\jot]
+    \AA & \text{if $t|_p$ is a variable} \\[-\jot]
+    \BB & \text{if $t|_q$ is a variable for some $q < p$} \\[-\jot]
+    \NN & \text{otherwise}
+  \end{cases}
+\]
+
+Based on a fixed tuple of positions $\tuple{p}{n}$,
+the \emph{fingerprint} of a term $t$ is defined as
+$\mathit\Fp(t) = \bigl(\Gfpf(t, p_1), \ldots, \Gfpf(t, p_n)\bigr).$ To compare
+two terms $s$ and $t$, it suffices to check that their fingerprints are
+componentwise compatible using the following unification and matching
+matrices, respectively:
+%
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\confrep{
+\begin{align*}
+& \hbox{\begin{tabular}{@{}C{0.75em}|C{0.75em}C{0.75em}C{0.75em}C{0.75em}C{0.75em}@{}}
+& $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+\hline
+$\cst{f}_1\vphantom{^{()}}$ & & \xmark & & & \xmark \\
+\AA & & & & & \xmark \\
+\BB & & & & & \\
+\NN & \xmark & \xmark & \xmark & &
+\end{tabular}}
+&
+& \hbox{\begin{tabular}{@{}C{0.75em}|C{0.75em}C{0.75em}C{0.75em}C{0.75em}C{0.75em}@{}}
+& $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+\hline
+$\cst{f}_1\vphantom{^{()}}$ & & \xmark & \xmark & \xmark & \xmark \\
+\AA & & & & \xmark & \xmark \\
+\BB & & & & & \\
+\NN & \xmark & \xmark & \xmark & \xmark &
+\end{tabular}}
+\end{align*}
+}{
+\begin{align*}
+& \hbox{\begin{tabular}{@{}C{0.75em}|C{0.75em}C{0.75em}C{0.75em}C{0.75em}C{0.75em}@{}}
+& $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+\hline
+$\cst{f}_1\vphantom{^{()}}$ & & \xmark & & & \xmark \\
+$\cst{f}_2$ & \xmark & & & & \xmark \\
+\AA & & & & & \xmark \\
+\BB & & & & & \\
+\NN & \xmark & \xmark & \xmark & &
+\end{tabular}}
+&
+& \hbox{\begin{tabular}{@{}C{0.75em}|C{0.75em}C{0.75em}C{0.75em}C{0.75em}C{0.75em}@{}}
+& $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+\hline
+$\cst{f}_1\vphantom{^{()}}$ & & \xmark & \xmark & \xmark & \xmark \\
+$\cst{f}_2$ & \xmark & & \xmark & \xmark & \xmark \\
+\AA & & & & \xmark & \xmark \\
+\BB & & & & & \\
+\NN & \xmark & \xmark & \xmark & \xmark &
+\end{tabular}}
+\end{align*}
+}%
+%
+The rows and columns correspond to $s$ and $t$, respectively. The
+metavariables $\cst{f}_1$~and~$\cst{f}_2$ represent arbitrary distinct symbols.
+Incompatibility is indicated by $\xmark{}$.
+
+\newcommand\fpok{\text{--}}
+
+As an example,
+let $(\varepsilon, 1,\allowbreak 2,\allowbreak 1.1,\allowbreak 1.2,\allowbreak 2.1, 2.2)$
+be the sample positions,
+and let $s = \cst{f}(\cst{a}, x)$ and $t = \cst{f}(\cst{g}(x), \cst{g}(\cst{a}))$
+be the terms to unify. Their fingerprints are
+$\Fp(s) = (\cst{f}, \cst{a}, \AA, \NN, \NN,\allowbreak \BB, \BB)$
+and
+$\Fp(t) = (\cst{f}, \cst{g}, \cst{g}, \AA, \NN, \cst{a}, \NN)$.
+%
+Using the left matrix, we compute the compatibility vector
+%
+$(\fpok, \xmark, \fpok, \xmark, \fpok, \fpok, \fpok).$
+%
+The mismatches at positions 1 and 1.1 indicate that $s$ and $t$ are not unifiable.
+
+A fingerprint index is a trie that stores a term set $T$ keyed by fingerprint.
+The term $\cst{f}(\cst{g}(x), \cst{g}(\cst{a}))$ above would
+be stored in the node addressed by
+$\cst{f}.\cst{g}.\cst{g}.\AA.\NN.\cst{a}.\NN$, together with other
+terms that share the same fingerprint.
+This scheme makes it possible to unify or match a query term $s$
+against all the terms $T$ in one traversal. Once a node storing the terms $U
+\subseteq T$ has been reached, due to overapproximation we must apply
+unification or matching on $s$ and each $u \in U.$ % to obtain correct results.
+
+When adapting this data structure to \lfhol{}, we must first choose a
+suitable notion of position in a term. Conventionally, higher-order
+positions are strings over $\{1, 2\}$, but this is not graceful.
+% indicating, for each binary
+% application $t_1\;t_2$, which term $t_i$ to follow.
+Instead, it is preferable to generalize the first-order notion to
+flattened \lfhol{} terms---e.g.,
+$x\> \cst{a} \> \cst{b} \> |_{1} = \cst{a}$
+and $x\> \cst{a} \> \cst{b} \> |_{2} = \cst{b}.$
+%
+However, this approach fails on applied variables. For example,
+although $x \> \cst{b}$ and $\cst{f} \> \cst{a} \> \cst{b}$ are
+unifiable (using $\{ x \mapsto \cst{f} \> \cst{a} \}$), sampling position 1
+would yield a clash between
+$\cst{b}$~and~$\cst{a}.$ To ensure that positions remain stable under
+substitution, we propose to number arguments in reverse:
+$t {|}^\varepsilon = t$ and
+$\zeta \> t_n \, \ldots \, t_1  |^{i.p} = t_{i} |^p$
+if $1 \le i \le n$.
+We use a nonstandard notation, $t|^p$, for this nonstandard
+notion. The operation is undefined for out-of-bound indices.
+
+\begin{lemma}\label{lemma:fpindex-aux}
+  Let $s$ and $t$ be unifiable terms, and let $p$ be a position such that the
+  subterms $s|^{p}$ and $t|^{p}$ are defined. Then $s|^{p}$ and $t|^{p}$ are
+  unifiable.
+\end{lemma}
+\begin{proof}
+  By structural induction on $p$. The case $p = \varepsilon$ is trivial.
+
+  \medskip
+
+  \noindent
+  \textsc{Case $p = q.i$}:\enskip
+  Let $s|^{q} = \zeta \; s_m \, \ldots \, s_1$ and $t|^{q} = \eta \; t_n \, \ldots \, t_1$.
+  Since $p$ is defined in both $s$ and $t$, we have
+   $s|^{p} = s_i$ and $t|^{p} = t_i$.
+  By the induction hypothesis, $s|^{q}$ and $t|^{q}$ are
+  unifiable, meaning that there exists a substitution $\sigma$
+  such that $\sigma(\zeta \; s_m \, \ldots \, s_1) = \sigma(\eta \; t_n \, \ldots \, t_1)$.
+  Hence, $\sigma(s_1) = \sigma(t_1)$, \ldots, $\sigma(s_i) = \sigma(t_i)$---i.e.,
+  $\sigma(s|^{p}) = \sigma(t|^{p})$.
+\end{proof}
+
+Let $t{\langle}{}^p$ denote the subterm $t{|}^q$ such that $q$ is the longest
+prefix of $p$ for which $t{|}^q$ is defined.
+%
+The \lfhol{} version of the fingerprint function is defined as follows:
+%
+\[
+  \GfpfRTL(t,p) =
+  \begin{cases}
+    \cst{f} & \text{if $t|^p$ has a symbol head $\cst{f}$} \\
+    \AA & \text{if $t|^p$ has a variable head} \\
+    \BB & \text{if $t|^p$ is undefined} \\[-\jot]
+        & \text{but $t{\langle}{}^p$ has a variable head} \\
+    \NN & \text{otherwise}
+  \end{cases}
+\]
+%
+Except for the reversed numbering scheme,
+$\GfpfRTL$ coincides with $\Gfpf$ on first-order terms.
+The fingerprint $\FpRTL(t)$ of a term $t$ is defined analogously as before,
+and the same compatibility matrices can be used.
+
+The key difference between $\Gfpf$ and $\GfpfRTL$ concerns applied variable.
+Given the sample positions $(\varepsilon, 2, 1)$,
+the fingerprint of $x$ is $(\AA, \BB, \BB)$ as before, whereas
+the fingerprint of $x \; \cst{c}$ is $(\AA, \BB, \cst{c}).$
+%
+As another example,
+let $(\varepsilon, 2,\allowbreak 1,\allowbreak 2.2,\allowbreak 2.1,\allowbreak 1.2, 1.1)$
+be the sample positions,
+and let $s = x \; (\cst{f} \; \cst{b} \; \cst{c})$ and $t = \cst{g}\; \cst{a}\; (y \; \cst{d}).$
+Their fingerprints are
+$\FpRTL(s) = (\AA, \BB, \cst{f}, \BB, \BB, \cst{b}, \cst{c})$ and
+$\FpRTL(t) = (\cst{g}, \cst{a}, \AA, \NN, \NN, \BB, \cst{d})$.
+%
+The terms are not unifiable due to the incompatibility at position 1.1
+($\cst{c}$ vs.~$\cst{d}$).
+
+We can easily support prefix optimization for both terms $s$ and $t$ being
+compared: We simply add enough fresh variables as arguments to ensure that $s$
+and $t$ are fully applied before computing their fingerprints.
+
+\begin{lemma}\label{lemma:ehoh:fpindex-gfpf-sound-unif}
+  If terms $s$ and $t$ are unifiable, then $\GfpfRTL(s, p)$ and $\GfpfRTL(t,
+  p)$ are compatible according to the unification matrix.
+  If $s$ generalizes $t$, then $\GfpfRTL(s, p)$ and $\GfpfRTL(t, p)$ are
+  compatible according to the matching matrix.
+\end{lemma}
+\begin{proof}
+  We focus on the case of unification. By contraposition, it suffices to
+  consider the eight blank cells in the unification matrix, where the rows
+  correspond to $\GfpfRTL(s, p)$ and the columns correspond to $\GfpfRTL(t,
+  p)$. Since unifiability is a symmetric relation, we can rule out four cases.
+
+\medskip
+
+\noindent
+\textsc{Case} $\cst{f}_1$--$\cst{f}_2$:\enskip
+By definition of $\GfpfRTL$, $s|^{p}$ and $t|^{p}$ must be of the forms
+$\cst{f}_1 \; \overline{s}$ and $\cst{f}_2 \; \overline{t}$, respectively.
+Clearly, $s|^{p}$ and $t|^{p}$ are not unifiable. By Lemma
+\ref{lemma:fpindex-aux}, $s$ and $t$ are not unifiable.
+
+\medskip
+
+\noindent
+\textsc{Case} $\cst{f}_1$--$\NN$, $\cst{f}_2$--$\NN$, \textsc{or} $\AA$--$\NN$:\enskip
+From $\GfpfRTL(t, p) = \NN$, we deduce that
+$p \neq \varepsilon$.
+Let $p = q.i.r$, where $q$ is the longest prefix such that $\GfpfRTL(t, q) \neq \NN$.
+Since $\GfpfRTL(t, q.i) = \NN$, the head of $t|^{q}$ must be some symbol $\cst{g}$.
+(For a variable head, we would have $\GfpfRTL(t, q.i) = \BB$.)
+Hence, $t|^{q}$ has the form $\cst{g} \; t_n \, \ldots \, t_1$, for $n < i$.
+Since $q.i$ is a legal position in $s$, $s|^{q}$ has the form
+$\zeta \; s_m \, \ldots \, s_1$, with $i \le m$. A necessary condition for
+$\sigma(s|^{q}) = \sigma(t|^{q})$ is that
+$\sigma(\zeta \; s_m \, \ldots \, s_{n+1}) = \sigma(\cst{g})$,
+but this is impossible because the left-hand side is an application (since
+$n < m$), whereas the right-hand side is the symbol $\cst{g}$.
+By Lemma \ref{lemma:fpindex-aux}, $s$ and $t$ are not unifiable.
+\end{proof}
+
+\begin{corollary}[Overapproximation]\,%
+  If $s$ and $t$ are unifiable terms, then $\FpRTL(s)$ and $\FpRTL(t)$ are
+  compatible according to the unification matrix.
+  If $s$ generalizes $t$, then $\FpRTL(s)$ and $\FpRTL(t)$ are
+  compatible according to the matching matrix.
+\end{corollary}
+%\begin{proof}
+%This follows from Lemma~\ref{lemma:ehoh:fpindex-gfpf-sound-unif}.\qed
+%\end{proof}
+
+% \subsection{Feature Vector Indices}
+
+% A clause $C$
+% subsumes a clause $D$ if there exists a substitution $\sigma$ such that
+% $\sigma(C) \subseteq D.$
+% Subsumption is a crucial operation to prune the search space.
+%  Feature-vector indices
+% \cite{ss-2013-feature-vector} are an imperfect indexing data structure
+% that can be used to retrieve clauses that subsume a query clause
+% % (forward subsumption)
+% or that are subsumed by the query clause.\
+% %
+% Unlike for discrimination trees and fingerprint indices, no changes were
+% necessary to adapt feature vectors indices to \lfhol{}. All the predefined
+% features make sense in \lfhol{}. % and are compatible with subsumption.
+
 
 \section{Inference Rules}
 \label{sec:ehoh:inferences}
