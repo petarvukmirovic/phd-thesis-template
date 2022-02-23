@@ -421,6 +421,7 @@ The first group of rules\confrep{ }{---the \emph{positive} rules---}consists
 of operations that focus on a single constraint and replace it with a new
 (possibly empty) set of constraints:
 
+\vskip2\jot
 \noindent
 \begin{tabular}{ll}
   \textsf{Delete} & $\{ t \unif t \} \uplus \mathit{S} \Unifarrow \mathit{S}$ \\[\jot]
@@ -437,7 +438,7 @@ of operations that focus on a single constraint and replace it with a new
   \textsf{Eliminate}  & $\{ x \unif t \} \uplus \mathit{S} \Unifarrow \{ x \unif t \} \cup \{ x \mapsto t \}(\mathit{S})$ \\
                       &   if $x \in \Var(\mathit{S}) \setminus \Var(t)$
 \end{tabular}
-
+\vskip2\jot
 
 The \textsf{Delete}, \textsf{Decompose}, and \textsf{Eliminate} rules are
 essentially as for first-order terms. The \textsf{Orient} rule is generalized
@@ -473,6 +474,7 @@ rules---}detect unsolvable constraints:
 % \end{description}
 %
 
+\vskip2\jot
 \noindent
 \begin{tabular}{ll}
   \textsf{Clash} &   $\{ \cst{f} \; \overline{s} \unif \cst{g} \; \overline{t} \} \uplus \mathit{S} \Unifarrow \bot$; if $\cst{f} \not= \cst{g}$ \\[\jot]
@@ -480,6 +482,7 @@ rules---}detect unsolvable constraints:
   \textsf{ClashLenXF} & $\{ x \; \tuple{s}{m} \unif \cst{f} \; \tuple{t}{n} \} \allowbreak \uplus \mathit{S} \Unifarrow \bot$; if $m > n$ \\[\jot]
   \textsf{OccursCheck}     & $\{ x \unif t \} \uplus \mathit{S} \Unifarrow \bot$;  if $x \in \Var(t)$ and $x \not= t$
 \end{tabular}
+\vskip2\jot
 
 \begin{rep}\textsf{Clash} and \textsf{OccursCheck} are essentially as in
 Baader and Nipkow. \textsf{ClashTypeX} and \textsf{ClashLenXF}
@@ -2006,7 +2009,8 @@ preprocessor, as explained in Sect.~\ref{sec:ehoh:preprocessing}.
 The superposition rules were introduced in Sect.~\ref{sec:pre:rules}. For completeness,
 we repeat them with slightly simplified notation, as we do not repeat side conditions:
 
-\hfill
+% \vskip\abovedisplayskip
+\hbox{}\hfill
 \begin{tabular}{ll}
   \namedinference{SN}
   {s \eq t \mathrel\vee C \qquad u[s'] \noteq v \mathrel\vee D}
@@ -2019,8 +2023,8 @@ we repeat them with slightly simplified notation, as we do not repeat side condi
   &
   \namedinference{EF}{s \eq t \mathrel\vee  s' \eq u \mathrel\vee C}{\sigma(t \noteq u \mathrel\vee  s \eq u \mathrel\vee C)}
 \end{tabular}
-\hfill
-\kern\belowdisplayskip
+\hfill\hbox{}
+\vskip\belowdisplayskip
 
 \noindent
 In each rule, $\sigma$ denotes the MGU of $s$ and $s'$.
