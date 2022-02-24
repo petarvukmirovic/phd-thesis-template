@@ -109,15 +109,15 @@ option \verb|--enable-ho|.%
 \footnote{\url{https://github.com/eprover/eprover/commit/80946ac}}
 %We plan to include the new higher-order inferences in the E 2.5 release.
 
-The main challenges we faced concerned the
+The main challenges we faced involved the
 representation of types and terms
 (Sect.~\ref{sec:ehoh:types-and-terms}), the unification
 \confrep{algorithm}{and matching algorithms}
 (Sect.~\ref{sec:ehoh:unif-match}), and the indexing data structures
-(Sect.~\ref{sec:ehoh:indexing}). We also adapted the
+(Sect. \ref{sec:ehoh:indexing}). We also adapted the
 inference rules (Sect.~\ref{sec:ehoh:inferences})\confrep{ and}{,} the
 heuristics (Sect.~\ref{sec:ehoh:heuristics})\confrep{}{, and the
-  preprocessor (Sect.~\ref{sec:ehoh:preprocessing})}.
+  preprocessor (Sect. \ref{sec:ehoh:preprocessing})}.
 
 \looseness=-1
 A central aspect of our work is a set of techniques we call
@@ -1294,6 +1294,7 @@ fashion and builds the substitution incrementally (like $\Pdtarrow$).
 Its initial states are of the form $([s \MATCH t], \emptyset)$. Its transitions
 are as follows:
 
+\vskip\abovedisplayskip
 \noindent
 \begin{tabular}{ll}
   \textsf{Decompose} & $ (\cst{f} \; \tuple{s}{m} \MATCH \cst{f} \; \tuple{t}{m} \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow {} ( (s_1 \MATCH t_1, \ldots, s_m \MATCH t_m) \cdot \overline{c}, \sigma ) $ \\[\jot]
@@ -1311,9 +1312,8 @@ are as follows:
   \textsf{Double}    & $(x \; \tuple{s}{{m}} \MATCH u \; \tuple{t}{{m}}  \mathrel{\cdot} \overline{c}, \, \sigma) \Matchiiarrow \bot$ \\
                      & if $x$ and $u$ have the same type, $\sigma(x)$ is defined, and $\sigma(x) \neq u$ \\[\jot]
 \end{tabular}
-
+\vskip\belowdisplayskip
 \newcommand\AlphaMatch[1]{\alpha(#1)}
-
 We need an auxiliary function to convert $\Matchiiarrow$ states to
 $\Matcharrow$ states.
 Let
