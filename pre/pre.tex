@@ -183,7 +183,7 @@ discussed logics, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}.
 
 \looseness=-1
-An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em literal} $l$ is an equation $s \eq t$ or its negation (disequation) $s \noteq t$. A clause is a
+An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em literal} $l$ is an equation $s \eq t$ or its negation (disequation) $s \noteq t$. A clause $C$ is a
 finite multiset of literals, interpreted and written disjunctively:\ $l_1 \llor
 \cdots \llor l_n$. Free variables of the clauses are implicitly
 universally quantified. Note that $\llor$ denoting disjunction in clauses
@@ -221,7 +221,7 @@ ordering on terms that has the following properties:
     \textit{Subterm property} & For all terms $s$ and contexts $C$, $C[s] \succ s$ \\
     \textit{Respects substitutions} & For all terms $s, t$ and substitutions $\sigma$, $s \succ t$ implies $\sigmaterm{s} \succ \sigmaterm{t}$ \\
     \textit{Respects contexts} & For all terms $s,t$ and contexts $C$, $s \succ t$ implies $C[s] \succ C[t]$ \\
-    \textit{Ground total} & For any two
+    \textit{Ground total} & For all distinct
     ground terms $s$ and $t$ either $s \succ t$ or $t \succ s$. \\
     \textit{Well-founded} & There are no infinite chains of the form $s_1 \succ s_2 \succ \cdots$ 
 \end{tabular}
@@ -254,10 +254,11 @@ only on unifiable terms. We say terms $s$ and $t$ are {\em unifiable} if there i
 substitution $\sigma$ such that $\sigmaterm{s} = \sigmaterm{t}$; we further say
 $\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is a pair of two terms of the same type. 
 We always specify if the constraint should be interpreted as ordered or unordered.
+We say a substitution $\sigma$ is \emph{more general} than $\varrho$ if there exists a substitution $\theta$
+such that $\varrho = \theta\sigma$.
 A \emph{most general unifier} is a
 unifier $\sigma$, such that for any other unifier $\theta$, there is a
-substitution $\varrho$ such that $\theta = \varrho\sigma$. When there is such a
-$\varrho$, we say $\sigma$ is more general than $\theta$. In first-order logic,
+substitution $\varrho$ such that $\theta = \varrho\sigma$. In first-order logic,
 the most general unifier is unique up to variable renaming. Furthermore,
 first-order logic admits efficient algorithms for computing the most general
 unifier \cite{hv-09-unifalgs}.

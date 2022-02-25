@@ -167,7 +167,7 @@ The main contribution of this thesis is the extension of two theorem provers,
 E and Zipperposition \cite{sc-15-simon-phd}, to full higher-order logic. To
 extend these provers, we faced many challenges. Some of them were of engineering
 nature, some of them were algorithmic, while others concerned fine-tuning the
-heuristics to achieve the best possible performance. We discuss those challenges in more detail.
+heuristics to optimize the performance. We discuss those challenges in more detail.
 
   
   First, we implemented the complete superposition calculus for $\lambda$-free
@@ -222,12 +222,13 @@ heuristics to achieve the best possible performance. We discuss those challenges
   manageable.
 
   
-  After spending so much time and energy on developing higher-order
-  provers, we took a step back and worked on improving first-order provers. In
-  particular, we looked at the most efficient approaches to simplify problems in
-  propositional logic, a simpler, decidable logic that disallows quantification.
-  We lifted some of these approaches to first-order logic and implemented them
-  in Zipperposition. 
+  After spending so much time and energy on developing higher-order provers, we
+  took a step back and worked on improving first-order provers. As they form the
+  basis of higher-order reasoning in our approach, this should improve
+  higher-order performance as well. In particular, we looked at the most
+  efficient approaches to simplify problems in propositional logic, which is
+  simpler than first-order logic and even decidable. We lifted some of these
+  propositional approaches to first-order logic and implemented them in Zipperposition. 
 
 \section{Thesis Structure and Publications}
 
