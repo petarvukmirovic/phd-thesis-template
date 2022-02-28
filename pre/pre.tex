@@ -118,6 +118,8 @@ the choice operator (and some variations of this logic). Assuming a set of
 base types $T$ and a set of symbols $\Sigma$, let us
 define terms and types. Types are either base types $\tau \in T$, or function
 types $\tau \rightarrow \upsilon$ where both $\tau$ and $\upsilon$ are types.
+When we write $\tau_1 \rightarrow \cdots \rightarrow \tau_n \rightarrow \upsilon$
+we assume $\upsilon$ to be a base type ($\upsilon \in T$), by convention.
 Each symbol $\cst{f} \in \Sigma$ is assigned a type.
 
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
@@ -160,7 +162,8 @@ substitutions $\varrho$ and $\sigma$, mapping disjoint variable sets, we write
 $\varrho \cup \sigma$ to denote $\varrho\sigma$.
 
 We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$
-and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
+and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$,
+omitting the length $n \geq 0$ when it is not important or it can be inferred. Every
 $\beta$-reduced term can be written as $\lam{\tuple{x}{m}}{a \, \tuplen{t}}$,
 where $a$ is not an application; we call $a$ the \emph{head} of the term. By
 convention, $a, b$ and $\zeta$ denote heads. If $a$ is a free variable, we call the term
@@ -174,7 +177,7 @@ position $p$, then $s$ is a subterm of $\lambda x.\, t$ at position $1.p$. Our
 definition of subterm gracefully generalizes the corresponding first-order
 notion: $\cst{a}$ is a subterm of $\cst{f} \, \cst{a} \, \cst{b}$ at position 1,
 but $\cst{f}$ and $\cst{f} \, \cst{a}$ are not subterms of $\cst{f} \, \cst{a}
-\, \cst{b}$. We say a term is ground if it has no variables, and closed
+\, \cst{b}$. We say a term is ground if it has no free variables, and closed
 if it has no loosely bound variables.
 
 

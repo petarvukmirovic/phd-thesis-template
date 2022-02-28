@@ -64,6 +64,7 @@
 \RequirePackage[usenames,dvipsnames,svgnames,table,xcdraw]{xcolor}
 %\RequirePackage[table]{xcolor}
 \RequirePackage{tikz}
+\RequirePackage{xargs}
 
 %% If the document is not compiled with XeLaTeX, we need to use the native
 %% fonts.

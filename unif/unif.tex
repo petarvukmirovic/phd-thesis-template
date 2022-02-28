@@ -28,8 +28,179 @@ Alexander Betnkamp and Visa Nummelin}
 \section{Introduction}
 \label{sec:unif:intro}
 
+Unification is concerned with finding a substitution that makes two terms
+equal, for some notion of syntactic equality. Since the invention of Robinson's first-order unification
+algorithm \cite{ar-65-resolution}, it has become an indispensable
+tool in theorem proving, logic
+programming, natural language processing, programming language compilation and other areas of computer science.
+
+Many of these applications are based on higher-order formalisms and require
+higher-order unification. Due to its undecidability and explosiveness,
+the higher-order unification problem is considered one of the main
+obstacles on the road to efficient higher-order tools.
+
+One of the reasons for higher-order unification's explosiveness lies in
+\emph{flex-flex pairs}, which consist of two variable-headed terms,
+e.g., $F \, X \unif G \, \cst{a}$. Even this seemingly simple
+problem has infinitely many incomparable unifiers.
+%
+One of the first methods designed to combat this explosion is Huet's
+preunification~\cite{gh-75-unification}. Huet noticed that some logical calculi
+would remain complete if flex-flex pairs are not eagerly solved but postponed as
+constraints. If only flex-flex constraints remain, we know that a unifier must
+exist and we do not need to solve them.
+%
+Huet's preunification has been used in many reasoning tools including Isabelle
+\cite{tn-02-isabelle}, Leo-III \cite{sb-21-leo3}, and Satallax
+\cite{cb-12-satallax}. However, recent developments in higher-order theorem
+proving~\cite{bbtvw-21-sup-lam,br-19-restricted-unif} require full unification---i.e., enumeration of unifiers even for
+flex-flex pairs, which is the focus of this chapter.
+
+Jensen and Pietrzykowski's (JP) procedure \cite{jp-76-unif} is the best known
+procedure for this purpose (Section \ref{sec:unif:background}). Given two terms to
+unify, it first identifies a position where the terms disagree.
+Then, in parallel branches of the search tree, it applies suitable substitutions, involving a
+variable either at the position of disagreement or above, and repeats this process on
+the resulting terms until they are equal or trivially nonunifiable.
+
+Building on the JP procedure, we designed a new procedure (Section
+\ref{sec:unif:the-unification-procedure}) with the same completeness guarantees (Section \ref{sec:unif:proof-of-completeness}).
+The new procedure addresses many of the issues that are
+detrimental to the performance of the JP procedure.
+%
+First, the JP procedure does not terminate in many cases of obvious
+nonunifiability, e.g., for $X \unif \cst{f} \, X$, where $X$ is a non-functional
+variable and $\cst{f}$ is a function constant. This example also shows that
+the JP procedure does not generalize Robinson's first-order procedure gracefully. To address
+this issue, our procedure detects whether a unification problem belongs to a
+fragment for which unification is decidable and finite complete sets of unifiers (CSUs)
+exist.
+% Another approach for treating explosiveness of higher-order unification is to
+% restrict our attention to some fragment $L$ of $\lambda$-terms that has
+% decidable, unary unification problem. We say that the unification problem is
+% unary if any two terms belonging to $L$ are either not unifiable or have a most
+% general unifier (MGU). 
+We call algorithms that enumerate elements of the CSU for such fragments
+\emph{oracles}. Noteworthy fragments with oracles are first-order terms,
+patterns \cite{tn-93-patterns}, functions-as-constructors
+\cite{tl-16-facunif}, and a new fragment 
+we present in Section~\ref{sec:unif:solid-oracle}.
+%
+The unification procedures of Isabelle and Leo-III check whether the unification
+problem belongs to a decidable fragment, but we take this idea a step further by
+checking this more efficiently and for every subproblem arising during
+unification.
+
+Second, the JP procedure computes many redundant unifiers. Consider the
+example $F \, (G \, \cst{a}) \unif F \, \cst{b}$, where it produces, in addition
+to the desired unifiers $\{F \mapsto \lambda x. \, H\}$ and $\{G \mapsto \lambda
+x. \, \cst{b}\}$, the redundant unifier $\{F \mapsto \lambda x. \, H,\; G \mapsto
+\lambda x. \, x\}$. 
+The design of our procedure avoids computing many redundant unifiers, including
+this one. Additionally, as oracles usually return a small CSU, 
+their integration reduces the number of redundant unifiers.
+
+\newpage
+Third, the JP procedure applies more explosive rules than Huet's preunification procedure to
+flex-rigid pairs. To gracefully generalize Huet's procedure, 
+we show that his rules for flex-rigid pairs suffice 
+to enumerate CSUs
+if combined with appropriate rules for flex-flex pairs.
+
+Fourth, the JP procedure repeatedly traverses the parts of the unification
+problem that have already been unified. Consider the problem $\cst{f}^{100} \,
+(G \, \cst{a}) \unif \cst{f}^{100} \, (H \, \cst{b})$, where the exponents
+denote repeated application. It is easy to see that this problem can be reduced
+to $G \, \cst{a} \unif H \, \cst{b}$. However, the JP procedure will wastefully
+retraverse the common context $ \cst{f}^{100} [\;] $ after applying each new
+substitution. Since the JP procedure must apply substitutions to the variables occurring in the
+common context above the position of disagreement, it cannot be easily adapted to
+eagerly decompose unification pairs. By contrast, our procedure is designed to decompose
+the pairs eagerly, never traversing a common context twice.
+
+Last, the JP procedure does not allow to apply substitutions and
+$\beta$-reduce lazily.
+The rules of simpler procedures (e.g., first-order
+\cite{hv-09-unifalgs} and pattern unification \cite{tn-93-patterns}) depend only on
+the heads of the unification pair.
+Thus, to
+determine the next step, implementations of these procedures need to
+substitute and
+$\beta$-reduce only until the heads of the current unification
+pair are not mapped by the substitution and are not $\lambda$-abstractions. 
+Since the JP procedure is not based on the decomposition of unification pairs, 
+it is unfit for
+optimizations of this kind.
+We designed our procedure to allow for this optimization.
+
+% In Section \ref{sec:unif:indexing} we discuss a higher-order extension of fingerprint indexing,
+% a technique to filter out terms that are not unifiable with a given
+% query term from a set of terms. 
+To more efficiently find terms (in a large term set) that are unifiable with a given query term,
+we developed a higher-order extension of fingerprint indexing \cite{ss-12-fp-indexing}
+(Section \ref{sec:unif:indexing}).
+We implemented our procedure, several oracles,
+and the fingerprint index in
+the Zipperposition prover (Section \ref{sec:unif:implementation}). Since a
+straightforward implementation of the JP procedure already existed in
+Zipperposition, we used it as a baseline to evaluate the performance of our
+procedure (Section \ref{sec:unif:evaluation}). The results show substantial
+performance improvements.
+
+% This invited article is an extended version of our FSCD-2020 paper \cite{vbn-21-unif}.
+% Most notable extension is the Section \ref{sec:unif:proof-of-completeness}, which gives
+% the detailed proof of completeness of our new procedure. In addition, 
+% we give proofs for all the unproved statements from the paper, expand the examples 
+% and provide more detailed explanations.
+
+
 \section{Background}
 \label{sec:unif:background}
+
+Our setting is the simply typed $\lambda$-calculus. Unless mentioned otherwise,
+we use the same notation as laid out in Chapter~\ref{ch:pre}. Additional notions
+are introduced as follows.
+
+\emph{Parameters} and \emph{body} for any term $\param[\seq x]s$ are defined to
+be $\seq x$ and $s$ respectively, where $s$ is not a $\lambda$-abstraction. The
+\emph{size} of a term is inductively defined as $\text{size}(F) = 1$;
+$\text{size}(x) = 1$; $\text{size}(\cst{f}) = 1$; $\text{size}(s\,t) =
+\text{size}(s) + \text{size}(t)$; $\text{size}(\lambda x.\, s) = \text{size}(s)
++ 1$. A term is in \emph{head normal form} ({\em hnf}) if it is of the form
+$\lambda \overline{x}.\,a\,\overline{t}$, where $a$ is a free variable, bound
+variable, or a constant. In this case, $a$ is called the \emph{head} of the
+term. Note that this relaxes the condition that the term needs to be in
+$\beta$-normal form to determine its head. A term is called flex or rigid if its
+head is flex or rigid, respectively. By $\nf{s}{\textsf{h}}$ we denote the term
+obtained from a term $s$ by repeated $\beta$-reduction of the leftmost outermost
+redex until it is in hnf. Unless stated otherwise, we view terms syntactically,
+as opposed to $\alpha\beta\eta$-equivalence classes. The common context
+$\mathcal{C}(s,t)$ of two $\eta$-long $\beta$-reduced terms $s$~and~$t$ of the
+same type is defined inductively as follows, assuming that $a \not= b$:
+$\mathcal{C}(\lambda x.\, s, \lambda y.\, t) = \lambda x.\,
+\mathcal{C}(s,\{y\mapsto x\}t)$; $\mathcal{C}(a\,\overline{s}_m,
+b\,\overline{t}_n) = \square$; $\mathcal{C}(a\,\overline{s}_m,
+a\,\overline{t}_m) = a\,\mathcal{C}(s_1,t_1)\,\ldots\,\mathcal{C}(s_m,t_m)$.
+Unless otherwise stated, we take unification constraint $s \unif t$ to be an
+unordered pair of two terms of the same type. To ease notation, we do not write
+parentheses around application of substitutions to terms (or other objects containing terms);
+in other words we shorten $\sigma(\theta(\varrho(s)))$ to $\sigma\theta\varrho \, s$
+
+\ourpara{Remark}
+We use the definition of a CSU from Sect.~\ref{sec:pre:unif} because 
+JP's definition of a CSU, which we have adopted in our earlier work \cite{vbn-21-unif}, is flawed.
+JP's definition does not employ the notion of auxiliary variables,
+but instead requires $\rho X = \theta\sigma X$ for all variables mapped by $\rho$.
+This is problematic because nothing prevents $\rho$ from mapping the auxiliary variables.
+For example, $\sigma = \{F \mapsto \lambda x y.\> G\>y\}$ is supposed
+to be an MGU for $F\>\cst{a}\>\cst{c} \unif F\>\cst{b}\>\cst{c}$.
+But for the unifier $\rho = \{F \mapsto \lambda x y.\> y,\> G \mapsto \lambda x.\> \cst{d}\}$,
+without the notion of auxiliary variables,
+there exists no appropriate substitution $\theta$
+because $\rho G = \theta\sigma G$ requires $\theta G = \lambda x.\> \cst{d}$
+and $\rho F = \theta\sigma F$ requires $\theta G = \lambda x.\> x$.
+
+
 
 \section{The Unification Procedure}
 \label{sec:unif:the-unification-procedure}
