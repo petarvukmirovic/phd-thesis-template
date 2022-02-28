@@ -137,9 +137,30 @@ $\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand \cst{q})$ are well-formed
 terms of higher-order logic. For convenience, we still call terms of Boolean
 types \emph{formulas}.
 
-We assume the standard notions of $\alpha$, $\beta$ and $\eta$ conversions and
-write $s \equi t$ if terms $s$ and $t$ are equal modulo $\alpha\beta\eta$
-converison. We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$
+\looseness=-1
+With $\alpha$-renaming we assume the rule $(\lambda x. \, s) \longrightarrow \lambda
+y. \, \{x \mapsto y\}(s)$ where $y$ does not occur loosely bound in $s$ and 
+$y$ is not bound in $s$. Application of substitution $\sigma$ to term
+$t$, implicitly $\alpha$-renames bound variables to avoid capture.  For example,
+$\{X \mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$. The
+$\beta$-reduction rule corresponds to applying arguments to function: $(\lambda
+x. s) \, t \longrightarrow \{x \mapsto t\} (s)$, where the bound variables in $s$
+are renamed to avoid capture. Lastly, $\eta$-reduction is defined as $\lambda
+x.\, s \, x \longrightarrow s$ under the condition that $x$ is not loosely
+bound in $x$. We write $s \equi t$ if terms $s$ and $t$ are equal modulo $\alpha\beta\eta$
+converison. 
+
+\looseness=-1
+As hinted in previous definitions, higher-order substitutions
+($\sigma,\varrho,\ldots$) are functions from both free and bound variables to
+terms. A variable $F$ is mapped by $\sigma$ if $ \sigma(F) \not\equi F$.
+Substitutions map only finitely many variables. Given a substitution $\varrho$,
+which maps $F$ to $s$, with $\varrho\setminus\{F \mapsto s\}$ we denote a
+substitution that does not map $F$ and otherwise coincides with $\varrho$. Given
+substitutions $\varrho$ and $\sigma$, mapping disjoint variable sets, we write
+$\varrho \cup \sigma$ to denote $\varrho\sigma$.
+
+We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$
 and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
 $\beta$-reduced term can be written as $\lam{\tuple{x}{m}}{a \, \tuplen{t}}$,
 where $a$ is not an application; we call $a$ the \emph{head} of the term. By
@@ -157,16 +178,6 @@ but $\cst{f}$ and $\cst{f} \, \cst{a}$ are not subterms of $\cst{f} \, \cst{a}
 \, \cst{b}$. We say a term is ground if it has no variables, and closed
 if it has no loosely bound variables.
 
-Higher-order substitutions ($\sigma,\varrho,\ldots$) are functions from free and bound
-variables to terms. A variable $F$ is mapped by $\sigma$ if $ \sigma(F) \not\equi
-F$. Each substitution maps only finitely many variables, and it is denoted as in
-the first-order case. Application of  $\sigma$ to term $t$ is denoted $\sigma(t)$;
-this application $\alpha$-renames $t$ to avoid variable capture. For example,
-$\{X \mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$.  Given a substitution
-$\varrho$, which maps $F$ to $s$, we write $\varrho\setminus\{F \mapsto s\}$ to
-denote a substitution that does not map $F$ and otherwise coincides with
-$\varrho$. Given substitutions $\varrho$ and $\sigma$, mapping disjoint variable
-sets, we write $\varrho \cup \sigma$ to denote $\varrho\sigma$.
 
 Throughout this thesis, we consider completeness of higher-order calculi only
 with respect to Henkin semantics \cite{bm-14-automation-ho}. Note that no
@@ -194,7 +205,8 @@ predicate or equational. For uniformity, and to
 stay close to the implementation, we encode predicate atoms as equations with
 $\itrue$. Negative literals are encoded as disequations. For example,
 $\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
-$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. 
+$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. To lighten the notation,
+we sometimes write the predicate literals in non-encoded form.
 
 Applying substitution to a literal is reduced to applying it to both sides of
 the (dis)equa\-tion and it is extended pointwise to clauses. It is sometimes
@@ -342,6 +354,31 @@ superposition are as follows:
          $\sigmacl{s \eq t}$ is eligible for paramodulation, $\sigmacl{u \noteq v}$ is eligible for resolution, and $u|_p$ is not a variable
 \end{tabular}
 
+\medskip
+Let us give some intuition behind how these rules are applied in practice. The
+\infname{ER} rule is used to replace equality with equality within a clause.
+Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In
+clausal form it is $X \noteq \cst{2} \llor \cst{even}(X)$. Applying the
+\infname{ER} rule effectively applies the precondition $X \eq \cst{2}$ to the
+conclusion $\cst{even}(X)$ to obtain $\cst{even}(\cst{2})$. The \infname{EF}
+rule can be used to find instances of the clause that can further be simplified.
+Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
+\cst{p}(X, Y)$. Applying \infname{EF} to its first two literals yields $\cst{a}
+\noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$. This clause
+then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
+
+Lastly, superposition rules are used to simulate what mathematicians do when
+they ``replace equals by equals''. Left premise intuitively states that an
+equation $s \eq t$ holds under condition $C$ (or more precisely, its negation).
+Similarly, the right premise asserts that a (dis)equation holds under a
+condition. Superposition rule simply concatenates the conditions for both
+premises and replaces equals by equals in two main inference terms. For example
+given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and $\neg
+\cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition between their
+last literals results in $\neg
+\cst{even}(X) \llor \neg \cst{even}(\cst{b}) \llor \cst{g}(\cst{a}) \eq
+\cst{b}$.
+
 % \[
 % \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
 % \]
@@ -366,6 +403,7 @@ superposition are as follows:
 % where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
 % $(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable;
 % \infname{SP} stands for positive superposition 
+
 
 % \[
 % \namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}
