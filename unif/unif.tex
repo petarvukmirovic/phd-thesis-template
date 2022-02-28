@@ -1,3 +1,55 @@
 \chapter{Efficient Full Higher-Order Unification}
 \setheader{Efficient Full Higher-Order Unification}
 \label{ch:unif}
+
+\blfootnote{In this work I designed the main algorithm, solid oracle and
+fingerprint indexing. I also implemented and evaluated the algorithms. Visa
+Nummelin proved the completeness of the main algorithm with Alexander Bentkamp's help.
+The completeness and termination of solid oracle was proven by me with Alexander
+Bentkamp's help.}
+
+\authors{Joint work with\\
+Alexander Betnkamp and Visa Nummelin}
+
+\begin{abstract}
+  We developed a procedure to enumerate complete sets of higher-order unifiers based on work
+  by Jensen and Pietrzykowski. Our procedure removes many redundant unifiers by
+  carefully restricting the search space and tightly integrating decision
+  procedures for fragments that admit a finite complete set of unifiers. We
+  identify a new such fragment and describe a procedure for computing its unifiers.
+  Our unification procedure, together with new higher-order term indexing data structures, 
+  is implemented in the Zipperposition theorem prover.
+  Experimental evaluation shows a clear advantage over Jensen and Pietrzykowski's
+  procedure.    
+\end{abstract}
+    
+\newpage
+
+\section{Introduction}
+\label{sec:unif:intro}
+
+\section{Background}
+\label{sec:unif:background}
+
+\section{The Unification Procedure}
+\label{sec:unif:the-unification-procedure}
+
+\section{Proof of Completeness}
+\label{sec:unif:proof-of-completeness}
+
+\section{A New Decidable Fragment}
+\label{sec:unif:solid-oracle}
+
+\section{An Extension of Fingerprint Indexing}
+\label{sec:unif:indexing}
+
+\section{Implementation}
+\label{sec:unif:implementation}
+
+\section{Evaluation}
+\label{sec:unif:evaluation}
+
+\section{Discussion and Related Work}
+
+\section{Conclusion}
+
