@@ -29,23 +29,22 @@ formulas are built inductively using logical connectives $\inot, \iand, \ior,
 \psi, \allowbreak \phi \ior \psi, \phi \iimplies \psi, \phi \iequiv \psi$ are formulas as well.
 
 To interpret the formulas, propositional variables are assigned 0 (false) or 1
-(true), constants $\itrue$ and $\ifalse$ are assigned 1 and 0, respectively; the
-formula is interpreted using the rules for each connective
+(true), and constants $\itrue$ and $\ifalse$ are assigned 1 and 0, respectively; formulas are interpreted using the rules for each connective
 \cite[Sect.~1.4]{hr-00-logic-in-cs}. As there are finitely many propositional
 variables in a formula, trying all (finitely many) possible variable assignments
 describes an algorithm to decide satisfiability (existence of satisfiable
-assignment for a formula) or validity (if all assignments are satisfy the formula).
+assignment for a formula) or validity (if all assignments satisfy the formula).
 
 However, this simple approach is prohibitively expensive and modern tools that
 decide propositional satisfiability problem (SAT solvers) use more advanced
-approaches such as CDCL calculus \cite{mss-96-cdcl}. Modern SAT solvers also
-heavily preprocess the problem and continue simplifying it during proving
+approaches such as the CDCL calculus \cite{mss-96-cdcl}. Modern SAT solvers also
+heavily preprocess the problem and continue simplifying it during the proving
 process.
 
 \section{First-Order Logic}
 
 First-order logic increases the expressivity by allowing quantification over
-objects and has more complicated formula structure. There are many flavors of
+objects and has a more complicated formula structure. There are many flavors of
 first-order logic, but in this thesis we consider monomorphic first-order logic
 with equality.
 
@@ -53,7 +52,7 @@ We distinguish a set of base types $T$ which is required to have the Boolean
 type $o$, and a set of symbols $\Sigma$. To each symbol $\cst{f} \in \Sigma$ a
 tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
 $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
-\ldots, \tau_{n})$ are \emph{argument types}, $\tau$ is the \emph{return type}, and that $n$
+\ldots, \tau_{n})$ are \emph{argument types}, $\tau$ is the \emph{return type}, and $n$
 is the \emph{arity} of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ we call
 $\cst{f}$ a \emph{predicate symbol}, otherwise we call it a \emph{function symbol}. Argument types may not be Boolean.
 
@@ -66,11 +65,11 @@ abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$. Using a similar
 notation, we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$
 or simply $\tuplen{t}$.
 
-Terms are used to build \emph{atoms}. Atom is either a term $t$ of type $o$ (\emph{predicate atom}) or an
+Terms are used to build \emph{atoms}. An atom is either a term $t$ of type $o$ (\emph{predicate atom}) or an
 equation $s \eq t$ where terms $t$ and and $s$ are of the same type (\emph{equational atom}). Atoms are
 combined using logical connectives to build formulas just like in propositional
 logic. Additionally, first-order formulas are built using quantifiers: if $\phi$
-is a formula and $x$ is a variable then $\iforall x.\, \phi$, as well as
+is a formula and $x$ is a variable, then $\iforall x.\, \phi$, as well as
 $\iexists x.\, \phi$ are formulas. The first formula requires that $\phi$ holds
 for any value of $x$, while the second one requires that there is some $x$ for
 which $\phi$ holds. As soon as there is a single functional symbol with arity
@@ -80,14 +79,14 @@ values to variables to determine the truth value of the formula. It is also
 necessary to interpret the symbols. Therefore, it is obvious that the propositional
 technique for deciding satisfiability does not work in the first-order case.
 
-Even though we do not formally define semantics of logic, we assume the natural
+Even though we do not formally define the semantics of logic, we assume the natural
 extensions of domain, valuation, interpretation and model (as defined by Fitting
-\cite{mf-1996-fol}) from unsorted to many-sorted logic. Models we consider are
+\cite{mf-1996-fol}) from unsorted to many-sorted logic. The models we consider are
 \emph{normal}, i.e., they interpret $\eq$ as an equality relation. Usual notions
 of (un)satisfiability and (in)validity are assumed. We write
 $\ourmodel~\models_\xi~N$ to denote that a model $\ourmodel$ satisfies a clause
 set $N$, for a variable assignment $\xi$. If $\ourmodel$ is a model of $N$
-(i.e., it satisfies it under every variable assignment), we simply write
+(i.e., $\ourmodel$ satisfies it under every variable assignment), we simply write
 $\ourmodel \models N.$  Abusing notation, we write $M \models N$ to denote that
 $M$ \emph{entails} $N$, i.e., that every model of $M$ is a model of $N.$
 
@@ -104,8 +103,8 @@ we denote that $s$ is a subterm of $u$.
 {\em Substitutions} $\sigma, \varrho, \ldots$ are total mappings from variables to
 terms of the same type. Substitutions map only finitely many variables to terms
 other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
-x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to itself.
-Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$ results in
+x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to themselves.
+Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$, results in
 replacing all mapped variables by the corresponding terms.
 The composition $\varrho\sigma$ of substitutions is defined by
 $\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitution $\sigma$ is {\em grounding}
@@ -135,7 +134,7 @@ logical connectives are symbols present in the set $\Sigma$. This means that
 higher-order logic does not distinguish between terms and formulas. For example,
 $\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand \cst{q})$ are well-formed
 terms of higher-order logic. For convenience, we still call terms of Boolean
-types \emph{formulas}.
+type \emph{formulas}.
 
 \looseness=-1
 With $\alpha$-renaming we assume the rule $(\lambda x. \, s) \longrightarrow \lambda
@@ -153,7 +152,7 @@ converison.
 \looseness=-1
 As hinted in previous definitions, higher-order substitutions
 ($\sigma,\varrho,\ldots$) are functions from both free and bound variables to
-terms. A variable $F$ is mapped by $\sigma$ if $ \sigma(F) \not\equi F$.
+terms. A variable $F$ is mapped by $\sigma$ if $ \sigma(F)\,\not\equi\,F$.
 Substitutions map only finitely many variables. Given a substitution $\varrho$,
 which maps $F$ to $s$, with $\varrho\setminus\{F \mapsto s\}$ we denote a
 substitution that does not map $F$ and otherwise coincides with $\varrho$. Given
@@ -164,7 +163,7 @@ We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$
 and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
 $\beta$-reduced term can be written as $\lam{\tuple{x}{m}}{a \, \tuplen{t}}$,
 where $a$ is not an application; we call $a$ the \emph{head} of the term. By
-convention, $a, b$ or $\zeta$ denote heads. If $a$ is a free variable, we call the term
+convention, $a, b$ and $\zeta$ denote heads. If $a$ is a free variable, we call the term
 \emph{flex}; otherwise, the term is \emph{rigid}.
 
 Deviating from the standard notion of higher-order subterm, we define subterms
@@ -189,16 +188,16 @@ semantics.
 
 The resolution and superposition calculi do not work directly on formulas, but
 on their simplified forms, {\em clauses}. Thus, the initial problem, expressed as a
-set of formulas, must be transformed in a set of clauses. For all three
+set of formulas, must be transformed into a set of clauses. For all three
 discussed logics, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}.
 
 \looseness=-1
 An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em literal} $l$ is an equation $s \eq t$ or its negation (disequation) $s \noteq t$. A clause $C$ is a
 finite multiset of literals, interpreted and written disjunctively:\ $l_1 \llor
-\cdots \llor l_n$. Free variables of the clauses are implicitly
+\cdots \llor l_n$. Free variables of clauses are implicitly
 universally quantified. Note that $\llor$ denoting disjunction in clauses
-is different than formula-building $\ior$.
+is different from the formula-building $\ior$.
 
 In standard, non-clausal first-order logic, an atom is either
 predicate or equational. For uniformity, and to
@@ -217,9 +216,9 @@ substitution.
 \section{Superposition}
 
 Superposition is one of the most successful calculi for first-order logic with
-equality. It ows its success to careful treatment of equality and built-in
+equality. It owes its success to a careful treatment of equality and built-in
 heuristics to prune the search space such as term order and selection functions.
-Before we introduce the rules of the calculus, we provide definitions of these and other
+Before introducing the rules of the calculus, we provide definitions of these and other
 background concepts.
 
 \subsection{Term Order and Selection}
@@ -242,21 +241,21 @@ The term order is lifted to literals and clauses using the {\em multiset extensi
 $\succ$. The order is extended to multisets as follows
 \cite[Sect.~2.5]{bg-01-resolution}. For two multisets $S_1$ and $S_2$, we write $S_1 \succ S_2$ if $S_1 \not= S_2$
 and whenever $S_2(x) > S_1(x)$ then there is some $y \succ x$ such that $S_1(y)
-> S_2(y)$. We use notation $S(x)$ to denote the number of occurrences of $x$ in
-$S$. To use multiset extension, positive literals are represented as $ \{ \{s\},
+> S_2(y)$. We use the notation $S(x)$ to denote the number of occurrences of $x$ in
+$S$. To use the  multiset extension, positive literals are represented as $ \{ \{s\},
 \{t\} \}$ and negative ones as $\{ \{ s, t \} \}$. Clauses are then represented as 
 multisets of such literals. 
 
-Two orders that are commonly used in superposition theorem proving are
-Knuth-Bendix order (KBO) \cite[Sect.~5.4.4]{bn-98-tr-and-all-that} and
+Two orders that are commonly used in superposition theorem proving are the
+Knuth-Bendix order (KBO) \cite[Sect.~5.4.4]{bn-98-tr-and-all-that} and the
 lexicographic path order (LPO) \cite[Sect.~5.4.2]{bn-98-tr-and-all-that}.
 KBO assigns integer weights to symbols and uses precedence between symbols to
 break eventual ties. LPO entirely relies on precedence and inspects term
-structure more closely to determine the order. 
+structures more closely to determine the order. 
 
 \newcommand{\selfun}{\ensuremath{\mathit{Sel}}}
-{\em Literal selection function} is a function that selects a (multi)subset of literals.
-Superposition requires that at least one of the selected literals is negative. 
+The {\em literal selection function} is a function that selects a (multi)subset of literals
+from a given (multi)set of literals. Superposition requires that at least one of the selected literals is negative. 
 
 \subsection{Unification}
 \label{sec:pre:unif}
@@ -295,10 +294,10 @@ that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The most general unifi
 corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
 the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
 if two higher-order terms are unifiable, but there exist algorithms
-that enumerate all elements of CSU for unifiable terms.
+that enumerate all elements of the CSU for unifiable terms.
 
 These higher-order concepts gracefully generalize the corresponding first-order
-ones. For example, if $s$ at $t$ are first-order there must exist a singleton
+ones. For example, if $s$ at $t$ are first-order, then there must exist a singleton
 CSU, i.e., the most general unifier. Thus, we will not explicitly qualify
 unifiers as first-order or higher-order and ensure the context provides enough
 information.
@@ -307,7 +306,7 @@ information.
 \label{sec:pre:rules}
 \newcommand{\mgu}{\ensuremath{\mathit{mgu}}}
 
-Before we spell out the inference rules of standard, first-order superposition
+Before spelling out the inference rules of standard, first-order superposition
 let us introduce some helpful notation, following Schulz \cite{ss-02-brainiac}.
 With $t|_p$ we denote subterm of $t$ at position $p$ and with $t[p \leftarrow
 t']$ replacement of this subterm with $t'$. Let \selfun{} be a selection function,
@@ -318,10 +317,11 @@ is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals 
 within either positive or negative selected literals. We say \sigmacl{l} is
 eligible for paramodulation if it is positive, nothing is selected and
 \sigmacl{l} is the maximal literal within the literals of \sigmacl{C}. With
-$\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using horizontal
+$\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using a horizontal
 line to separate premises and the conclusion, four inference rules of
 superposition are as follows:
 
+\medskip
 \begin{tabular}{m{\dimexpr 0.36\linewidth-2\tabcolsep}m{\dimexpr 0.57\linewidth-2\tabcolsep}}
     \multicolumn{2}{l}{{\bf Equality resolution} (ER)} \\[\jot]
     $\namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}$ & where $\sigma = \mgu(s,t)$, and $\sigmacl{s \noteq t}$ is eligible for resolution
@@ -415,10 +415,10 @@ last literals results in $\neg
 
 \subsection{The Redundancy Criterion and Simplification Rules}
 
-Above described rules are used to generate new clauses from already derived
+The rules described above are used to generate new clauses from already derived
 ones. Even though orderings and selection are used to reduce the search space,
 it still grows rather fast. To identify unnecessary clauses in the search
-space, superposition features \emph{redundancy criterion}
+space, superposition features a \emph{redundancy criterion}
 \cite[Sect.~4.2.2]{bg-01-resolution}. We say that a ground clause $C$ is
 {\em redundant} in a ground set of clauses $N$ if it is entailed by a subset of
 clauses in $N$ such that each clause in this subset is smaller than $C$. More
@@ -427,9 +427,9 @@ instance of $C$ is redundant for some grounding of $N$. Removing redundant
 clauses does not affect completeness of superposition.
 
 Other than the four generating rules, superposition provers also use
-simplification rules, which are justified using redundancy criterion. These
+simplification rules, which are justified using the redundancy criterion. These
 rules replace the premises with conclusions, and we denote them using double
-bars. As an example of such rule, let us introduce rewriting (demodulation) of
+bars. As an example of such a rule, let us introduce rewriting (demodulation) of
 negative literals (\infname{RN}):
 
 \[
@@ -444,9 +444,9 @@ s$ or tautological clauses are clearly justified by the redundancy criterion.
 Schulz gives an extensive list of such rules \cite{ss-02-brainiac}, including rewriting of positive
 literals which has more side conditions.
 
-We say that a clause $C$ subsumes clause $D$ is there is a substitution $\sigma$
+We say that a clause $C$ subsumes clause $D$ if there is a substitution $\sigma$
 such that $\sigmacl{C} \subseteq D$. Subsumption is one of the most important
-operations within a theorem prover. This rule does not adhere to redundancy
+operations within a theorem prover. This rule does not adhere to the redundancy
 criterion, but can be justified using other mechanisms \cite{wtrb-20-sat-framework}.
 
 \subsection{The Saturation Procedure}
