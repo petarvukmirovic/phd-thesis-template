@@ -361,7 +361,7 @@ Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In
 clausal form it is $X \noteq \cst{2} \llor \cst{even}(X)$. Applying the
 \infname{ER} rule effectively applies the precondition $X \eq \cst{2}$ to the
 conclusion $\cst{even}(X)$ to obtain $\cst{even}(\cst{2})$. The \infname{EF}
-rule can be used to find instances of the clause that can further be simplified.
+rule can be used to find instances of the clause that can be further simplified.
 Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
 \cst{p}(X, Y)$. Applying \infname{EF} to its first two literals yields $\cst{a}
 \noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$. This clause
