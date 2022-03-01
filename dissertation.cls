@@ -100,7 +100,7 @@
 
     \setmainfont[Path = fonts/libertinus/, ItalicFont=libertinusserif-italic.otf, BoldFont=libertinusserif-bold.otf, BoldItalicFont=libertinusserif-bolditalic.otf]{libertinusserif-regular.otf}
     % \setsansfont[Path = fonts/libertinus/, BoldFont=libertinussans-bold.otf, ItalicFont=libertinussans-italic.otf]{libertinussans-regular.otf}
-     \setsansfont[Scale=0.8, Path = fonts/Inter/static/, BoldFont=Inter-Bold.ttf]{Inter-Regular.ttf}
+     \setsansfont[Scale=0.85, Path = fonts/Inter/static/, BoldFont=Inter-Bold.ttf]{Inter-Regular.ttf}
     \setmathfont[Path = fonts/libertinus/]{libertinusmath-regular.otf}
     \setmonofont[Scale=MatchLowercase, Path=fonts/inconsolata/]{Inconsolata-Regular.ttf}
     %% The default style for text is Tahoma (sans-serif).

@@ -205,6 +205,649 @@ and $\rho F = \theta\sigma F$ requires $\theta G = \lambda x.\> x$.
 \section{The Unification Procedure}
 \label{sec:unif:the-unification-procedure}
 
+To unify two terms $s$ and $t$, our procedure builds a tree as follows. The
+nodes of the tree have the form $(E,\sigma)$, where $E$ is a multiset of
+unification constraints $\{(s_1 \unif t_1), \ldots, (s_n~\unif~t_n)\}$ and
+$\sigma$ is the substitution constructed up to that point.  The root node is $(\{s~\unif~t\}, \makeop{id})$, where $\makeop{id}$ is the identity
+substitution. The tree is then constructed applying the transitions listed
+below. The leaves of the tree are either failure nodes  $\bot$ or substitutions
+$\sigma$. Ignoring failure nodes, the set of all substitutions in the leaves
+forms a complete set of unifiers for $s$ and $t$. More generally, our procedure can be used to
+unify a multiset $E$ of constraints by making the root of the unification tree
+$(E, \makeop{id})$.
+
+The procedure requires an infinite supply of fresh free variables. These fresh
+variables must be disjoint from the variables occurring in the initial multiset
+$E$. Whenever a transition $(E,\sigma) \newunifarrow (E',\sigma')$ is made, all
+fresh variables used in $\sigma'$ are removed from the supply and cannot be used
+again as fresh variables.
+
+\looseness=-1
+The transitions are parametrized by a mapping~$\mathcal{P}$ that assigns a set
+of substitutions to a unification pair; this mapping abstracts the
+concept of unification rules present in other unification procedures. Moreover,
+the transitions are parametrized by a selection function~$S$ mapping a multiset
+$E$ of unification constraints to one of those constraints $S(E) \in E$, the
+\emph{selected} constraint in $E$. The transitions, defined as follows, are only
+applied if the $\selected{\text{grayed}}$ constraint is selected.
+\begin{description}[labelwidth=\widthof{\rm\textsf{Normalize$_{\alpha\eta}$}}]
+  \item[\rm\unifrulename{Succeed}]
+      $(\varnothing, \sigma) \newunifarrow \sigma$ 
+  % \smallskip
+  \item[\rm\unifrulename{Normalize$_{\alpha\eta}$}]
+      $(\{\selected{\lambda \overline{x}_m. \, s \unif \lambda \overline{y}_n. \, t}\}\uplus E, \sigma) 
+      \newunifarrow 
+      (\{\lambda \overline{x}_m. \, s \unif \lambda \overline{x}_m. \, t'\, x_{n+1} \ldots x_m\}\uplus E, \sigma)$\\
+      % where $n \geq m$ and $t'=\{y_1\mapsto x_1,\ldots,y_m\mapsto x_m\}t$
+      where $m \geq n$, $\overline{x}_m \not= \overline{y}_n$, and $t'=\{y_1\mapsto x_1,\ldots,y_n\mapsto x_n\}t$
+  % \smallskip
+  \item[\rm\unifrulename{Normalize$_\beta$}]
+      $(\{\selected{\lambda \overline{x}. \, s \unif \lambda \overline{x}. \, t}\}\uplus E, \sigma) 
+      \newunifarrow 
+      (\{\lambda \overline{x}. \, \nf{s}{\textsf{h}} \unif \lambda \overline{x}. \, \nf{t}{\textsf{h}}\}\uplus E, \sigma)$\\
+      where $s$ or $t$ is not in hnf
+      % \smallskip
+  \item[\rm\unifrulename{Dereference}]
+      $(\{\selected{\lambda \overline{x}. \, F \, \overline{s} \unif \lambda \overline{x}. \, t}\}\uplus E, \sigma)
+      \newunifarrow 
+      (\{\lambda \overline{x}. \, (\sigma F) \,\overline{s} \unif \lambda \overline{x}. \, t\}\uplus E, \sigma)$\\
+      where none of the previous transitions apply and $F$ is mapped by $\sigma$
+  % \smallskip
+      \item[\rm\unifrulename{Fail}]
+      $(\{\selected{\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda \overline{x}. \, b \, \overline{t}_n}\}
+      \uplus E, \sigma) \newunifarrow \bot$\\
+      where none of the previous transitions apply, and
+      $a$ and $b$ are different rigid heads
+  % \smallskip
+  \item[\rm\unifrulename{Delete}]  $(\{\selected{s \unif s}\}\uplus E, \sigma) \newunifarrow (E, \sigma)$\\
+      where none of the previous transitions apply
+  % \smallskip 
+  \item[\rm\unifrulename{OracleSucc}]
+  $(\{\selected{s \unif t}\}\uplus E, \sigma) \newunifarrow (E, \varrho \sigma)$\\
+      where none of the previous transitions apply, 
+      some oracle found a finite CSU $U$ for $\sigma s \unif \sigma t $ using fresh auxiliary variables,
+      and $\varrho \in U$; if multiple oracles found a CSU, only one of them is considered
+  % \smallskip
+  \item[\rm\unifrulename{OracleFail}]
+  $(\{\selected{s \unif t}\}\uplus E, \sigma) \newunifarrow \bot$\\
+  where none of the previous transitions apply, 
+  and some oracle determined $\sigma s \unif \sigma t$ has no solutions
+  % \smallskip
+  \item[\rm\unifrulename{Decompose}]
+      $(\{\selected{\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda \overline{x}. \, a \, \overline{t}_m}\}
+      \uplus E, \sigma) 
+      \newunifarrow 
+      ( \{s_1 \unif t_1, \ldots ,s_m \unif t_m\} \uplus E,
+      \sigma)$\\
+      where none of the transitions \unifrulename{Succeed} to \unifrulename{OracleFail} apply
+  % \smallskip
+  % \item [\rm\textsf{Eliminate}] 
+  %     $(\{\selected{\lambda \overline{x}_n. \, F \, \overline{s}_m \unif \lambda \overline{x}_n. \, F \, \overline{t}_m}\}
+  %     \uplus E, \sigma)
+  %     \newunifarrow
+  %     (\{s_{j_{1}}\unif t_{j_{1}},\ldots,s_{j_{k}}\unif t_{j_{k}}\} \uplus E,\varrho \sigma)$\\
+  %     where none of the transitions \textsf{Succeed} to \textsf{OracleFail} apply,
+  %     $ 1 \leq j_1 < \cdots < j_k \leq n$, and
+  %     % $(j_{i})_{i=1}^{k}$ is a subsequence
+  %     % of $\left(i\right)_{i=1}^{m}$, and
+  %     $\varrho = \{ F \mapsto \param G\, x_{j_{1}} \ldots x_{j_{k}} \}$ with $G$ a fresh variable
+  % \smallskip
+  \item[\rm\textsf{Bind}]
+      $(\{\selected{s \unif t}\} 
+      \uplus E, \sigma) 
+      \newunifarrow 
+      (\{s \unif t\}
+      \uplus E, \rho \sigma)$\\
+      where none of the transitions \textsf{Succeed} to \textsf{OracleFail} apply,
+      and $\rho\in\mathcal{P}(s \unif t)$.
+\end{description}
+
+
+The transitions are designed so that only \unifrulename{OracleSucc},
+\unifrulename{Decompose}, and \unifrulename{Bind} can introduce parallel branches in the
+constructed tree. \unifrulename{OracleSucc} can introduce branches
+using different unifiers of the CSU, \unifrulename{Bind} can introduce branches 
+using different substitutions in $\mathcal{P}$, and \unifrulename{Decompose}
+can be applied in parallel with \unifrulename{Bind}. 
+
+The form of the rules \unifrulename{OracleSucc} and \unifrulename{Bind} is similar: both
+extend the current substitution. However,
+they are designed following different principles. \unifrulename{OracleSucc} solves
+the selected unification constraint using an efficient algorithm applicable only
+to certain classes of terms. On the other hand, \unifrulename{Bind} is applied to
+explore the whole search space for any given constraint. These rules are separated
+in two to make \unifrulename{Bind} applicable only if \unifrulename{OracleSucc}
+(or \unifrulename{OracleFail}) is not, so that possible solutions (or failures) are
+detected early.
+
+Our approach is to apply substitutions and $\alpha\beta\eta$-normalize terms
+lazily. In this context, laziness means that the transitions
+\unifrulename{Normalize$_{\alpha\eta}$}, \unifrulename{Normalize$_{\beta}$}, and
+\unifrulename{Dereference} partially normalize and partially apply the constructed
+substitution just enough to ensure that the heads are the ones we would get if
+the substitution was fully applied and the term was fully normalized. 
+Additionally, the transitions that modify the constructed substitution,
+\unifrulename{OracleSucc} and \unifrulename{Bind}, do not apply that substitution to the
+unification pairs directly, but only extend it with a new binding. To support
+lazy dereferencing, these rules must maintain the
+invariant that all substitutions are idempotent. The invariant is easily
+preserved if the substitution $\varrho$ from the definition of
+\unifrulename{OracleSucc} and \unifrulename{Bind} is itself idempotent and no variable
+mapped by $\sigma$ occurs in $\varrho F$, for any variable $F$ mapped by
+$\varrho$.
+
+The \textsf{OracleSucc} and \textsf{OracleFail} transitions
+invoke oracles, such as pattern unification,
+to compute a CSU faster,
+produce fewer redundant unifiers, and
+discover nonunifiability earlier.
+In some cases, addition of oracles lets the procedure terminate more often.
+
+In the literature, oracles are usually stated under the assumption that their
+input belongs to the appropriate fragment. To check whether a unification
+constraint is inside the fragment, we need to fully apply the substitution and
+$\beta$-normalize the constraint.
+% To use an off-the-shelf oracle
+% in our procedure, we need to wrap it inside an algorithm that applies the currently
+% built substitution $\sigma$, normalizes terms and checks whether terms belong to the
+% fragment the oracle handles, before invoking the oracle. Applying substitution and
+% normalizing eagerly to invoke an oracle can inadvertently cancel the effects of
+% lazy normalization built into our procedure.
+To avoid these expensive operations and enable efficient oracle integration, 
+oracles must be redesigned to lazily discover whether the terms
+belong to their fragment.  
+% Usually, the operations
+% oracles perform can clearly be separated into those that do and those that do
+% not depend on whether the terms belong to the fragment oracle manages. 
+Most oracles contain a decomposition operation which requires only a partial application of
+the substitution and only partial $\beta$-normalization. If one of the constraints resulting from decomposition is not in
+the fragment, the original problem is not in the fragment. 
+This allows us to detect that the problem is not in the fragment without fully applying
+the substitution and $\beta$-normalizing.
+% Thus, without checking if all subterms are in the fragment, the oracle
+% can check if the term heads are equal after getting terms in hnf. This
+% effectively delegates the fragment check to the
+% other operations of the oracle. 
+
+%  If some
+% other transitions applies, it is the only applicable transition. Transitions
+% \textsf{Bind} and \textsf{OracleSucc} may be applicable with different partial
+% bindings or unifiers.
+
+%
+%Mention log on variables?
+%
+The core of the procedure lies in the \textsf{Bind} step, parameterized
+by the mapping~$\mathcal{P}$ that determines which substitutions (\emph{bindings}) 
+to create. The bindings are defined as follows:
+%
+% \begin{addmargin}[0.5em]{0.5em}
+%\vspace{-0.2em}
+\begin{description}[itemsep=1\jot]
+    \item[JP-style projection for $F$] Let $F$ be a free variable of
+    type $\alpha_1 \rightarrow \cdots \rightarrow \alpha_n \rightarrow \beta$, where
+    some $\alpha_i$ is equal to $\beta$ and $n > 0$. Then the JP-style projection binding is
+        \[F \mapsto \lambda \overline{x}_n.\,x_i\]
+    \item[Huet-style projection for $F$] Let $F$ be a free variable of type $\alpha_1
+    \rightarrow \cdots \rightarrow \alpha_n \rightarrow \beta$, where some $\alpha_i
+    = \gamma_1 \rightarrow \cdots \rightarrow \gamma_m \rightarrow \beta$, $n > 0$ and $m \geq 0$. Huet-style projection is
+    \[F \mapsto \lambda \overline{x}_n. \, x_i \, (F_1 \, \overline{x}_n) \, \ldots \, (F_m \, \overline{x}_n)\]
+    where the fresh free variables $\overline{F}_m$ and bound variables $\overline{x}_n$ are of appropriate types.
+    \item[Imitation of $a$ for $F$] 
+    \looseness=-1 Let $F$ be a free variable of type $\alpha_1 \rightarrow
+    \cdots \rightarrow \alpha_n \rightarrow \beta$ and $a$ be a free variable or a constant
+    of type $\gamma_1 \rightarrow \cdots
+    \rightarrow \gamma_m \rightarrow \beta$ where $n,m \geq 0$. The imitation binding is
+    \[F \mapsto \lambda \overline{x}_n. \, a \, (F_1 \, \overline{x}_n) \ldots
+    (F_m \, \overline{x}_n)\] where the fresh free variables $\overline{F}_m $ and
+    bound variables $\overline{x}_n$ are of appropriate types.
+    \item[Elimination for $F$] Let $F$ be a free variable of type $\alpha_1 \rightarrow
+    \cdots \rightarrow \alpha_n \rightarrow \beta$, where $n >0$. In addition, let $1 \leq j_1 < \cdots < j_i \leq n$ and $i<n$. Elimination
+    for the sequence $(j_k)_{k=1}^i$ is
+    \[ F \mapsto \lambda \overline{x}_n. \, G \, x_{j_1} \, \ldots \, x_{j_i}\]
+    where the fresh free variable $G$ as well as all $x_{j_k}$ are of appropriate type.
+    We call fresh variables emerging from this binding in the role of $G$ 
+    \emph{elimination variables}.
+    \item[Identification for $F$ and $G$] Let $F$ and $G$ be different free variables. Furthermore, let
+    the type of $F$ be $\alpha_1 \rightarrow \cdots \rightarrow \alpha_n
+    \rightarrow \beta$ and the type of $G$ be $\gamma_1 \rightarrow \cdots
+    \rightarrow \gamma_m \rightarrow \beta$, where $n,m\geq 0$. Then, the identification binding binds
+    $F$ and $G$ with
+    \begin{equation*}
+        F \mapsto \lambda \overline{x}_n. \, H \, \overline{x}_n \, (F_1 \, \overline{x}_n)
+        \ldots (F_m \, \overline{x}_n) \quad
+        G \mapsto \lambda \overline{y}_m. \,
+        H \, (G_1 \, \overline{y}_m) \ldots (G_n \, \overline{y}_m) \, \overline{y}_m
+    \end{equation*}
+    \looseness=-1
+    where the fresh free variables $H,\overline{F}_m,\overline{G}_n$ and bound
+    variables $\overline{x}_n$,$\overline{y}_m$ are of appropriate types. 
+    Fresh variables from this binding with the role of $H$ are called \emph{identification variables}.
+    \item[Iteration for $F$]
+    \looseness=-1 
+    Let $F$ be a free variable of the type $\alpha_1 \rightarrow \cdots
+    \rightarrow \alpha_n \rightarrow \beta_1$ and let some $\alpha_i$ be the
+    type $\gamma_1 \rightarrow \cdots \rightarrow \gamma_m \rightarrow
+    \beta_2$, where $n>0$ and $m\geq 0$. Iteration for $F$ at $i$ is  
+    \[ F \mapsto \lambda \overline{x}_n.\,H\,\overline{x}_n \, (\lambda
+    \overline{y}.\,x_i \, (G_1 \, \overline{x}_n \, \overline{y}) \ldots (G_m \,
+    \overline{x}_n \, \overline{y}) )\]
+    The free variables $H$ and $G_1, \ldots,
+    G_m$ are fresh, and $\overline{y}$ is an arbitrary-length sequence of bound
+    variables of arbitrary types. All new variables are of
+    appropriate type. Due to indeterminacy of $\overline{y}$, this step is
+    infinitely branching. 
+    
+
+\end{description}
+
+\noindent
+The following mapping $\mathcal{P}_\mathsf{c}(\lambda \overline{x}.
+\, s \unif \lambda \overline{x}. \, t)$ is used as the parameter $\mathcal{P}$ of the procedure:
+\begin{itemize}
+  \setlength\itemsep{1\jot}
+
+    \item If the constraint is rigid-rigid, $\mathcal{P}_\mathsf{c}(\lambda \overline{x}.
+    \, s \unif \lambda \overline{x}. \, t) = \varnothing$.
+
+    \item If the constraint is flex-rigid,
+    let 
+    $\mathcal{P}_\mathsf{c}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, a\, \overline{t})$ 
+    be 
+    \begin{itemize}
+        \item an imitation of $a$ for $F$, if $a$ is a constant, and
+        \item all Huet-style projections for $F$, if $F$ is not an identification variable.
+    \end{itemize}
+    
+    \item If the constraint is flex-flex and the heads are different,
+    let 
+    $\mathcal{P}_\mathsf{c}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, G\, \overline{t})$ 
+    be 
+    \begin{itemize}
+        \item all identifications and iterations for both $F$ and $G$, and
+        \item all JP-style projections for non-identification variables among $F$ and $G$.
+    \end{itemize}
+    
+    \item If the constraint is flex-flex and the heads are identical,
+    we distinguish two cases:
+    \begin{itemize}
+        \item if the head is an elimination variable, 
+        $\mathcal{P}_\mathsf{c}(\lambda \overline{x}.\, s \unif \lambda \overline{x}.\, t ) = \varnothing$;
+        \item otherwise, let 
+        $\mathcal{P}_\mathsf{c}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, F\, \overline{t})$ 
+        be all iterations for $F$ at arguments of functional type and
+        all eliminations for~$F$.
+    \end{itemize}
+\end{itemize}
+
+\ourpara{Comparison with the JP Procedure}
+%
+% Our procedure is based on the JP procedure, which is the best known procedures that
+% enumerates a CSU \cite{jp-76-unif}. Unlike other complete unification procedures
+% \cite{sg-89-unif}, it does not try to blindly guess the solution of flex-flex
+% unification constraints, but enumerates them systematically. 
+%
+\looseness=-1
+The JP procedure enumerates unifiers by constructing a search tree with nodes of the form $(s \unif t, \sigma)$, where $s \unif t$ is the current unification
+problem and $\sigma$ is the substitution built so far. 
+The initial node consists of the input problem and the
+identity substitution. Success nodes are nodes of the form $(s \unif s, \sigma)$.
+The set of all substitutions contained in the success nodes form a CSU.
+
+To determine the
+child nodes of a node $(s \unif t, \sigma)$, the procedure  computes the common context $C$ of $s$ and $t$,
+yielding term pairs $(s_1, t_1), \ldots, (s_n, t_n)$, called \emph{disagreement
+pairs}, such that $s = C[s_1,\ldots,s_n]$ and $t = C[t_1,\ldots,t_n]$. It
+chooses one of the disagreement pairs $(s_i, t_i)$.
+Depending on the context $C$ and the chosen disagreement pair $(s_i, t_i)$,
+it determines a set of bindings $\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$.
+For each of the bindings $\rho\in\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$, it creates a child node
+$(\nf{(\varrho{s})}{\beta\eta} \unif \nf{(\varrho{t})}{\beta\eta}, \varrho\sigma)$,
+where $\nf{u}{\beta\eta}$ denotes a
+$\beta\eta$-normal form of a term $u$. 
+
+The set of bindings $\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$
+is based on the heads of $s_i$ and $t_i$, and the free variables occurring above
+$s_i$ and $t_i$ in $C$. The set $\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$ contains
+\begin{itemize}
+  \item all JP-style projections for free variables that are heads of $s_i$ or $t_i$;%
+\footnote{In JP's formulation of projection, they explicitly mention that the projected argument must be of base type. 
+In our presentation, this follows from $\beta$ being of base type by the convention introduced in Sect.~\ref{sec:pre:hol}.}
+  
+  \item an imitation of $a$ for $F$ if a free variable $F$ is the head of $s_i$ and a free
+  variable or constant $a$ is the head of $t_i$ (or vice versa);
+  \item all eliminations for free variables occurring above the
+  chosen disagreement pair
+  eliminating only the argument containing the disagreement pair;
+  \item an identification for the heads of $s_i$ and $t_i$ if they are both free variables; and
+  \item all iterations for the heads of $s_i$ and
+  $t_i$ if they are free variables, and for all free variables occurring above the disagreement pair.%
+\footnote{In JP's formulation of iteration, it is not immediately obvious whether they intend to require iteration of arguments of base type.
+However, their Definition 2.4 \cite{jp-76-unif} shows that they do.}
+\end{itemize}
+
+Architecturally, the most noticeable difference between the JP procedure and ours is
+the representation of the problem: The JP procedure works on a single constraint,
+while our procedure maintains a multiset of constraints. At a first glance, this
+is a merely presentational change. However, it has consequences for termination,
+performance, and redundancy of the procedure.
+
+\looseness=-1
+Since the JP procedure never decomposes the common context of its only constraint, it allows
+iteration or elimination to be applied at a free variable above the disagreement
+pair, even if  bindings were already applied below that free variable. This can
+lead to many different paths to the same unifier. In contrast, our procedure
+makes the decision which binding to apply to a flex-flex pair with the same
+head as soon as it is observed. Also, it explores the possibility of not
+applying a binding and decomposing the pair. In either way, the flex-flex pair
+is never revisited, which improves the performance and returns fewer redundant
+unifiers. We show that this restriction prunes the search space without
+influencing the completeness.
+
+Our procedure makes the choice of child nodes based only on the heads of the
+chosen unification constraint. In contrast, the JP procedure tracks all the
+variables occurring in the common context. Thus, lazy normalization and lazy
+variable substitution cannot be integrated in the JP procedure a straightforward
+fashion. Moreover, as it does not feature a rule similar to
+\unifrulename{Decompose}, it always retraverses the already unified part of the
+problem, resulting in poor performance on deep terms.
+
+
+\looseness=-1
+% The JP procedure can be modified to solve the preunification problem by making
+% it never choose flex-flex disagreement pairs, ignore the disagreement pairs
+% below a free variable, and terminate with a preunifier when no flex-rigid pair
+% remains. However, such a procedure would be less efficient than Huet's procedure
+% because it would use the iteration binding instead of Huet-style projection to
+% solve flex-rigid pairs. Our procedure applies Huet-style projections on
+% flex-rigid pairs, which results in two important improvements over the JP
+% procedure. First, our procedure terminates more often than the JP procedure
+% because Huet-style projections cause only a finite branching, whereas iteration
+% causes an infinite branching. Second, when our procedure is modified to solve
+% the preunification problem by never selecting flex-flex pairs and stopping when
+% only flex-flex pairs remain, it becomes an optimized variant of Huet's procedure
+% that supports oracles as well as lazy substitution and $\beta$-reduction.
+One of the main drawbacks of the JP procedure is that it features a highly
+explosive, infinitely branching iteration rule. This rule is a more general
+version of Huet-style projection. Its universality enables finding elements of
+CSU for flex-flex pairs, for which Huet-style projection does not suffice.
+However, the JP procedure applies iteration indiscriminately on both flex-flex and
+flex-rigid pairs. We discovered that our procedure remains complete if iteration
+is applied only on flex-flex pairs, and Huet-style projection only on
+flex-rigid ones. This helps our procedure terminate more often than the JP
+procedure. As a side-effect, the restriction of our procedure to
+the preunification problem is a graceful generalization of Huet procedure, with
+additional improvements such as oracles, lazy substitution, and lazy
+$\beta$-reduction.
+
+
+\looseness=-1
+The bindings of our procedure contain further optimizations that are absent in
+the JP procedure: The JP procedure applies eliminations for one parameter
+at a time, yielding multiple paths to the same unifier. It applies imitations to
+flex-flex pairs, which we found to be unnecessary. Similarly, we found out that
+tracking which rules introduced which variables can avoid computing redundant
+unifiers: It is not necessary to apply iterations and eliminations on
+elimination variables, and projections on identification variables.
+
+\ourpara{Examples}
+We present some examples that demonstrate advantages of our procedure.
+The displayed branches of the constructed trees are not necessarily exhaustive.
+We abbreviate 
+JP-style projection as \textsf{JP\,Proj},
+imitation as \textsf{Imit},
+identification as \textsf{Id},
+\unifrulename{Decompose} as \textsf{Dc}, 
+\unifrulename{Dereference} as \textsf{Dr},
+$\textsf{Normalize}_\beta$ as $\textsf{N}_\beta$,
+and
+\textsf{Bind} of a binding $x$ as $\textsf{B(}x\textsf{)}$.
+Transitions of the JP procedure are denoted by $\Longrightarrow$.
+For the JP transitions we implicitly apply the generated bindings and fully
+normalize terms, which significantly shortens JP derivations.
+
+\begin{exa}
+The JP procedure does not terminate on the problem $G \unif \cst{f} \, G$:
+\[(G \unif \cst{f} \, G, \makeop{id}) 
+\overset{\textsf{Imit}}{\jpunifarrow}
+(\cst{f}\,G' \unif \cst{f}^2 \, G', \sigma_1) 
+\overset{\textsf{Imit}}{\jpunifarrow}
+(\cst{f}^2 \, G'' \unif \cst{f}^3 \, G'', \sigma_2) 
+\overset{\textsf{Imit}}{\jpunifarrow}\cdots\]
+where $\sigma_1 = \{G \mapsto  \lambda x. \, \cst{f} \, G' \}$
+and $\sigma_2 = \{G' \mapsto  \lambda x. \, \cst{f} \, G'' \}\sigma_1$.
+By including any oracle that supports the first-order occurs check, such as the
+pattern oracle or the fixpoint oracle described in Section \ref{sec:unif:implementation},
+our procedure gracefully generalizes first-order unification: 
+\[(\{G \unif \cst{f} \, G\}, \makeop{id}) 
+\overset{\textsf{OracleFail}}{\newunifarrow}
+\bot
+\]
+\end{exa}
+
+\begin{exa}
+The following derivation illustrates the advantage of the \textsf{Decompose} rule.
+\begin{align*}
+&
+(\{\cst{h}^{100} \, (F \, \cst{a}) \unif \cst{h}^{100} \, (G \,\cst{b})\}, \makeop{id}) 
+\overset{\textsf{Dc}^{100}}{\newunifarrow}
+(\{F \, \cst{a} \unif G \,\cst{b}\}, \makeop{id}) 
+\overset{\textsf{B(Id)}}{\newunifarrow}
+(\{F \, \cst{a} \unif G \,\cst{b}\}, \sigma_1) 
+\\ &
+\overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+(\{H \, \cst{a}\, (F' \, \cst{a}) \unif H \, (G'\,\cst{b}) \,\cst{b}\}, \sigma_1)
+\overset{\textsf{Dc}}{\newunifarrow}
+(\{\cst{a} \unif G'\,\cst{b}, F' \, \cst{a} \unif \cst{b}\}, \sigma_1) 
+\\ &
+\overset{\textsf{B(Imit)}}{\newunifarrow}
+(\{\cst{a} \unif G'\,\cst{b}, F' \, \cst{a} \unif \cst{b}\}, \sigma_2) 
+\overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+(\{\cst{a} \unif \cst{a}, F' \, \cst{a} \unif \cst{b}\}, \sigma_2) 
+\overset{\textsf{Delete}}{\newunifarrow}
+(\{F' \, \cst{a} \unif \cst{b}\}, \sigma_2) \\
+&\overset{\textsf{B(Imit)}}{\newunifarrow}
+(\{F' \, \cst{a} \unif \cst{b}\}, \sigma_3) 
+\overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+(\{\cst{b} \unif \cst{b}\}, \sigma_3) 
+\overset{\textsf{Delete}}{\newunifarrow}
+(\varnothing, \sigma_3) 
+\overset{\textsf{Succeed}}{\newunifarrow}
+\sigma_3 
+\end{align*}
+where 
+$\sigma_1 = \{
+    F\mapsto \lambda x. \, H \, x\, (F' \, x), 
+    G\mapsto \lambda y. \, H \, (G' \, y) \, y
+    \}$;
+$\sigma_2 = \{
+  G' \mapsto \lambda x. \, \cst{a}
+  \}\sigma_1$; and
+$\sigma_3 = \{
+  F' \mapsto \lambda x. \, \cst{b}
+  \}\sigma_2$.
+%
+The JP procedure produces the same intermediate substitutions $\sigma_1$ to $\sigma_3$,
+but since it does not decompose the terms, it retraverses the common context
+$\cst{h}^{100}\,[\;]$ at every step to identify the contained disagreement pair:
+\begin{align*}
+    &
+    (\cst{h}^{100} \, (F \, \cst{a}) \unif \cst{h}^{100} \, (G \,\cst{b}), \makeop{id}) 
+    \overset{\textsf{Id}}{\jpunifarrow}
+    (\cst{h}^{100} \, (H \, \cst{a}\, (F' \, \cst{a})) \unif \cst{h}^{100} \, (H \, (G' \,\cst{b}) \,\cst{b}), \sigma_1) 
+    \\ &
+    \overset{\textsf{Imit}}{\jpunifarrow}
+    (\cst{h}^{100} \, (H \, \cst{a}\, (F' \, \cst{a})) \unif \cst{h}^{100} \, (H \, \cst{a} \,\cst{b}), \sigma_2) 
+    \overset{\textsf{Imit}}{\jpunifarrow}
+    (\cst{h}^{100} \, (H \, \cst{a}\, \cst{b}) \unif \cst{h}^{100} \, (H \, \cst{a} \,\cst{b}), \sigma_3) 
+    \overset{\textsf{Succeed}}{\jpunifarrow}
+    \sigma_3
+\end{align*}
+
+\end{exa}
+
+\begin{exa}
+  Even when no oracles are used, our procedure performs better than the JP procedure on small, simple
+  problems. Consider the problem $F \, \cst{a} \unif \cst{a}$, which has a two
+  element CSU: $\{ F \mapsto \lambda x. \, x, F \mapsto \lambda x. \, \cst{a}
+  \}$. Our procedure terminates, finding both unifiers:
+\begin{align*}
+    &
+    (\{ F \, \cst{a} \unif \cst{a} \}, \makeop{id})
+    \overset{\textsf{B(JP Proj)}}{\newunifarrow}
+    (\{ F \, \cst{a} \unif \cst{a} \},  \{ F \mapsto \lambda x. \, x \} )
+    \overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+    (\{ \cst{a} \unif \cst{a} \}, \{  F \mapsto \lambda x. \, x \})
+    \\ &
+    \overset{\textsf{Delete}}{\newunifarrow}
+    (\varnothing, \{  F \mapsto \lambda x. \, x \})
+    \overset{\textsf{Succeed}}{\newunifarrow}
+    \{  F \mapsto \lambda x. \, x \}
+    \\[1\jot]
+    &
+    (\{ F \, \cst{a} \unif \cst{a} \}, \makeop{id})
+    \overset{\textsf{B(Imit)}}{\newunifarrow}
+    (\{ F \, \cst{a} \unif \cst{a} \},  \{ F \mapsto \lambda x. \, \cst{a} \} )
+    \overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+    (\{ \cst{a} \unif \cst{a} \}, \{  F \mapsto \lambda x. \, \cst{a} \})
+    \\ &
+    \overset{\textsf{Delete}}{\newunifarrow}
+    (\varnothing, \{  F \mapsto \lambda x. \, \cst{a} \})
+    \overset{\textsf{Succeed}}{\newunifarrow}
+    \{  F \mapsto \lambda x. \, \cst{a} \}
+\end{align*}
+
+The JP procedure finds those two unifiers as well, but it does not terminate as
+it applies iterations to $F$.
+
+
+\end{exa}
+
+\begin{exa}
+The search space restrictions also allow us to prune some redundant unifiers. Consider the problem $F \, (G\,\cst{a}) \unif F \,
+\cst{b}$, where $\cst{a}$ and $\cst{b}$ are of base type. 
+Our procedure produces only one failing branch and the following two successful branches:
+%
+\begin{align*}
+&
+(\{ F\,(G\,\cst{a}) \unif F \, \cst{b} \}, \makeop{id})
+\overset{\textsf{Dc}}{\newunifarrow}
+(\{ G\,\cst{a} \unif \cst{b} \}, \makeop{id})
+\overset{\textsf{B(Imit)}}{\newunifarrow}
+(\{ G\,\cst{a} \unif \cst{b} \}, \{ G \mapsto \lambda x.\, \cst{b} \})
+\\ &
+\overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+(\{ \cst{b} \unif \cst{b} \}, \{ G \mapsto \lambda x.\, \cst{b} \})
+\overset{\textsf{Delete}}{\newunifarrow}
+(\varnothing, \{ G \mapsto \lambda x.\, \cst{b} \})
+\overset{\textsf{Succeed}}{\newunifarrow}
+\{ G \mapsto \lambda x.\, \cst{b} \}
+\\[1\jot]
+&
+(\{ F\,(G\,\cst{a}) \unif F \, \cst{b} \}, \makeop{id})
+\overset{\textsf{B(Elim)}}{\newunifarrow}
+(\{ F\,(G\,\cst{a}) \unif F \, \cst{b} \}, \{ F \mapsto \lambda x.\, F' \})
+\\ &
+\overset{\textsf{Dr}+\textsf{N}_\beta}{\newunifarrow}
+(\{ F' \unif F' \}, \{ F \mapsto \lambda x.\, F' \})
+\overset{\textsf{Delete}}{\newunifarrow}
+(\varnothing, \{ F \mapsto \lambda x.\, F' \})
+\overset{\textsf{Succeed}}{\newunifarrow}
+\{ F \mapsto \lambda x.\, F' \}
+\end{align*}
+%
+The JP procedure additionally produces the following redundant unifier:
+%
+\begin{align*}
+    &
+    ( F\,(G\,\cst{a}) \unif F \, \cst{b} , \makeop{id})
+    \overset{\textsf{JP Proj}}{\jpunifarrow}
+    ( F \, \cst{a} = F \, \cst{b} , \{ G \mapsto \lambda x. \, x \})
+    \\ &
+    \overset{\textsf{Elim}}{\jpunifarrow}
+    (F' = F' , \{ G \mapsto \lambda x. \, x, F \mapsto \lambda x. \, F' \})
+    \overset{\textsf{Succeed}}{\jpunifarrow}
+    \{ G \mapsto \lambda x. \, x, F \mapsto \lambda x. \, F' \}
+\end{align*}
+Moreover, the JP procedure does not terminate because an infinite number of iterations is 
+applicable at the root. Our procedure terminates in this case since we only apply iteration
+binding for non base-type arguments, which $F$ does not have.
+\end{exa}
+
+\ourpara{Pragmatic Variant} We structured our procedure so that most of
+the unification machinery is contained in the \unifrulename{Bind} step. Modifying
+$\mathcal{P}$, we can sacrifice completeness and obtain a pragmatic variant of
+the procedure that often performs better in practice. 
+%The simplest such modification
+%is to limit the number or kind of bindings applied to a single constraint. 
+Our preliminary experiments showed that using mapping $\mathcal{P}_\mathsf{p}$ defined as follows is a reasonable compromise between completeness and
+performance:
+\begin{itemize}
+    \setlength\itemsep{1\jot}
+    \item If the constraint is rigid-rigid, $\mathcal{P}_\mathsf{p}(\lambda \overline{x}.
+    \, s \unif \lambda \overline{x}. \, t) = \varnothing$.
+    \item If the constraint is flex-rigid,
+    let 
+    $\mathcal{P}_\mathsf{p}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, a\, \overline{t})$ 
+    be 
+    \begin{itemize}
+        \item an imitation of $a$ for $F$, if $a$ is a constant, and
+        \item all Huet-style projections for $F$ if $F$ is not an identification variable.
+    \end{itemize}
+    
+    \item If the constraint is flex-flex and the heads are different,
+    let 
+    $\mathcal{P}_\mathsf{p}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, G\, \overline{t})$ 
+    be
+    \begin{itemize}
+      \item an identification binding for $F$ and $G$, and
+      \item all Huet-style projections for $F$ if $F$ is not an identification variable
+  \end{itemize}
+   
+  \item If the constraint is flex-flex and the heads are identical, we distinguish two cases:
+      \begin{itemize}
+      \item if the head is an elimination variable, 
+      $\mathcal{P}_\mathsf{p}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, F\, \overline{t}) = \varnothing$;
+      \item otherwise, let $\mathcal{P}_\mathsf{p}(\lambda \overline{x}. \, F \,\overline{s} \unif \lambda \overline{x}. \, F\, \overline{t})$
+            be the set of all eliminations bindings for $F$. 
+  \end{itemize}
+\end{itemize}
+
+The pragmatic variant of our procedure removes all iteration bindings to enforce finite branching. 
+Moreover, it
+imposes limits 
+on the number of bindings applied,
+counting the applications of bindings locally, per
+constraint. 
+It is useful to distinguish the Huet-style projection cases where
+$\alpha_i$ is a base type (called \emph{simple projection}), which always
+reduces the problem size, and the cases where $\alpha_i$ is a functional type (called \emph{functional
+projection}). We limit the number applications of the following bindings:
+functional projections, eliminations, imitations and identifications.
+In addition,
+a limit on the total number of applied bindings can be set. 
+An elimination binding that removes $k$ arguments counts as $k$
+elimination steps.
+Due to these limits, the pragmatic variant 
+terminates.
+
+To fail as soon as any of the limits
+is reached, the pragmatic variant employs an additional oracle.
+If this oracle determines that the limits are reached and the constraint is of the form
+$\lambda \overline{x}.\, F \, \overline{s}_m \unif \lambda \overline{x}.\, G \, \overline{t}_n$, it returns a \emph{trivial unifier} --
+a substitution $\{ F \mapsto \lambda \overline{x}_m.\, H, G \mapsto \lambda \overline{x}_n.\, H \}$, where $H$ is a fresh variable; if the limits are reached and
+the constraint is flex-rigid, the oracle fails; if the limits are not reached, 
+it reports that terms are outside its fragment. The trivial unifier prevents the procedure from failing on
+easily unifiable flex-flex pairs.
+
+Careful tuning of each limit optimizes the procedure for a specific class of problems. 
+For problems originating from proof assistants, shallow unification depth usually suffices. However, hard
+hand-crafted problems often need
+deeper unification.
+
+
+
+
 \section{Proof of Completeness}
 \label{sec:unif:proof-of-completeness}
 

@@ -40,7 +40,7 @@
 \newcommand{\substcl}[2]{\substterm{#1}{#2}}
 \newcommand{\sigmacl}[1]{\ensuremath{\substcl{\sigma}{#1}}}
 
-\newcommand\unif{\mathrel{\smash{\stackrel{\lower.1ex\hbox{\ensuremath{\scriptscriptstyle ?}}}{=}}}}
+\newcommand\unif{\mathrel{\smash{\stackrel{\lower.5ex\hbox{\ensuremath{\scriptscriptstyle ?}}}{=}}}}
 \newcommand\MATCH{\mathrel{{\scriptstyle\lesssim}^{\scriptscriptstyle{?\!}}}}
 %\newcommand\UNIF{=^?}
 
@@ -85,13 +85,6 @@
 \def\cpp{C\nobreak\raisebox{.1ex}{+}\nobreak\raisebox{.1ex}{+}}
 \newcommand\appE{\ensuremath{\cst{@}{+}\text{E}}}
 
-\newtheorem{theorem}{Theorem}{\bfseries}{\slshape}
-\newtheorem{corollary}[theorem]{Corollary}{\bfseries}{\slshape}
-\newtheorem{lemma}[theorem]{Lemma}{\bfseries}{\slshape}
-% \newtheorem*{proof}{Proof}{\itshape}{\rmfamily}
-\numberwithin{theorem}{chapter}
-
-
 \newcommand\MyFunction[2]{\textbf{function} \textsc{#1}(#2) \textbf{is} \\}
 \newcommand\MyProcedure[2]{\textbf{procedure} \textsc{#1}(#2) \textbf{is} \\}
 \newcommand\MyIf[1]{\textbf{if} #1 \textbf{then} \\}
@@ -135,3 +128,27 @@
 \global\long\def\set#1#2{\left\{  #1\,\middle|\,#2\right\}  }
 \newcommandx\jp[3][usedefault, addprefix=\global, 1=3]{\textnormal{JP #2#1.#3}}
 \newcommand\nf[2]{{#1}\downarrow_{{\ifthenelse{\equal{#2}{}}{\beta}{#2}}}}
+
+\newcommand\newunifarrow{\longrightarrow}
+\newcommand\jpunifarrow{\Longrightarrow}
+
+\definecolor{light-gray}{gray}{0.875}
+\newcommand{\selected}[1]{\smash{\setlength{\fboxsep}{.3ex}\colorbox{light-gray}{\ensuremath{\vphantom{('q}{#1}}}}}
+\newcommand{\unifrulename}[1]{\textsf{#1}}
+
+
+\newtheoremstyle{normal}
+{}{}{\slshape}{}{\bfseries}{.}{.5em}{}
+
+\theoremstyle{normal}
+\newtheorem{theorem}{Theorem}{\bfseries}{\slshape}
+\newtheorem{corollary}[theorem]{Corollary}{\bfseries}{\slshape}
+\newtheorem{lemma}[theorem]{Lemma}{\bfseries}{\slshape}
+% \newtheorem*{proof}{Proof}{\itshape}{\rmfamily}
+\numberwithin{theorem}{chapter}
+
+\newtheoremstyle{example}
+{}{}{\rmfamily}{}{\bfseries}{.}{.5em}{}
+
+\theoremstyle{example}
+\newtheorem{exa}[theorem]{Example}{\bfseries}{\rmfamily}
