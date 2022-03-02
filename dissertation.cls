@@ -598,3 +598,4 @@
     colorlinks = false
 }
 
+\RequirePackage{eqparbox}

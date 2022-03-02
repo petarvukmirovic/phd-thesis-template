@@ -2147,13 +2147,424 @@ $\{ \lambda y. \, X (\lambda x.\, x) \, y \unif \lambda y. \, y \}$ has only inf
 \section{An Extension of Fingerprint Indexing}
 \label{sec:unif:indexing}
 
+\looseness=-1
+A fundamental building block for almost all automated reasoning tools is the
+operation of retrieving term pairs that satisfy certain conditions, e.g.,
+unifiable terms, instances or generalizations. Indexing data structures are used
+to implement this operation efficiently. If the data structure retrieves
+precisely the terms that satisfy the condition, it is called \emph{perfect}.
+
+Higher-order indexing has received little attention compared to its
+first-order counterpart. However, recent research in higher-order theorem
+proving increased the interest in higher-order indexing
+\cite{ls-16-indexing,br-19-restricted-unif}.
+A \emph{fingerprint index} \cite{ss-12-fp-indexing,vbss-19-ehoh1} is an imperfect index based on
+the idea that the skeleton of the term consisting of all non-variable positions
+is not affected by substitutions. Therefore, we can easily determine that the terms
+are not unifiable (or matchable) if they disagree on a fixed set of sample
+positions.
+
+More formally, when we sample an untyped first-order term $t$ on a sample position $p$, 
+the \emph{generic fingerprinting function} $\text{gfpf}$
+distinguishes four possibilities:
+\[
+  \kern5em
+  \text{gfpf}(t,p) =
+  \begin{cases}
+    \cst{f} & \text{if $t|_p$ has a symbol head $\cst{f}$} \\[-\jot]
+    \AA & \text{if $t|_p$ is a variable} \\[-\jot]
+    \BB & \text{if $t|_q$ is a variable for some proper prefix $q$ of $p$} \\[-\jot]
+    \NN & \text{otherwise}
+  \end{cases}
+  \kern5em
+\]
+We define the \emph{fingerprinting function} $\text{fp}(t) = (\text{gfpf}(t,
+p_1), \ldots, \text{gfpf}(t, p_n))$, based on a fixed tuple of positions $\overline{p}_n$.
+Determining whether two terms are compatible for a given retrieval operation reduces
+to checking their fingerprints' componentwise compatibility. The following matrices
+determine the compatibility for retrieval operations:
+\begin{align*}
+    && \hbox{\begin{tabular}{@{}C{1em}|C{1em}C{1em}C{1em}C{1em}C{1em}@{}}
+    & $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+    \hline
+    $\cst{f}_1\vphantom{^{()}}$ & & \xmark & & & \xmark \\
+    \AA & & & & & \xmark \\
+    \BB & & & & & \\
+    \NN & \xmark & \xmark & \xmark & &
+    \end{tabular}}
+    &&
+    \hbox{\begin{tabular}{@{}C{1em}|C{1em}C{1em}C{1em}C{1em}C{1em}@{}}
+    & $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
+    \hline
+    $\cst{f}_1\vphantom{^{()}}$ & & \xmark & \xmark & \xmark & \xmark \\
+    \AA & & & & \xmark & \xmark \\
+    \BB & & & & & \\
+    \NN & \xmark & \xmark & \xmark & \xmark &
+    \end{tabular}}
+\end{align*}
+The left matrix determines unification compatibility, while the right matrix
+determines compatibility for matching term $s$ (rows) onto term $t$ (columns). Symbols
+$\cst{f}_1$ and $\cst{f}_2$ stand for arbitrary distinct constants. Incompatible
+features are marked with \xmark. For example, given a tuple of term positions $(1, 1.1.1, 2)$, and
+terms $\cst{f}(\cst{g}(X), \cst{b})$ and $\cst{f}(\cst{f}(\cst{a},\cst{a}),\cst{b})$, 
+their fingerprints are $(\cst{g}, \BB, \cst{b})$ and $(\cst{f},
+\NN, \cst{b})$, respectively. Since the first fingerprint component is incompatible,
+terms are not unifiable.
+
+Fingerprints for the terms in the index are stored in a trie data structure.
+This allows us to efficiently filter out terms that are not compatible with a given
+retrieval condition. For the remaining terms, a unification or matching
+procedure must be invoked to determine whether they satisfy the condition or not.
+
+The fundamental idea of first-order fingerprint indexing carries over to
+higher-order terms -- 
+application of a substitution does not change the rigid skeleton of a term.
+However, to extend fingerprint indexing to
+higher-order terms, we must address the issues of $\alpha\beta\eta$-normalization and figure how to cope with $\lambda$-abstractions and
+bound variables. To that end, we define a function $\hotofo{t}$, defined on
+%TODO: @PETAR \eta-long?
+% Yes
+$\beta$-reduced $\eta$-long terms in De Bruijn \cite{db-75-dbindices} notation:
+%TODO: @PETAR: also mention that this is an encoding into FOL before the definition?
+% @ALEX: There is a sentence about that later. I do not see how it can easily fit in this description :(
+\begin{align*}
+& \hotofo{F \, \overline{s}} = F
+&& \hotofo{x_i \, \overline{s}_n } = \cstdba{i}(\hotofo{s_1}, \ldots, \hotofo{s_n})
+&& \hotofo{\cst{f} \, \overline{s}_n } = \cst{f}(\hotofo{s_1}, \ldots, \hotofo{s_n}) &&
+\hotofo{\lambda \overline{x}. \, s  } = \hotofo{s}
+\end{align*}
+\looseness=-1
+We let $x_i$ be a bound variable of type $\alpha$ with De Bruijn index $i$,
+and $\cstdba{i}$ be a fresh constant corresponding to this variable. All constants
+$\cstdba{i}$ must be fresh. 
+Effectively, $\hotofo{\;}$ transforms a $\eta$-long $\beta$-reduced higher-order term to an untyped first-order term. Let $\nf{t}{\beta\eta}$ be
+the $\eta$-long $\beta$-reduced form of $t$; the higher-order generic
+fingerprinting function $\text{gfpf}_\textsf{ho}$, which relies on conversion $\nametodb{t}$ from
+named to De Bruijn representation, is defined as
+\[
+  \text{gfpf}_\textsf{ho}(t,p) =
+    \text{gfpf}(\hotofo{\nametodb{\nf{t}{\beta\eta}}}, p)
+\]
+
+If we define $\text{fp}_\textsf{ho}(t) =
+\text{fp}(\hotofo{\nametodb{\nf{t}{\beta\eta}}})$, we can support fingerprint indexing
+for higher-order terms with no changes to the compatibility matrices. For example,
+consider the terms $s = (\lambda x y. \, x \, y) \, \textsf{g}$ and $t = \cst{f}$,
+where $\cst{g}$ has the type $\alpha \rightarrow \beta$ and $\cst{f}$ has the
+type $\alpha \rightarrow \alpha \rightarrow \beta$. 
+For the tuple of
+positions $(1, 1.1.1, 2)$ we get
+\begin{align*}
+  & \text{fp}_\textsf{ho}(s) =
+    \text{fp}(\hotofo{\nametodb{\nf{s}{\beta\eta}}}) =
+    \text{fp}(\cst{g}(\cstdba{0})) = 
+    (\cstdba{0}, \NN, \NN) \\
+  & \text{fp}_\textsf{ho}(t) =
+   \text{fp}(\hotofo{\nametodb{\nf{t}{\beta\eta}}}) =
+    \text{fp}(\cst{f}(\cstdba{1}, \cstdba{0})) = 
+    (\cstdba{1}, \NN, \cstdba{0})
+\end{align*}
+As the first and third fingerprint component are incompatible, the terms are not unifiable.
+
+\looseness=-1
+Other first-order indexing techniques such as feature vector indexing and substitution trees
+can probably be extended to higher-order terms using the method described here.
+
+
 \section{Implementation}
 \label{sec:unif:implementation}
+Zipperposition \cite{sc-15-simon-phd, sc-supind-17} is an
+open-source\footnote{\url{https://github.com/sneeuwballen/zipperposition}}
+theorem prover written in OCaml.
+It is a versatile testbed for prototyping extensions to
+superposition-based theorem provers.
+It was initially
+designed as a prover for polymorphic first-order logic
+and then extended to higher-order logic.
+A recent addition is a complete mode for
+Boolean-free higher-order logic \cite{bbtvw-21-sup-lam},
+which depends on a unification procedure that can enumerate a CSU. 
+We implemented our procedure in Zipperposition.
+
+\looseness=-1
+We used OCaml's functors to create a modular implementation. The core of our
+procedure is implemented in a module which is parametrized by another module
+providing oracles and implementing the \textsf{Bind} step. In this way we can
+obtain the complete or pragmatic procedure and seamlessly integrate
+oracles while reusing as much common code as possible.
+
+To enumerate all elements of a possibly infinite CSU, we rely on lazy lists whose
+elements are subsingletons of unifiers (either one-element sets containing a unifier
+or empty sets). The search space must be explored in a {\em fair} manner,
+meaning that no branch of the constructed tree is indefinitely postponed. 
+
+Each {\sf Bind} step will give rise to new unification problems $E_1, E_2,
+\ldots$ to be solved. Solutions to each of those problems are lazy lists $p_1,
+p_2, \ldots$ containing subsingletons of unifiers. To avoid postponing some
+unifier indefinitely, we use the dovetailing technique: we first take one
+subsingleton from $p_1$, then one from each of $p_1$ and $p_2$. We continue with
+one subsingleton from each of $p_1,p_2$ and $p_3$, and so on. Empty lazy lists are
+ignored in the traversal. To ensure we do not remain stuck waiting for a unifier
+from a particular lazy list, the procedure will periodically return an empty
+set, indicating that the next lazy list should be probed. 
+
+\looseness=-1
+The implemented selection function for our procedure prioritizes selection of
+rigid-rigid over flex-rigid pairs, and flex-rigid over flex-flex pairs. However,
+since the constructed substitution $\sigma$ is not applied eagerly, heads can
+appear to be flex, even if they become rigid after dereferencing and
+normalization. To mitigate this issue to some degree, we
+dereference the heads with $\sigma$, but do not normalize, and use the resulting
+heads for prioritization.
+
+We implemented oracles for the pattern, solid, and fixpoint fragment. 
+Fixpoint unification~\cite{gh-75-unification} is concerned with problems of the form
+$\{F \unif t\}$. If $F$ does not occur in $t$, $\{ F \mapsto t \}$
+is an MGU for the problem. If there is a position $p$ in $t$ such that 
+$t|_p = F \, \overline{u}_m$
+and for each prefix $q\neq p$ of $p$, $t|_q$ has a rigid head and either $m=0$ or $t$ is not a $\lambda$-abstraction,
+then we can conclude that $F \unif t$ has no solutions. Otherwise,
+the fixpoint oracle is not applicable.
+
+For second-order logic with only unary constants, it is decidable whether
+a unifier for a problem in this class (called
+\emph{monadic second-order}) exists \cite{wf-88-monadicunif}. As this class of terms admits a
+possibly infinite CSU, this oracle cannot be used for \textsf{OracleSucc} step,
+but it can be used for \textsf{OracleFail}. Similarly the fragment of
+second-order terms with no repeated occurrences of free variables has decidable
+unifier existence but possibly infinite CSUs
+\cite{gd-01-unif-chapter}. Due to their limited applicability and high complexity we
+decided not to implement these oracles.
+
+
 
 \section{Evaluation}
-\label{sec:unif:evaluation}
+\label{sec:unif:evaluation}We evaluated the implementation of our unification procedure in Zipperposition,
+%TODO: @PETAR: "the complete and the pragmatic variant"? 
+%Done.
+% Also, the complete variant is sometimes called "full". Maybe we should stick to one of the two?
+% @ALEX: Investingating.
+assessing the complete variant and the pragmatic variant, the latter with several
+different combinations of limits for number of bindings. As part of the
+implementation of the complete mode for Boolean-free higher-order logic in
+Zipperposition \cite{bbtvw-21-sup-lam}, Bentkamp implemented a straightforward
+version of the JP procedure. This version is faithful to the original description,
+with a check as to whether a (sub)problem can be solved using a first-order oracle
+as the only optimization. Our evaluations were performed on StarExec Miami
+\cite{sst-14-starexec} servers with Intel Xeon E5-{2620 v4} CPUs clocked at {2.10}\,GHz with 60\,s CPU limit.
+
+\looseness=-1
+Contrary to first-order unification, there is no widely available corpus of
+benchmarks designed solely for evaluating performance of higher-order
+unification algorithms. Thus, we used all 2606 monomorphic higher-order theorems
+from the TPTP library \cite{gs-17-tptp} and 832 monomorphic higher-order
+Sledgehammer (SH) generated problems \cite{ns-13-leo2sh} as our benchmarks\footnote{An archive with raw
+results, all used problems, and scripts for running each configuration is
+available at \url{http://doi.org/10.5281/zenodo.4269591}}. 
+Many TPTP problems require synthesis of complicated unifiers,
+whereas Sledgehammer problems are only mildly higher-order -- many of them are
+solved with first-order unifiers.
+
+\looseness=-1
+We used the naive implementation of the JP procedure (\textbf{jp}) as a baseline
+to evaluate the performance of our procedure. We compare it with the complete
+variant of our procedure (\textbf{cv}) and pragmatic variants
+(\textbf{pv}) with several different configurations of limits for
+applied bindings. All other Zipperposition parameters have been fixed to the values of
+a variant of a well-performing configuration we used for the CASC-27 theorem proving competition \cite{gs-19-casc27}.
+The cv configuration and all of the pv
+configurations use only pattern unification as an underlying oracle. To test
+the effect of oracle choice, we evaluated the complete variant
+in 8 combinations: with no oracles
+(\textbf{n}), with only fixpoint (\textbf{f}), pattern (\textbf{p}), or solid (\textbf{s}) oracle,
+and with their combinations: \textbf{fp}, \textbf{fs}, \textbf{ps}, \textbf{fps}.
+
+\looseness=-1
+Figure~\ref{fig:new-old} compares different variants of the procedure with the
+naive JP implementation. Each pv configuration is denoted by pv$^{a}_{bcde}$
+where $a$ is the limit on the total number of applied bindings, and $b$, $c$,
+$d$, and $e$ are the limits of functional projections, eliminations, imitations,
+and identifications, respectively. Figure~\ref{fig:oracles} summarizes the
+effects of using different oracles.
+
+The configuration of our procedure with no oracles outperforms the JP procedure with the first-order oracle. This
+suggests that the design of the procedure, in particular lazy normalization and
+lazy application of the substitution, already reduces the effects of the JP
+procedure's main bottlenecks. Raw evaluation data shows that on TPTP benchmarks, complete and pragmatic configurations
+differ in the set of problems they solve -- cv solves 19
+problems not solved by pv$^{4}_{2222}$, whereas pv$^{4}_{2222}$ solves 34
+problems cv does not solve. Similarly, comparing the pragmatic configurations with each other,
+pv$^{6}_{3333}$ and pv$^{4}_{2222}$ each solve 13 problems that the other one does not.  The overall higher success rate of pv$^2_{1020}$ compared to
+pv$^2_{1222}$ suggests that solving flex-flex pairs by trivial unifiers often
+suffices for superposition-based theorem proving. 
+
+\newbox\mybox
+\setbox\mybox=\hbox{\small pv$^{12}_{6666}$}
+
+%%% TYPESETTING: hbox to
+\newcommand\HEAD[1]{\hbox to \wd\mybox{\hfill\hbox{#1}\hfill}}
+\newcommand\Z{\phantom{0}}
+\newcommand\MIDLINE{\\[.25ex]\hline\rule{0pt}{3ex}}
+
+\begin{figure}[t]
+	\def\arraystretch{1.1}%
+%\setlength\tabcolsep{.75ex}
+  \centerline{\begin{tabular}{@{}lcccccccc}
+    \strut                  &  \HEAD{jp}               & \HEAD{cv}              & \HEAD{pv$^{12}_{6666}$}    & \HEAD{pv$^{6}_{3333}$}     & \HEAD{pv$^{4}_{2222}$}    & \HEAD{pv$^{2}_{1222}$}   & \HEAD{pv$^{2}_{1121}$}         & \HEAD{pv$^{2}_{1020}$} 
+    \MIDLINE
+    TPTP                    &  \eqmakebox[jp][r]{1551} &  \eqmakebox[nc][r]{1717} &  \eqmakebox[np6][r]{1722} &  \eqmakebox[np3][r]{\bf 1732} & \eqmakebox[np2][r]{\bf 1732} & \eqmakebox[np1][r]{1715} &  \eqmakebox[np10][r]{1712}   & \eqmakebox[np0][r]{1719}  \\
+    SH                      &  \eqmakebox[jp][r]{242}  &  \eqmakebox[nc][r]{\bf 260}  &  \eqmakebox[np6][r]{253}  &  \eqmakebox[np3][r]{255}  & \eqmakebox[np2][r]{255}  & \eqmakebox[np1][r]{254}  &  \eqmakebox[np10][r]{259}    & \eqmakebox[np0][r]{257} \\
+    \end{tabular}}
+	\caption{Proved problems, per configuration}
+	\label{fig:new-old}
+\end{figure}
+\begin{figure}[t]
+	\def\arraystretch{1.1}%
+%\setlength\tabcolsep{.75ex}
+  \centerline{\begin{tabular}{@{}lcccccccc}
+    \strut                  &  \HEAD{n}                     & \HEAD{f}                      & \HEAD{p}                       & \HEAD{s}                       & \HEAD{fp}                     & \HEAD{fs}                     & \HEAD{ps}                      & \HEAD{fps}
+    \MIDLINE
+    TPTP                    &  \eqmakebox[n][r]{1658} & \eqmakebox[s][r]{1717} &  \eqmakebox[p][r]{1717} & \eqmakebox[sp][r]{1720} & \eqmakebox[n][r]{1719} & \eqmakebox[s][r]{\bf 1724} &  \eqmakebox[p][r]{1720} & \eqmakebox[sp][r]{1723}  \\
+    SH                      &  \eqmakebox[n][r]{245}  & \eqmakebox[s][r]{255}  &  \eqmakebox[p][r]{\bf 260}  & \eqmakebox[sp][r]{259}  & \eqmakebox[n][r]{255}  & \eqmakebox[s][r]{254}  &  \eqmakebox[p][r]{258}  & \eqmakebox[sp][r]{254} \\
+    \end{tabular}}
+	\caption{Proved problems, per used oracle}
+	\label{fig:oracles}
+\end{figure}
+
+
+Counterintuitively, in some cases, using oracles can hurt the performance of
+Zipperposition. Using oracles typically results in generating smaller
+CSUs, whose elements are more general substitutions than the ones we obtain without oracles. 
+These more general substitutions usually
+contain more applied variables, which Zipperposition's heuristics avoid due to
+their explosive nature. This can make Zipperposition postpone necessary inferences for too long. 
+Configuration n benefits from this effect and therefore solves 18 TPTP problems that no other configuration in Figure
+\ref{fig:oracles} solves. The same effect also gives configurations with only one oracle 
+an advantage over configurations with multiple oracles on some problems.
+
+The evaluation sheds some light on how often solid unification problems appear in practice. 
+The raw data show that
+configuration s solves 5 TPTP problems that neither f nor p solve. Configuration
+f solves 8 TPTP problems that neither s nor p solve, while p solves 9 TPTP
+problems that two other configurations do not. This suggests that the solid oracle
+is slightly less beneficial than the fixpoint or pattern oracles, but still presents a
+useful addition the set of available oracles.
+
+% TODO: Maybe investigate at some point in future.
+% An interesting observation is that including the solid oracle has a different
+% effect on TPTP and Sledgehammer problems. However, solid fragment does not
+% subsume the first-order fragment -- first-order terms that share variables or
+% are not linear are not solid. This can also explain why solid unification helps
+% on TPTP problems that usually include hard hand-crafted higher-order problems,
+% but hurts on mostly first-order Sledgehammer problems.
+\looseness=-1 
+A subset of TPTP benchmarks, concerning operations on Church numerals, is designed to test the efficiency of
+higher-order unification. Our procedure performs exceptionally well
+on these problems -- it solves all of them, usually
+faster than other competitive higher-order provers.
+  There are 11 benchmarks in \texttt{NUM} category of TPTP that contain conjectures about
+  Church numerals: \texttt{NUM020\^{}1}, \texttt{NUM021\^{}1}, \texttt{NUM415\^{}1},
+  \texttt{NUM416\^{}1}, \texttt{NUM417\^{}1}, \texttt{NUM418\^{}1}, \texttt{NUM419\^{}1}, \texttt{NUM798\^{}1},
+  \texttt{NUM799\^{}1}, \texttt{NUM800\^{}1}, and \texttt{NUM801\^{}1}.
+  We evaluated those problems using the same CPU nodes and the same time limits 
+  as above. In addition to Zipperposition, we used
+  all higher-order provers that took part in the 2019 edition of CASC \cite{gs-19-casc27} (in the THF category) for this evaluation: CVC4
+  1.7 \cite{cbetal-11-cvc4}, Leo-III 1.4 \cite{sb-21-leo3}, Satallax 3.4
+  \cite{cb-12-satallax}, Vampire 4.4 THF \cite{lkav-13-vampire}. Figure~\ref{fig:numerals}
+  shows the CPU time needed to solve a problem or ``--'' if the prover timed out.
+
+  \begin{figure}[tb]
+    \def\arraystretch{1.1}%
+  %\setlength\tabcolsep{.75ex}
+    \centerline{\begin{tabular}{@{}l@{\hskip 1.25em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c}
+      \strut                  &  CVC4               & Leo-III                & Satallax             & Vampire               & Zipperposition (cv)
+      \MIDLINE
+      \texttt{NUM020\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{0.46} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{\bf 0.03} \\
+      \texttt{NUM021\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{\bf 4.10} \\    
+      \texttt{NUM415\^{}1}  &  \eqmakebox[n][r]{45.80} & \eqmakebox[n][r]{0.34} & \eqmakebox[n][r]{0.21} & \eqmakebox[n][r]{0.42} & \eqmakebox[n][r]{\bf 0.03} \\    
+      \texttt{NUM416\^{}1}  &  \eqmakebox[n][r]{47.37} & \eqmakebox[n][r]{0.92} & \eqmakebox[n][r]{0.21} & \eqmakebox[n][r]{0.41} & \eqmakebox[n][r]{\bf 0.07} \\    
+      \texttt{NUM417\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{49.73} & \eqmakebox[n][r]{\bf 0.30} & \eqmakebox[n][r]{0.40} & \eqmakebox[n][r]{0.45} \\    
+      \texttt{NUM418\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{0.40} & \eqmakebox[n][r]{1.29} & \eqmakebox[n][r]{0.38} & \eqmakebox[n][r]{\bf 0.03} \\    
+      \texttt{NUM419\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{0.42} & \eqmakebox[n][r]{23.33} & \eqmakebox[n][r]{0.37} & \eqmakebox[n][r]{\bf 0.03} \\    
+      \texttt{NUM798\^{}1}  &  \eqmakebox[n][r]{46.29} & \eqmakebox[n][r]{0.35} & \eqmakebox[n][r]{4.01} & \eqmakebox[n][r]{0.38} & \eqmakebox[n][r]{\bf 0.03} \\    
+      \texttt{NUM799\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{5.05} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{\bf 0.03} \\    
+      \texttt{NUM800\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{\bf 0.37} & \eqmakebox[n][r]{3.15} \\
+      \texttt{NUM801\^{}1}  &  \eqmakebox[n][r]{--} & \eqmakebox[n][r]{0.73} & \eqmakebox[n][r]{38.77} & \eqmakebox[n][r]{--} & \eqmakebox[n][r]{\bf 0.50} \\
+      \end{tabular}}
+    \caption{Time needed to prove a problem, in seconds.}
+    \label{fig:numerals}
+  \end{figure}
 
 \section{Discussion and Related Work}
+\looseness=-1
+The problem addressed in this chapter is that of finding
+a complete and efficient higher-order unification procedure. Three main lines of
+research dominated the research field of higher-order unification over the last forty years. 
+
+\looseness=-1
+The first line of research went in the direction of finding procedures that
+enumerate CSUs. The most prominent procedure designed for
+this purpose is the JP procedure \cite{jp-76-unif}. Snyder and Gallier
+\cite{sg-89-unif} also provide such a procedure,
+but instead of solving
+flex-flex pairs systematically, their procedure blindly guesses the head of the necessary
+binding by considering all constants in the signature and fresh variables of all
+possible types. Another approach, based on higher-order combinators, is given by
+Dougherty \cite{dd-93-comb-unif}. This approach blindly creates (partially
+applied) \textsf{S}-, \textsf{K}-, and \textsf{I}-combinator bindings for applied
+variables, which results in returning many redundant unifiers, as well as in
+nonterminating behavior even for simple problems such as $X \, \cst{a} =
+\cst{a}$.
+
+The second line of research is concerned with enumerating
+preunifiers. The most prominent procedure in this line of research is Huet's 
+\cite{gh-75-unification}. The Snyder--Gallier procedure restricted not to solve flex-flex pairs
+is a version of the PT procedure presented in Section \ref{sec:unif:solid-oracle}. It improves 
+Huet's procedure by featuring a Solution rule.
+
+The third line of research gives up the expressiveness of the full
+$\lambda$-calculus and focuses on decidable fragments. Patterns
+\cite{tn-93-patterns} are arguably the most important such fragment in practice,
+with implementations
+in Isabelle \cite{tn-02-isabelle}, Leo-III \cite{sb-21-leo3}, Satallax
+\cite{cb-12-satallax}, $\lambda$Prolog \cite{dm-12-lprolog}, and other systems.
+Functions-as-constructors \cite{tl-16-facunif} unification subsumes pattern
+unification but is significantly more complex to implement. Prehofer
+\cite{cp-95-unifphd} lists many other decidable fragments, not only for
+unification but also preunification and unifier existence problems. Most of
+these algorithms are given for second-order terms with various constraints on
+their variables. Finally, one of the first decidability results is Farmer's discovery \cite{wf-88-monadicunif} that
+higher-order unification of terms with unary function symbols is decidable.
+
+Our procedure draws inspiration from and contributes to all three lines of research.
+Accordingly, its advantages over previously known procedures can be laid out
+along those three lines. First, our procedure mitigates many issues of the 
+JP procedure. Second, it can be modified not to solve flex-flex pairs,
+and become a version of Huet's procedure with important built-in optimizations.
+Third, it can integrate any oracle for problems with finite CSUs, including the one we discovered.
+
+% The disadvantages of our algorithm include the need to slightly redesign oracles
+% to perform lazy normalization and substitution application if one wants to use
+% them efficiently. Furthermore, properties like the graceful extension of first-order fragment fully
+% depend on oracles.
+
+The implementation of our procedure in Zipperposition was one of the reasons
+this prover evolved from proof-of-concept prover for higher-order logic to
+competitive higher-order prover. Shortly after the procedure was implemented, in the 2020 edition of CASC, Zipperposition won
+the higher-order division. 
 
 \section{Conclusion}
+We presented a procedure for enumerating a complete set of higher-order unifiers
+that is designed for efficiency. Due to a design that restricts 
+the search space and a tight integration of oracles,
+ it reduces the number of redundant unifiers returned and
+gives up early in cases of nonunifiability. In addition, we presented a new
+fragment of higher-order terms that admits finite CSUs. Our evaluation shows
+a clear improvement over previously known procedures.
+
+The procedure was a very prolific playground for tuning various heuristics
+to improve the success rate. In Chapter \ref{ch:ho-techniques} we discuss
+some of the Zipperposition parameters we tuned to make better use of the procedure.
+It also makes the basis of the unification procedure implemented in $\lambda$E,
+the full higher-order extension of Ehoh, described in Chapter \ref{ch:ehoh2}.
 
