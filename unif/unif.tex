@@ -301,8 +301,7 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
       where none of the transitions \textsf{Succeed} to \textsf{OracleFail} apply,
       and $\rho\in\mathcal{P}(s \unif t)$.
 \end{description}
-
-
+%
 The transitions are designed so that only \unifrulename{OracleSucc},
 \unifrulename{Decompose}, and \unifrulename{Bind} can introduce parallel branches in the
 constructed tree. \unifrulename{OracleSucc} can introduce branches
@@ -590,7 +589,7 @@ tracking which rules introduced which variables can avoid computing redundant
 unifiers: It is not necessary to apply iterations and eliminations on
 elimination variables, and projections on identification variables.
 
-\ourpara{unif:examples}
+\ourpara{Examples}
 We present some examples that demonstrate advantages of our procedure.
 The displayed branches of the constructed trees are not necessarily exhaustive.
 We abbreviate 
@@ -1869,6 +1868,7 @@ the following two lemmas show that solid pairs admit an MGU:
 
 \begin{lemma}
   \label{unif:lemma:solid-vars-diff-mgu}
+  \looseness=-1
   Let 
   $\{\lambda \overline{x}.\, F \, \overline{s}_m \unif \lambda\overline{x}.\, F' \, \overline{s}'_{m'}\}$
   be a solid unification problem
@@ -2158,7 +2158,7 @@ Higher-order indexing has received little attention compared to its
 first-order counterpart. However, recent research in higher-order theorem
 proving increased the interest in higher-order indexing
 \cite{ls-16-indexing,br-19-restricted-unif}.
-A \emph{fingerprint index} \cite{ss-12-fp-indexing,vbss-19-ehoh1} is an imperfect index based on
+A \emph{fingerprint index} \cite{ss-12-fp-indexing} is an imperfect index based on
 the idea that the skeleton of the term consisting of all non-variable positions
 is not affected by substitutions. Therefore, we can easily determine that the terms
 are not unifiable (or matchable) if they disagree on a fixed set of sample
@@ -2183,6 +2183,7 @@ p_1), \ldots, \text{gfpf}(t, p_n))$, based on a fixed tuple of positions $\overl
 Determining whether two terms are compatible for a given retrieval operation reduces
 to checking their fingerprints' componentwise compatibility. The following matrices
 determine the compatibility for retrieval operations:
+\pagebreak[1]
 \begin{align*}
     && \hbox{\begin{tabular}{@{}C{1em}|C{1em}C{1em}C{1em}C{1em}C{1em}@{}}
     & $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
@@ -2269,7 +2270,7 @@ As the first and third fingerprint component are incompatible, the terms are not
 \looseness=-1
 Other first-order indexing techniques such as feature vector indexing and substitution trees
 can probably be extended to higher-order terms using the method described here.
-
+\pagebreak[2]
 
 \section{Implementation}
 \label{sec:unif:implementation}
