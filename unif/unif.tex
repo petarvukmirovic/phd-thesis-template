@@ -590,7 +590,7 @@ tracking which rules introduced which variables can avoid computing redundant
 unifiers: It is not necessary to apply iterations and eliminations on
 elimination variables, and projections on identification variables.
 
-\ourpara{Examples}
+\ourpara{unif:examples}
 We present some examples that demonstrate advantages of our procedure.
 The displayed branches of the constructed trees are not necessarily exhaustive.
 We abbreviate 
@@ -851,8 +851,1298 @@ deeper unification.
 \section{Proof of Completeness}
 \label{sec:unif:proof-of-completeness}
 
+Like the JP procedure, our procedure misses no unifiers:
+
+\begin{theorem}
+\label{thm:completeness}
+% \looseness=-1
+The procedure described in Section \ref{sec:unif:the-unification-procedure}
+parametrized by $\mathcal{P}_\mathsf{c}$ is complete, meaning that the
+substitutions on the leaves of the constructed tree form a CSU.
+More precisely, let $E$ be a multiset of constraints
+and let $V$ be the supply of fresh variables provided to the procedure. 
+Then for any unifier $\varrho$ of $E$ there exists
+a derivation $\left(E,\makeop{id}\right)\longrightarrow^{*}\sigma$ and a
+substitution $\theta$ such that for all free variables $X\not\in V$, we have $\varrho X = \theta\sigma X$.
+\end{theorem}
+
+Taking a high-level view, this theorem is proved by incrementally defining states
+$(E_{j},\sigma_{j})$ and \emph{remainder} \emph{substitutions}
+$\varrho_{j}$ starting with
+$\left(E_{0},\sigma_{0}\right)=\left(E,\makeop{id}\right)$ and
+$\varrho_{0}=\varrho$. The substitution $\varrho_{j}$ is what remains to be added
+to $\sigma_{j}$ to reach $\varrho_{0}$. States are defined
+so that the shape of the selected constraint from $E_{j}$ and the remainder
+substitution guide the choice of applicable transition rule.
+We employ a measure based on values of $E_j$ and $\varrho_j$ that decreases with 
+each application of the rules. Therefore, eventually, we will reach the target substitution
+$\sigma$.
+
+In the remaining of this section, we view terms as
+$\alpha\beta\eta$-equivalence classes, with the $\eta$-long $\beta$-normal
+form as their canonical representative. Moreover, we consider all
+substitutions to be fully applied. These assumptions are justified because
+all bindings depend only on the head of terms and hence replacing the lazy
+transitions $\unifrulename{Normalize}_{\alpha\eta}$,
+$\unifrulename{Normalize}_{\beta}$, and $\unifrulename{Dereference}$ by eager
+counterparts only affects the efficiency but not the overall behavior of our
+procedure.
+
+We now give the detailed completeness proof of Theorem \ref{thm:completeness}.
+Our proof is an adaptation of the proof given by Jensen and Pietrzykowski
+\cite{jp-76-unif}.
+% %Intimate knowledge of that proof is required from the reader.
+Definitions and lemmas are reused, but are combined together differently to
+suit our procedure. We start by listing all reused definitions and lemmas
+from the original JP proof. The ``JP'' labels in
+their statements refer to the corresponding lemmas and definitions from
+the original proof.
+
+\begin{defi}[{$\jp[1]D6$}] \label{unif:def:disagreement-pairs}
+\looseness=-1
+Given two terms $t$ and $s$ and their common context $C$, 
+we can write $t$ as $C[\seq t]$ and $s$ as $C[\seq s]$
+for some $\seq t$ and $\seq s$.
+The pairs $(s_{j},t_{j})$ are called \emph{disagreement pairs.}
+\end{defi}
+    %
+\begin{defi}
+[$\jp D1$]\label{unif:def:opponents}
+Given two terms $t$ and $s$,
+let $\param[\seq x] t'$ and $\param[\seq y] s'$ 
+be respective $\alpha$-equivalent terms such that
+their parameters $\seq x$ and $\seq y$ are disjoint.
+Then the disagreement pairs of $t'$ and $s'$ are called 
+\emph{opponent pairs} in $t$ and $s$.
+\end{defi}
+
+\begin{lemma}[$\jp L{3\text{ (1)}}$]\label{lem:principal-lemma}Let $\varrho$ be a substitution
+    and $X$, $Y$ be free variables such that $\varrho\left(X\,\seq s\right)=\varrho\left(Y\,\seq t\right)$
+    for some term tuples $\seq s$ and $\seq t$. Then for every opponent
+    pair $u$, $v$ in $\varrho X$ and $\varrho Y$
+    (Definition \ref{unif:def:opponents}), the head of $u$ or $v$ is a parameter
+    of $\varrho X$ or $\varrho Y$.
+    \end{lemma}
+  %
+  
+  In contrast to applied constants, applied variables should not be eagerly decomposed.
+  For a constant $\cst{f}$, if $\cst{f}\,\seq s \unif \cst{f}\,\seq t$ has a unifier,
+  that unifier must clearly also unify $s_{i} \unif t_{i}$ for each~$i$. 
+  For a free variable $X$, a unifier of $X\,\seq s \unif X\,\seq t$ does not necessarily
+  unify $s_{i} \unif t_{i}$.
+  The concept of $\omega$-simplicity is
+  a criterion on unifiers that captures some of the cases where eager decomposition is possible.
+  Non-$\omega$-simplicity
+  on the other hand is the main trigger of $\unifrulename{Iteration}$\textemdash the
+  most explosive binding of our procedure.
+  
+  \begin{defi}
+  [$\jp D2$]\label{unif:def:omega-simple}An occurrence of a parameter $x$ of term $t$
+  in the body of $t$ is $\omega$\emph{-simple }if both
+  \begin{enumerate}
+  \item the arguments of $x$ are distinct and are exactly (the $\eta$-long
+  forms of) all of the variables bound in the body of $t$, and
+  \item this occurrence of $x$ is not in an argument of any parameter
+  of $t$.
+  \end{enumerate}
+  \end{defi}
+  This definition is slightly too restrictive for our purposes.
+  It is unfortunate that condition~1 requires $x$ to be applied to
+  \emph{all} instead of just some of the bound variables. The JP
+  proof would probably work with such a relaxation, and the definition
+  would then cover all cases where eager decomposition is possible. 
+  However, to reuse the JP lemmas, we stick to the original
+  notion of $\omega$-simplicity and introduce the following relaxation:
+  \begin{defi}
+  An occurrence of a parameter $x$ of term $t$ in the body of $t$
+  is \emph{base-simple} if it is $\omega$-simple or both
+  \begin{enumerate}
+  \item $x$ is of base type, and
+  \item this occurrence of $x$ is not in an argument of any parameter
+  of $t$.
+  \end{enumerate}
+  \end{defi}
+  %
+  \begin{lemma}\label{lem:base-simple->inj.}
+  Let $s$ have parameters $\seq x$ and a subterm $x_{j}\,\seq v$ 
+  where this occurrence of $x_{j}$ is base-simple.
+  Then for any sequence $\seq t$ of (at least $j$) terms, the body of
+  $t_{j}$ is a subterm of $s\,\seq t$ (after normalization) at the position
+  of $x_{j}\,\seq v$ up to renaming of the parameters of $t_{j}$. 
+  To compare positions of $s$ and $s\,\seq t$, ignore
+  the parameter count mismatch.
+  % ASK(ALEX), ASK(VISA): I am no expert, but isn't it unusual to use these
+  % kind of instructions in the statement of the theorem? Maybe it would be good
+  % to locally redefine the concept of position.
+  \end{lemma}
+  \begin{proof}
+  Consider the process of $\beta$-normalizing $s\,\seq t$. After substituting
+  terms $\seq t$ into the body of~$s$, a further reduction can only
+  take place when some $t_{k}$ is an abstraction that gets arguments in
+  $s$. The arguments $\seq v$ to the $x_{j}$ are distinct variables
+  bound in the body of $s$. This follows easily from either case of the
+  definition of base-simplicity. So $t_{j}$ is applied to the unmodified
+  $\seq v$ after substituting
+  terms $\seq t$ into the body of~$s$. Base-simplicity also implies
+  that $t_{j}\,\seq v$ does not occur in an argument to another
+  $t_{k}$. Hence only the reduction of $t_{j}\,\seq v$ itself affects this
+  subterm. The variables $\seq v$ match the parameter count of $t_{j}$
+  because we consider the $\eta$-long form of $t_{j}$; so $t_{j}\,\seq v$ reduces to the body
+  of $t_{j}$ (modulo renaming). The position is obviously that of $x_{j}\,\seq v$.
+  \end{proof}
+  \begin{lemma}[$\jp C{4 strengthened}$]\label{lem:eq-if-omega-simple}Let $\varrho$ be a substitution and $X$ a free
+    variable. If $\varrho\left(\param X\,\seq s\right)=\varrho\left(\param X\,\seq t\right)$
+    and some occurrence of the $i^{\text{th}}$ parameter of $\varrho X$
+    is base-simple, then $\varrho s_{i}=\varrho t_{i}$.
+    \end{lemma}
+    \begin{proof}
+    By Lemma \ref{lem:base-simple->inj.}, $\varrho s_{i}$ occurs in
+    $\varrho X\left(\varrho\seq s\right)$ at certain position that depends
+    only on $\varrho X$. Similarly $\varrho t_{i}$ occurs in $\varrho X\left(\varrho\seq t\right)=\varrho X\left(\varrho\seq s\right)$
+    at the same position, and hence $\varrho s_{i}=\varrho t_{i}$.
+    \end{proof}
+    We define more properties to determine which binding to apply to a given constraint.
+    Roughly speaking, the simple comparison form will trigger identification bindings,
+    projectivity will trigger Huet-style projections, and
+    simple projectivity will trigger JP-style projections.
+    %
+    \begin{defi}[$\jp D4$]
+    \looseness=-1
+    \label{unif:def:simple-comparison-form}We say that $s$ and $t$ are in \emph{simple
+    comparison form }if all $\omega$-simple heads of opponent pairs in $s$ and $t$ are distinct, and
+    each opponent pair has an $\omega$-simple head.
+    \end{defi}
+    %
+    \begin{defi}[$\jp D5$]
+    \label{unif:def:projective} A term $t$ is called \emph{projective }if the head
+    of $t$ is a parameter of $t$. If the whole body is just
+    the parameter, then $t$ is called \emph{simply projective.}
+    \end{defi}
+    A central part of the proof is to find a suitable measure for the
+    remaining problem size. Showing that the measure is strictly decreasing
+    and well-founded guarantees that the procedure finds 
+    a suitable substitution in finitely many steps. We reuse the measure for remainder substitutions
+    from JP \cite{jp-76-unif}, but embed it into a lexicographic measure
+    to handle the decomposition steps and oracles of our procedure.
+    \begin{defi}[$\jp D7$] \label{unif:def:weights}
+    The \emph{free weight} of a term $t$ is the total number of occurrences of
+    free variables and constants in $t$.
+    The \emph{bound weight} of $t$ is the total number of occurrences 
+    (excluding occurrences $\lambda x$) of bound variables in $t$,
+    but with the particular exemption: if a prefix variable $u$ 
+    has one or more $\omega$-simple occurrences in the body,
+    then one such occurrence and its arguments are not counted.
+    It does not matter which occurrence is not counted because
+    in $\eta$-long form the bound weight of the arguments of an 
+    $\omega$-simple variable is the same for all occurrences
+    of that variable.
+    \end{defi}
+    \begin{defi}[$\jp D8$] \label{unif:def:ord}
+    For multisets $E$ of unification constraints and
+    substitutions $\rho$, our measure on pairs $(E, \rho)$
+    is the lexicographic comparison of
+    \begin{description}
+      \item[A] the sum of the sizes of the terms in $\rho E$
+      \item[B] the sum over the free weight of $\rho F$, 
+        for all variables $F$ mapped by $\rho$
+      \item[C] the sum over the bound weight of $\rho F$, 
+      for all variables $F$ mapped by $\rho$
+      \item[D] the sum over the number of parameters of $\rho F$, 
+      for all variables $F$ mapped by $\rho$
+    \end{description}
+    We denote the quadruple containing these numbers as $\ord(E,\rho)$.
+    We denote the triple containing only the last three components of $\ord(E,\rho)$ as $\ord \rho$.
+    %ASK(VISA): Why is ord(E,\rho) with parentheses and ord \rho without them?
+    We write $<$ for the lexicographic comparison of these tuples.
+    \end{defi}
+
+    \looseness=-1
+    The next six lemmas correspond to the bindings of our procedure and sufficient
+    conditions for the binding to bring us closer to a given solution. 
+    This is expressed as a decrease of the $\ord$ measure
+    of the remainder. In each of these lemmas, 
+    let $u$ be a term with a variable head $a$ and
+    $v$ a term with an arbitrary head $b$.
+    Let $\varrho$ be a unifier of $u$ and $v$.
+    The conclusion, let us call it \textbf{\emph{C}},
+    is always the same: there exists a binding $\delta$ applicable to the problem $ u\unif v$, and
+    there exists a substitution $\varrho'$ such that $\ord\varrho'<\ord\varrho$
+    and for all variables $X$ except the fresh variables introduced by the binding $\varrho X= \varrho'\, \delta X$.
+    For most of these lemmas, we refer to JP \cite{jp-76-unif} for proofs.
+    Although JP only claim $\varrho X= \varrho'\, \delta X$
+    for variables $X$ mapped by $\varrho$,
+    inspection of their proofs shows that the equality holds for 
+    all $X$ except the fresh variables introduced by the binding.
+    Moreover, some of our bindings have more preconditions, 
+    yielding additional orthogonal hypotheses in our lemmas,
+    which we address below.
+
+    \begin{lemma}
+    [$\jp L9$]\label{lem:elimination}If $a=b$ is not an elimination variable and $\varrho a$
+    discards any of its parameters, then \textbf{C} by elimination.
+    Moreover, for the elimination variable $G$ introduced by this elimination,
+    $\varrho'G$ discards none of its parameters and has the body of $\varrho a$.
+    \end{lemma}
+    \begin{proof}
+    Let $\varrho a=\param t$ and let $\left(x_{j_{k}}\right)_{k=1}^{i}$
+    be the subsequence of $\seq x$ consisting of those variables which
+    occur in the body $t$. It is a strict subsequence,\emph{ }since $\varrho a$
+    is assumed to discard some parameter. Since the equal heads $a=b$ of the
+    constraint $u\unif v$ are not elimination variables, elimination
+    for $(j_{k})_{k=1}^{i}$ can be applied. Let $\delta=\{ a\mapsto\param G\,x_{j_{1}}\,\ldots\,x_{j_{i}}\} $
+    be the corresponding binding. Define $\varrho'$ to be like $\varrho$
+    except
+    \[
+    \varrho'a=a\quad\text{and}\quad\varrho'G=\param[x_{j_{1}}...x_{j_{i}}]t.
+    \]
+    Obviously $\varrho'G$ is a closed term and $\varrho X = \varrho'\,\delta X$
+    holds for all $X \not= G$. Moreover $\ord\varrho'<\ord\varrho$, because
+    free and bound weights stay the same ($\varrho a$ and $\varrho'G$ have the
+    same body $t$) whereas the number of parameters strictly decreases. The definition
+    of $\left(j_{k}\right)_{k=1}^{i}$ implies that $\varrho'G$ discards
+    none of its parameters.
+    \end{proof}
+
+    %
+    \begin{lemma}
+    [$\jp L{10}$]\label{lem:iteration}
+    Assume that
+    there exists a parameter $x$ of $\varrho a$ such that
+    $x$ has a non-$\omega$-simple (Definition \ref{unif:def:omega-simple}) 
+    occurrence in $\varrho a$, which is not below another parameter, or
+    such that $x$ has at least two $\omega$-simple occurrences in $\varrho a$.
+    Moreover, 
+    if $a = b$, to make iteration applicable,
+    $a$~must not be an elimination variable, and
+    $x$ must be of functional type.
+    Then \textbf{C} is achieved by iteration.
+    \end{lemma}
+    %
+    \begin{lemma}
+    [$\jp L{11}$]\label{lem:jp-projection}
+    \looseness=-1
+    Assume that $a$ and $b$ are different free variables.
+    If $\varrho a$ is simply
+    projective (Definition \ref{unif:def:projective})
+    and $a$ is not an identification variable, 
+    then \textbf{C} by JP-style projection.
+    \end{lemma}
+    %\begin{proof}
+    %This is Lemma 3.11 from \cite{jp-76-unif}, plus the assumption 
+    %that $a$ is not an identification variable.
+    %This extra assumption is necessary because we restrict 
+    %the application of JP-style projection in this way.
+    %\end{proof}
+    %
+    \begin{lemma}
+    [$\jp L{12}$]\label{lem:jp-imitation}If $\varrho a$ is not projective and $b$ is rigid,
+    then \textbf{C} by imitation.
+    \end{lemma}
+    %
+    \begin{lemma}
+    [$\jp L{13}$]\label{lem:identification}
+    Let $a \not= b$.
+    Assume that $\varrho a \not= a$ and $\varrho b \not= b$
+    are in simple comparison form (Definition \ref{unif:def:simple-comparison-form}) and neither is
+    projective. 
+    Then \textbf{C} by identification.
+    Moreover, $\varrho' H$ is not projective, where $H$ is the identification variable
+    introduced by this application of the identification binding.
+    \end{lemma}
+    \begin{proof}
+    This is JP's Lemma~3.13, plus the claim that $\varrho' H$ is not projective.
+    Inspecting the proof of that lemma, it is obvious that $\varrho' H$ cannot be projective
+    because $\varrho a$ and $\varrho b$ are not projective.
+    \end{proof}
+    %
+    %Additionally, we need one more of these lemmas for the Huet-style projection binding:
+    %
+    \begin{lemma}
+    \label{lem:huet-projection}
+    Assume that $\varrho a$ is
+    projective (Definition \ref{unif:def:projective}),
+    $a$ is not an identification variable, and $b$ is rigid.
+    Then \textbf{C} by Huet-style projection.
+    \end{lemma}
+    \begin{proof}
+    Since $\varrho a$ is
+    projective, we have $\varrho a = \lambda \overline{x}_n.\, x_k\,\overline{t}_m$
+    for some $k$ and some terms $\overline{t}_m$.
+    If $\varrho a$ is also simply projective,
+    then $x_k$ must be non-functional
+    and since Huet-style projection and JP-style projection coincide
+    in that case, Lemma~\ref{lem:jp-projection} applies.
+    Hence, in the following we may assume that $\varrho a$ is not simply projective,
+    i.e., that $m>0$.
+    
+    Let $\delta$ be
+    the Huet-style projection binding:
+    \[ \delta = \{a \mapsto \lambda \overline{x}_n. \, x_i \, (F_1 \, \overline{x}_n) \, \ldots \, (F_m \, \overline{x}_n)\} \]
+    for fresh variables $F_1,\dots,F_m$.
+    This binding is applicable because $b$ is rigid.
+    Let $\varrho'$ be the same as $\varrho$ except that we set $\varrho' a = a$
+    and for each $1\leq j\leq m$ we set
+    \[
+      \varrho' F_j = \lambda \overline{x}_n. \, t_j
+    \]
+    It remains to show that $\ord\varrho'<\ord\varrho$.
+    The free weight of $\varrho a$ is the same as 
+    the sum of the free weights of $\varrho' F_j$ for $1\leq j\leq m$.
+    Thus, the free weight is the same for $\varrho$ and $\varrho'$.
+    The bound weight of $\varrho a$ however is exactly $1$ larger than
+    the sum of the bound weights of $\varrho' F_j$ for $1\leq j\leq m$
+    because of the additional occurrence of $x_k$ in $\varrho a$.
+    The exemption for $\omega$-simple occurrences in the definition
+    of the bound weight cannot be triggered by this occurrence of $x_k$
+    because $m > 0$ and thus $x_k$ is not $\omega$-simple.
+    It follows that $\ord\varrho'<\ord\varrho$.
+    \end{proof}
+    %
+    We are now ready to prove the completeness theorem (Theorem \ref{thm:completeness}).
+    \begin{proof}
+    Let $E$ be a multiset of constraints
+    and let $V$ be the supply of fresh variables provided to our procedure. 
+    Let $\varrho$ be a unifier of $E$.
+    We must show that there exists
+    a derivation $\left(E,\makeop{id}\right)\longrightarrow^{*}\sigma$ and a
+    substitution $\theta$ such that for all free variables $X\not\in V$, we have $\varrho X = \theta\sigma X$.
+     
+
+    Let $E_{0}=E$ and $\sigma_{0}=\makeop{id}$. 
+    Let $\varrho_{0}=\tau\varrho$ for some renaming $\tau$, such that 
+    every free variable occurring in $\varrho_{0}E_{0}$ does not occur in $E_{0}$ and is not contained in $V$.
+    Then $\varrho_{0}$
+    unifies $E_{0}$ because $\varrho$ unifies $E$ by assumption.
+    Moreover, $\varrho_{0}=\varrho_{0}\sigma_{0}$. We proceed
+    to inductively define $E_{j}$, $\sigma_{j}$ and $\varrho_{j}$
+    until we reach some $j$ such that $E_j = \varnothing$.
+    To guarantee well-foundedness, we ensure that the measure 
+    $\ord\left(\varrho_{j},E_{j}\right)$ decreases with each step.
+    We maintain the following invariants for all $j$:
+    \begin{itemize}
+    \item $(E_{j},\sigma_{j})\longrightarrow(E_{j+1},\sigma_{j+1})$;
+    \item $\ord(\varrho_{j},E_{j}) > \ord(\varrho_{j+1},E_{j+1})$;
+    \item $\varrho_{j}$ unifies $E_{j}$;
+    \item $\varrho_{0} X = \varrho_{j}\sigma_{j} X$ for all free variables $X\not\in V$;
+    \item every free variable occurring in $\varrho_{j}E_{j}$ does not occur in $E_{j}$ and is not contained in $V$;
+    \item for every identification variable $X$, $\rho_j X$ is not projective; and
+    \item for every elimination variable $X$, each parameter of $\rho_j X$ 
+          has occurrences in $\rho_j X$,
+          all of which are base-simple.
+    \end{itemize}
+    If $E_j \not= \varnothing$, let $u\unif v$ be the selected constraint $S(E_{j})$ in $E_{j}$.
+    
+    First assume that an oracle is able to find a CSU for the constraint $u\unif v$.
+    Since $\varrho_{j}$ unifies $u$ and~$v$, by the definition of a CSU,
+    the CSU discovered by the oracle 
+    contains a
+    unifier $\delta$ of $u$ and $v$ such that there exists $\varrho_{j+1}$
+    and for all free variables $X$ except for the auxiliary variables of the CSU
+    we have $\varrho_{j} X=\varrho_{j+1}\,\delta X$. Thus, an \unifrulename{OracleSucc}
+    transition is applicable and yields the node 
+    $(E_{j+1},\sigma_{j+1})=(\delta(E_{j}\setminus\{ u\unif v\} ),\delta\,\sigma_{j})$.
+    %Since the auxiliary variables introduced by \unifrulename{OracleSucc} are fresh, they cannot occur in $E_{j}$. 
+    Therefore we have a strict containment $\varrho_{j+1}E_{j+1}\subset\varrho_{j+1}\,\delta\,E_{j}=\varrho_{j}E_{j}$.
+    This implies $\ord(E_{j+1},\varrho_{j+1})<\ord(E_{j},\varrho_{j})$.
+    It also shows that the constraints $\varrho_{j+1}E_{j+1}$ are unified
+    when $\varrho_{j}E_{j}$ are. 
+    Since the auxiliary variables introduced by \unifrulename{OracleSucc} are fresh,
+    they cannot occur in $E_j$ nor in $\sigma_{j} X$ for any $X\not\in V$. Hence,
+    we have $\varrho_{0} X = \varrho_{j}\sigma_{j} X = \varrho_{j+1}\,\delta\,\sigma_{j} X =\varrho_{j+1}\sigma_{j+1} X$
+    for all free variables $X\not\in V$.
+    Any free variable occurring in $\varrho_{j+1}E_{j+1}$ cannot not occur in $E_{j+1}$ and is not contained in $V$
+    because  $\varrho_{j+1}E_{j+1}\subset\varrho_{j}E_{j}$
+    and the variables in $E_{j+1} = \delta(E_{j}\setminus\{ u\unif v\} )$
+    are either variables already present in $E_{j}$ or fresh variables introduced by \unifrulename{OracleSucc}.
+    New identification or elimination variables are not introduced;
+    so their properties are preserved. Hence all invariants are preserved.
+
+    Otherwise we proceed by a case distinction on the form of $u\unif v$.
+    Typically, one of the Lemmas \ref{lem:elimination}\textendash{}\ref{lem:huet-projection}
+    is going to apply. Any one of them gives substitutions $\varrho'$
+    and $\delta$ with properties that let us define $E_{j+1}=\delta E_{j}$,
+    $\sigma_{j+1}=\delta\,\sigma_{j}$ and $\varrho_{j+1}=\varrho'$.
+    The problem size always strictly decreases, because 
+    these lemmas imply
+    $\varrho_{j+1}E_{j+1}=\varrho_{j+1}\delta E_{j}=\varrho_{j}E_{j}$
+    and $\ord\varrho_{j+1}=\ord\varrho'<\ord\varrho_{j}$.
+    Regarding the other invariants, the former equation guarantees that $\varrho_{j+1}$
+    unifies $E_{j+1}$, and 
+    $\varrho_{0} X = \varrho_{j}\,\sigma_{j} X = \varrho_{j+1}\,\delta\,\sigma_{j} X =\varrho_{j+1}\,\sigma_{j+1} X$
+    for all $X \not\in V$ because the fresh variables introduced by the binding cannot occur in $\sigma_{j} X$ for any $X\not\in V$. The conditions on variables must be checked
+    separately when new ones are introduced. Let $a$ be
+    the head of $u=\param a\,\seq u$ and $b$ be the head of $v = \param b\,\seq v$.
+    Consider the following cases:
+
+    \begin{description}
+    \item[$u$ and $v$ have the same head symbol $a=b$] \hfill
+    \begin{enumerate}[beginpenalty=1000]
+    \item Suppose that $\varrho_{j}a$ has a parameter with non-base-simple
+    occurrence. By one of the induction invariants, $a$ is not an elimination
+    variable. 
+    Among all non-base-simple occurrences of parameters in $\varrho_{j}a$, 
+    choose the leftmost one, which we call $x$.
+    This occurrence of $x$ cannot be below another parameter, 
+    because having $x$ occur in one of its arguments would make
+    that other parameter non-base-simple, contradicting the occurrence of $x$ being leftmost.
+    Thus $x$ is neither base-simple nor below another parameter; so $x$ is of functional type.
+    Moreover, non-base-simplicity implies non-$\omega$-simplicity.
+    Hence, we can apply Lemma~\ref{lem:iteration} (iteration).
+
+    \item Otherwise suppose that $\varrho_{j}a$ discards some of its parameters.
+    By one of the induction invariants, $\varrho_{j}a$ is not an elimination variable.
+    Hence Lemma \ref{lem:elimination} (elimination) applies. The newly introduced elimination
+    variable $G$ satisfies the required invariants, because Lemma \ref{lem:elimination}
+    guarantees that $\varrho_{j+1}G$ uses its parameters and shares the
+    body with $\varrho_{j}a$ which by assumption of this case contains
+    only base-simple occurrences.
+
+    \item Otherwise every parameter of $\varrho_{j}a$ has occurrences and
+    all of them are base-simple. We are going to show that $\unifrulename{Decompose}$
+    is a valid transition and decreases $\varrho_{j}E_{j}$. By Lemma~\ref{lem:eq-if-omega-simple}
+    we conclude from $\varrho_{j}u=\varrho_{j}v$ that $\varrho_{j}u_{i}=\varrho_{j}v_{i}$
+    for every $i$. Hence the new constraints 
+    $E_{j+1}=E_{j}\setminus\left\{ u\unif v\right\} \cup\set{u_{i}\unif v_{i}}{\text{for all }i}$
+    after $\unifrulename{Decompose}$ are unified by $\varrho_{j}$.
+    This allows us to define $\varrho_{j+1}=\varrho_{j}$ and
+    $\sigma_{j+1}=\sigma_{j}$.
+    To check that $\varrho_{j+1}E_{j+1}=\varrho_{j}E_{j+1}$ is smaller
+    than $\varrho_{j}E_{j}$ it suffices to check that constraints $\varrho_{j}u_{i}\unif\varrho_{j}v_{i}$
+    together are smaller than $\varrho_{j}u\unif\varrho_{j}v$. Since
+    all parameters of $\varrho_{j}a$ have base-simple occurrences, $\varrho_{j}u_{i}$
+    is a subterm of $\varrho_{j}u=\param\varrho_{j}a\,\left(\varrho_{j}\seq u\right)$
+    by Lemma \ref{lem:base-simple->inj.}. Similarly for $\varrho_{j}v$.
+    It follows that $\varrho_{j+1}E_{j+1}$ is smaller
+    than $\varrho_{j}E_{j}$.
+    Since $\varrho_{j+1}=\varrho_{j}$ and
+    $\sigma_{j+1}=\sigma_{j}$, the other
+    invariants are obviously preserved.
+
+    \end{enumerate}
+    
+
+
+    \item[\mbox{$u \unif v$} is a flex-flex pair with different heads] \hfill
+    \begin{enumerate}
+      \setcounter{enumi}{4}
+      \item First, suppose that
+      $\varrho_j a$ or $\varrho_j b$ is simply projective
+      (Definition \ref{unif:def:projective}). 
+      By the induction hypothesis, the simply projective head 
+      cannot be an identification variable.
+      Thus Lemma \ref{lem:jp-projection} (JP-style projection) applies.
+      
+      \item \looseness=-1 
+      Otherwise suppose that 
+      $\varrho_j a$ is projective but not simply.
+      Then the head of $\varrho_j a$ is some parameter $x_{k}$. But
+      this occurrence cannot be $\omega$-simple because it has arguments
+      which cannot be bound above the head $x_{k}$. Thus Lemma \ref{lem:iteration}
+      (iteration) applies.
+      If $\varrho_j b$ is projective but not simply, the same argument applies.
+
+      \item Otherwise suppose that $\varrho_j a$, $\varrho_j b$ are in simple
+      comparison form (Definition \ref{unif:def:simple-comparison-form}).
+      By one of the the induction invariants,
+      the free variables occurring in $\varrho_{j}E_{j}$ do not occur in $E_{j}$.
+      Thus $\varrho_{j} a \not= a$ and $\varrho_{j} b \not= b$.
+      Then Lemma \ref{lem:identification} (identification) applies.
+
+      \item Otherwise $\varrho_j a$, $\varrho_j b$ are not in simple comparison
+      form. By Lemma \ref{lem:principal-lemma} and by the definition of simple comparison form,
+      there is some opponent pair $x_{k}\,\seq r$, $ b$
+      in $\varrho_j a$ and $\varrho_j b$
+      (after possibly swapping $u$ and $v$) where either the occurrence
+      of $x_{k}$ is not $\omega$-simple (Definition~\ref{unif:def:omega-simple}) or else
+      $x_{k}$ has another $\omega$-simple occurrence in the body of $\varrho_j a$.
+      Then Lemma \ref{lem:iteration} 
+      (iteration) applies.
+    \end{enumerate}
+    
+    \looseness=-1
+    \item[$u \unif v$ is a flex-rigid pair]
+    Without loss of generality, assume that $a$ is flex and $b$ is rigid.\hfill
+
+    \begin{enumerate}
+    \setcounter{enumi}{8}
+    \item Suppose first that $\varrho_j a$ is projective.
+    By one of the induction invariants, $a$ cannot be an identification variable.
+    Thus Lemma \ref{lem:huet-projection} (Huet-style projection) applies.
+    
+    \item Otherwise $\varrho_j a$ is not projective. 
+    The head of $\varrho_j a$ must be $b$ because $b$ is rigid, and $\varrho_j$ unifies $u$ and $v$. 
+    Since $\varrho_j a$ is not projective, that means that $b$ is not a bound variable. 
+    Therefore, $b$ must be a constant.
+    Then Lemma \ref{lem:jp-imitation} (imitation) applies.
+    \end{enumerate}
+    
+    We have now constructed a run 
+    $(E_{0},\sigma_{0})\longrightarrow(E_{1},\sigma_{1})\longrightarrow(E_{2},\sigma_{2})\longrightarrow\cdots$
+    of the procedure. 
+    This run cannot be infinite because because the measure $\ord(E_j,\varrho_{j})$
+    strictly decreases as $j$ increases.
+    Hence, at some point we reach a $j$ such
+    that $E_{j}=\varnothing$ and $\varrho_{0} X = \varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$.
+    Therefore, 
+    $(E,\makeop{id})\longrightarrow^*(\varnothing,\sigma_{j})\longrightarrow\sigma_j$,
+    and $\rho X = \tau^{-1}\,\varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$,
+    completing the proof. \qedhere
+    \end{description}
+    \end{proof}
+
+\pagebreak[2]    
 \section{A New Decidable Fragment}
 \label{sec:unif:solid-oracle}
+
+We discovered a new fragment that admits a finite CSU and a simple oracle. The
+oracle is based on work by Prehofer and the PT procedure \cite{cp-95-unifphd},
+an adaptation of the preunification procedure by Snyder and Gallier
+\cite{sg-89-unif} (which itself is an adaptation of Huet's procedure). PT
+transforms an initial multiset of constraints $E_0$ by applying bindings
+$\varrho$. If there is a sequence
+$E_0\ptarrow{\varrho_1}\cdots\ptarrow{\varrho_n}E_n$ such that $E_n$ has only
+flex-flex constraints, we say that PT produces a preunifier $\sigma =
+\varrho_n\ldots\varrho_1$ with constraints $E_n$. A sequence fails if
+$E_n=\bot$. As in the previous section, we consider all terms to be
+$\alpha\beta\eta$-equivalence classes with the $\eta$-long $\beta$-reduced form
+as their canonical representative. Unlike previously, in this section we view
+unification constraints $s \unif t$ as ordered pairs.
+
+The following rules, however, are stated modulo orientation. The PT transition
+rules, adapted for our presentation style, are as follows:
+
+\begin{description}[labelwidth=\widthof{\rm\unifrulename{\bf Decomposition}}]
+    \item[\rm\textsf{Deletion}] 
+      $\{\selected{s \unif s}\} \uplus E \ptarrowid E$
+    \item[\rm\textsf{Decomposition}]
+      $\{\selected{\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda \overline{x}. \, a \, \overline{t}_m} \} 
+        \uplus \allowbreak
+        E \ptarrowid \{ s_1 \unif  t_1, \ldots, s_m \unif t_m \} \uplus E$
+        \\ where $a$ is rigid
+    \item[\rm\textsf{Failure}]
+        $\{\selected{\lambda \overline{x}. \, a \, \overline{s} \unif \lambda \overline{x}. \, b \, \overline{t}} \} 
+          \uplus \allowbreak
+          E \ptarrowid \bot$
+    \\ where $a$ and $b$ are different rigid heads
+    \item[\rm\textsf{Solution}] 
+      $\{\selected{\lambda \overline{x}.\, F\,\overline{x} \unif \lambda \overline{x}.\,t} \} \uplus E \ptarrow{\varrho} \varrho E$
+      \\where $F$ does not occur in $t$, $t$ does not have a flex head, and $\varrho = \{ F \mapsto \lambda \overline{x}.\,t \}$ 
+    \item[\rm\textsf{Imitation}]
+      $\{\selected{\lambda \overline{x}. \, F \, \overline{s}_m \unif \lambda
+      \overline{x}. \, \cst{f} \, \overline{t}_n }\} \uplus E \ptarrow{\varrho}
+      \varrho(\{ G_1 \,
+      \overline{s}_m  \unif  t_1, \ldots,  G_n \, \overline{s}_m \allowbreak \unif t_n\} \uplus E)$ \\
+      where $\varrho = \{ F \mapsto \lambda \overline{x}_m. \, \cst{f} \, (G_1
+      \, \overline{x}_m) \ldots (G_n \, \overline{x}_m) \}$,
+      $\overline{G}_n$ are fresh variables of appropriate types
+    \item[\rm\textsf{Projection}]
+      $\{\selected{\lambda \overline{x}. \, F \, \overline{s}_m \unif \lambda
+      \overline{x}. \, a \, \overline{t} }\} \uplus E \ptarrow{\varrho} 
+      \varrho(\{ s_i \, (G_1 \,
+      \overline{s}_m) \ldots (G_j \, \overline{s}_m) \unif a \, \overline{t}\} \uplus E)$ \\
+      where $\varrho =\{F \mapsto \lambda \overline{x}_m. \, x_i \, (G_1 \,
+      \overline{x}_m) \ldots (G_j \, \overline{x}_m)\}$, $\overline{G}_j$ are
+      fresh variables of appropriate types
+\end{description}
+\looseness=-1
+The \selected{\text{grayed}} constraints are required to be selected by a given
+selection function $S$. We call $S$ \emph{admissible} if it selects only flex-rigid constraints, prioritizes
+selection of constraints applicable for \textsf{Failure} and \textsf{Decomposition}, 
+and of descendant constraints of
+\textsf{Projection} transitions with $j=0$ (i.e., for $x_i$ of base type), in that order of priority. In the
+remainder of this section we consider only admissible selection functions,
+an assumption that Prehofer also makes implicitly in his thesis. Additionally,
+whenever we compare multisets, we use the multiset ordering defined by
+Dershowitz and Manna \cite{dm-79-multisetordering}.
+As above, we assume that the fresh variables are taken from an infinite supply $V$ of fresh variables
+that are different from the variables in the initial problem
+and never reused.
+
+The following lemma states that PT is \emph{complete for preunification}:
+\begin{lemma}
+  \label{unif:lemma:pt-complete}
+  \looseness=-1
+  Let $\varrho$ be a unifier of a multiset of constraints $E_0$. Then PT produces a
+  preunifier $\sigma$ with constraints $E_n$, and there exists a
+  unifier $\theta$ of $E_n$ such that
+  $\varrho X = \theta \sigma X$ for all $X$ that are not contained in the supply $V$ of fresh variables.
+\end{lemma}
+\begin{proof}
+  This lemma is a refinement of Lemma 4.1.7 from Prehofer's PhD thesis
+  \cite{cp-95-unifphd}, and this proof closely follows the proof of that lemma.
+  Compared to the lemma from Prehofer's thesis, our lemma additionally establishes
+  the relationship of unifier $\theta$ of the resulting flex-flex constraint
+  set $E_n$ with preunifier $\sigma$ and the target unifier $\varrho$.
+
+  We prove the lemma by induction 
+  using a well-founded measure on $(\varrho,
+  E_0)$. The ordering
+  is the lexicographic comparison of the following properties:
+
+  \begin{description}
+    \item[A] sum of the abstraction-free sizes of the terms $\varrho F$ for each variable $F$ mapped by $\varrho$
+    %TODO: What are the "bindings in \rho"? Maybe write "the terms $\varrho x$ for each variable $x$ mapped by $\rho$"? --Alex
+    %TODO: Done
+    \item[B] multiset of the sizes of constraints in $E_0$
+  \end{description}
+Here, the \emph{abstraction-free size} is inductively defined by
+$\text{afsize}(F) = 1$; $\text{afsize}(x) = 1$; $\text{afsize}(\cst{f}) = 1$;
+$\text{afsize}(s\,t) = \text{afsize}(s) + \text{afsize}(t)$;
+$\text{afsize}(\lambda x.\, s) = \text{afsize}(s)$.
+
+  If $E_0$ consists only of flex-flex constraints, then we can take an empty
+  transition sequence (i.e., $\sigma = \text{id}$) and $\theta = \varrho$.
+  Otherwise, there exists a constraint that is selected by an
+  admissible selection function. We show that for each such constraint, there is
+  going to be a PT transition bringing us closer to the desired preunifier.
+
+  Let $E_0 = \{\selected{s \unif t}\} \uplus E'_0$. Since $s \unif t$ is selected, at least
+  one of $s$ and $t$ must have a rigid head. We distinguish several cases based on the
+  form of $s \unif t$ (modulo the constraint order):
+  
+  \begin{itemize}
+    \item $s \unif s$: in this case, \textsf{Deletion} applies. This transition does not
+    alter $\varrho$, but removes an equation obtaining $E_1$ which is smaller
+    than $E_0$ and still unifiable by $\varrho$. By induction hypothesis, the preunifier is reachable.
+    \item 
+    \looseness=-1
+    $\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda
+    \overline{x}. \, b \, \overline{t}_n$, where $a$ and $b$ are rigid: since
+    $\varrho$ is a unifier, then $a=b$, $n=m$, and \textsf{Decomposition}
+    applies. Similarly to the above case, we conclude that the preunifier is reachable.
+    \item $\lambda \overline{x}.\, F\,\overline{x} \unif \lambda \overline{x}.\,t$ where $t$
+    has a rigid head and $F$ does not occur in $t$: \textsf{Solution} applies. Huet showed \cite[proof of L5.1]{gh-75-unification}
+    that in this case $\varrho = \varrho\sigma_1$, where $\sigma_1 = \{ F \mapsto \lambda\overline{x}.\,t \}$.
+    Let $\varrho_1 = \varrho\setminus\{F \mapsto \varrho F\}$.
+    Then $\varrho = \varrho_1 \sigma_1$.
+    \looseness=-1
+    Since $\varrho$ unifies $E'_0$, $\varrho_1$ unifies $E_1 = \sigma_1 E'_0$. Clearly, $\varrho_1$ is smaller
+    than $\varrho$. Now we can apply induction hypothesis on $\varrho_1$ and $E_1$, from which 
+    we obtain a sequence $E_1 \ptarrow{\sigma_2} \cdots \ptarrow{\sigma_n} E_n$, $\theta$ which
+    unifies $E_n$ and $\sigma' = \sigma_n \ldots \sigma_2$, such that $\varrho_1 X = \theta\sigma' X$ for all $X \not\in V$.
+    Finally, it is clear that sequence $E_0 \ptarrow{\sigma_1} E_1 \ptarrow{\sigma_2} \cdots \ptarrow{\sigma_n} E_n$,
+    $\theta$, and $\sigma = \sigma' \sigma_1$ are as wanted in the lemma statement.
+    \item \looseness=-1 
+    $\lambda
+    \overline{x}.\,F\,\overline{s}_m~\unif~\lambda \overline{x}.\,a \,
+    \overline{t}$ where $a$ is rigid: depending on the value of $\varrho$, we can
+    either take an \textsf{Imitation} or \textsf{Projection} step. In either case, we show that
+    the measure reduces. Let $\varrho F = \lambda \overline{x}_m. \, b \, \overline{u}_n$ where $b$
+    is either a constant or a bound variable. If $b$ is a constant, we choose
+    the \textsf{Imitation} step; otherwise we choose the \textsf{Projection} step. In either case,
+    $\sigma_1 = \{ F \mapsto \lambda \overline{x}_m. \, b \, (G_1 \, \overline{x}_m) \ldots
+    (G_n \, \overline{x}_m) \}$. Then it is easy to check that $\varrho_1 = \varrho
+    \setminus \{F \mapsto \lambda \overline{x}_m. \, b \, \overline{u}_n\} \cup \{ G_1~\mapsto~\lambda\overline{x}_m.\, u_1, \allowbreak
+    \ldots, G_n \mapsto \lambda\overline{x}_m.\, u_n \}$ unifies $E_1$ created as the
+    result of imitation or projection. Clearly, $\varrho_1$ has smaller abstraction-free size
+    than $\varrho$. Therefore, by the induction hypothesis we obtain the transitions
+    $E_1 \ptarrow{\sigma_2} \cdots \ptarrow{\sigma_n} E_n$ and substitutions
+    $\theta$ and  $\sigma' = \sigma_n\ldots\sigma_2$, where $\varrho_1 X =
+    \theta \sigma' X$ for all $X \not\in V\setminus\{G_1,\dots,G_n\}$ and $\theta$ is a unifier of $E_n$. Our goal is to prove
+    $\varrho X = \theta \sigma' \sigma_1 X$ for all $X \not\in V$. 
+    For variables $X \not\in V$ that are not $F$, we have $\sigma_1 X = X$
+    and $\varrho X = \varrho_1 X$, which implies $\varrho X = \theta \sigma' \sigma_1 X$.
+    For $X = F$, since $\varrho_1$ and $\theta \sigma'$ agree on $G_1, \ldots, G_n$, we
+    conclude that $\varrho F = \theta \sigma' \sigma_1 F$.
+    Therefore, by taking $\sigma = \sigma'\sigma_1$, and prepending $E_0$ to the
+    sequence from the induction hypothesis, we show that the preunifier is reachable. 
+    \qedhere
+  \end{itemize}
+\end{proof}
+
+\looseness=-1
+Prehofer showed that PT terminates for some classes of constraints. Those
+classes impose requirements on the free variables occurring in the constraints.
+In particular, he identified a class of terms we call \emph{strictly
+solid}\footnote{In Prehofer's thesis this class is described in the statement of
+Theorem 5.2.6.}, which requires that all arguments of free variables are either
+bound variables (of arbitrary type) or ground second-order terms of base type.
+Another important constraint is linearity: a term is called
+\emph{linear} if it contains no repeated occurrences of free variables.
+% We relax Prehofer's conditions by lifting order requirements: we require all
+% arguments of free variables to be either bound variables or ground base-type
+% terms. We call this new class of terms \emph{solid}.
+
+\begin{exa}
+\label{unif:ex:solid-terms}
+Let $G$, $\cst{a}$, and $x$ be of base type, and $F$, $H$, $\cst{g}$, and $y$ be
+binary. Then, the term $F \, G \, \cst{a}$ is not strictly solid, since $F$ is
+applied to a free variable $G$; similarly $H \, (\lambda x. \, x) \, \cst{a}$ is
+not strictly solid as the first argument is of functional type, but it is not
+a bound variable; $\lambda x. \, F \, x \, \cst{a}$ is strictly solid, but $F \, \cst{a} \, (\cst{g} \, (\lambda y. \,
+y\,\cst{a}\,\cst{a})  \, \cst{a})$ is not, as the second
+argument of $F$ is a ground term of third order. 
+\end{exa}
+% \pagebreak[4]
+
+Prehofer's thesis states that PT terminates on $\{s \unif t\}$
+if $s$ is linear, $s$ shares no free variables with~$t$, $s$ is strictly solid,
+and $t$ is second-order. Together with completeness of PT for preunification,
+this result implies that PT procedure can be used to enumerate finitely many
+elements of complete set of preunifiers for this class of terms.
+
+Prehofer focused on the preunification problem as he remarks that the resulting
+flex-flex pairs are ``intricate" \cite[Sect.~5.2.2]{cp-95-unifphd}. We discovered that these flex-flex
+pairs actually have an MGU, allowing us to solve the full unification problem,
+rather than preunification problem. Moreover, we lift the order restriction
+imposed by Prehofer: We identify a class of terms called \emph{solid} which
+requires that all arguments of free variables are either bound variables (of
+arbitrary type) or ground (arbitrary-order) terms of base type.
+
+\begin{exa}
+  Consider the setting of Example \ref{unif:ex:solid-terms}. The terms $F \, G \,
+  \cst{a}$ and $H \, (\lambda x. \, x) \, \cst{a}$ are not solid, for the same reasons they are not strictly solid.
+  However, since the order restriction is lifted, $F \, \cst{a} \, (\cst{g} \, (\lambda y. \,
+  y\,\cst{a}\,\cst{a})  \, \cst{a})$ is solid.
+\end{exa}
+
+
+\looseness=-1 
+In other words, we extend the above preunification decidability result
+for linear strictly solid terms along two axes: we create an oracle
+for the full unification problem and we lift the
+order constraints.
+%
+To enumerate a CSU for a problem $E_0 = \{s \unif t\}$, where $s$ and $t$ are solid,
+$s$ is linear and shares no free variables with~$t$, our oracle applies the following two steps:
+\begin{enumerate}
+  \item Apply the PT procedure on $E_0$ to obtain a preunifier $\sigma$ with
+  flex-flex constraints $E_n$.
+  \item\label{step:ff}\looseness=-1 If $E_n$ is empty, return $\sigma$. Otherwise, choose a flex-flex constraint $u \unif v$ from $E_n$, and let the MGU of $u \unif v$
+  be $\varrho$. Then, set $E_n := \varrho(E_n \setminus \{ u \unif v \})$ and
+   $\sigma := \varrho\sigma$, and repeat step \ref{step:ff}.
+\end{enumerate}
+
+To show that this oracle terminates and yields a CSU, we must prove that the PT
+procedure terminates on above described class of problems (Lemma
+\ref{unif:lemma:solid-termination-preunif}). Moreover, we must show how to compute MGUs for
+the remaining flex-flex pairs (Lemma \ref{unif:lemma:solid-var-same-mgu} and
+\ref{unif:lemma:solid-vars-diff-mgu}). Our results are combined together in Theorem
+\ref{unif:thm:oracle}.
+
+
+
+Towards proving that the PT
+procedure terminates on above described class of problems, we first consider the corresponding matching problem.
+A \emph{matching problem} is a unification problem
+$\{ s \unif t \}$ where $t$ is ground. In what
+follows, we establish some useful properties of matching problems in which both
+$s$ and $t$ are solid (\emph{solid matching problems}). We call the unifier
+of a matching problem a \emph{matcher}.
+%TODO: @PETAR: This reference should be moved up because the previous lemma also uses multisets.
+%Done.
+
+\begin{lemma}
+    \label{unif:lemma:pt-matching-termination}
+    PT terminates on a solid matching problem $\{s \unif t\}$.
+\end{lemma}
+\begin{proof}
+    We show termination by designing a measure on a matching problem $E$ that
+    decreases with each application of a PT transition (possibly followed by
+    \textsf{Decomposition} or \textsf{Failure} steps). 
+    Our measure function
+    compares the following properties lexicographically:
+    \begin{description}
+        \item[A] multiset of the sizes of right-hand sides of the constraints in $E$
+        \item[B] number of free variables in $E$
+    \end{description}
+
+    Clearly, when applying PT transitions, the problem stays a matching problem
+    because the applied bindings do not introduce free variables on the
+    right-hand sides. It is also easy to check that each applied binding keeps
+    the terms in the solid fragment. Namely, bindings for both
+    \textsf{Imitation} and \textsf{Projection} transitions are patterns, which means
+    that, after applying the binding, fresh free variables are applied only to
+    bound variables or ground base-type terms. The \textsf{Solution} transition effectively
+    replaces the variable with a ground term, which is obviously solid. We show each transition 
+    either trivially terminates or reduces the measure:
+
+    \begin{description}
+      \item[Deletion] A decreases.
+      \item[Decomposition] A decreases.
+      \item[Failure] Trivial -- represents a terminal node.
+      \item[Solution] This transition applies on 
+        constraints of the form
+        $F \unif t$. This reduces A, since the constraint $F \unif t$ is removed
+        and $F$ cannot appear on the right-hand side.
+      \item[Imitation] The rule is applicable only on 
+        $\lambda \overline{x}.\, F \, \overline{s}_m  \unif \lambda
+        \overline{x}.\, \cst{f} \, \overline{t}_n$. The \textsf{Imitation} transition
+        replaces the constraint with $\{H_i \,
+        \overline{s}_m  \unif \overline{t}_i \mid 1\le i\le n\}$. This reduces A, as $F$ does not appear on any right-hand side.
+    \item[Projection] The rule is applicable only on 
+        $\lambda \overline{x}.\, F \, \overline{s}_m  \unif \lambda
+        \overline{x}.\, a \, \overline{t}_n$. If $a$ is a bound variable,
+        and we project $F$ to argument $s_i$ different than $a$, \textsf{Failure} applies and
+        PT trivially terminates. If we project $F$ to $a$, we apply \textsf{Decomposition},
+        which reduces $A$. If $a$ is a constant, for \textsf{Failure} not to apply, we
+        have to project to a base-type ground term $s_i$. This does not increase A,
+        since no variables appear on right-hand sides, but removes the variable $F$
+        from $E$, reducing B by one. \qedhere
+    \end{description}
+\end{proof}
+
+Recall that we say $\sigma$ is a grounding substitution if for every variable $F$ mapped
+by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
+\begin{lemma}
+    \label{unif:lemma:pt-matching-ground}
+  All unifiers produced by PT for the solid matching problem $\{s \unif t\}$ are grounding substitutions.
+\end{lemma}
+\begin{proof}
+  Closely following the proof of Lemma 5.2.5 in Prehofer's PhD thesis
+  \cite{cp-95-unifphd}, we prove our claim by induction on the length of the
+  PT transition sequence that leads to the unifier. We know this
+  sequence is finite by Lemma \ref{unif:lemma:pt-matching-termination}. The base case of
+  induction, for the empty sequence, is trivial. The induction step is made using
+  one of the following transitions:
+
+  \begin{description}
+    \item[Deletion] Trivial.
+    \item[Decomposition] Trivial.
+    \item[Failure] This rule is not relevant, since it will not lead to the unifier.
+    \item[Solution] This rule applies the substitution $\{F \mapsto t\}$, which 
+    is grounding since $t$ is ground.
+    \item[Imitation] This transition applies on 
+    constraints of the form
+    \[ \lambda \overline{x}. \, F \, \overline{s}_k \unif \lambda
+    \overline{x}. \, \cst{f} \, \overline{t}_l \]
+    The binding for \textsf{Imitation} is
+    $\varrho = \{F \mapsto \lambda \overline{x}_k.\, \cst{f}\, (G_1 \,
+    \overline{s}_k ) \ldots (G_l \, \overline{s}_k ) \}$, and reduces the
+    problem to $\{G_i \,  \overline{s}_k \unif t_i \mid 1\le i\le l\}$. Since the right-hand sides are ground, 
+    any unifier $\sigma$ produced by PT must map all of the variables $G_1, \ldots, G_l$. By induction hypothesis,
+    $\sigma G_i$ is ground. Therefore, $\sigma\varrho$ must map $F$ to a ground term.
+    \item[Projection] This transition applies on 
+    constraints of the form 
+    \[\lambda \overline{x}. \, F \, \overline{s}_k \unif \lambda
+    \overline{x}. \, t\]
+    The binding for \textsf{Projection} is
+    $\varrho = \{F \mapsto \lambda \overline{x}_k. \, x_i \, (G_1 \,
+      \overline{x}_k) \ldots (G_j \, \overline{x}_k)\}$,
+    and reduces the problem to
+    $\{s_i \, (G_1 \,
+      \overline{s}_k) \ldots (G_j \, \overline{s}_k) \unif a \, \overline{t}_l\}$.
+      Since the right-hand side is ground, 
+      any unifier $\sigma$ produced by PT must map all of the variables $G_1, \ldots, G_j$. 
+    By induction hypothesis,
+    $\sigma G_i$ is ground. Therefore, $\sigma\varrho$ must map $F$ to a ground term. \qedhere
+  \end{description}
+\end{proof}
+
+\begin{lemma}
+  \label{unif:lemma:solid-termination-preunif}
+  \looseness=-1
+  If $s$ and $t$ are solid, $s$ is linear and shares no free variables with $t$, then
+  PT terminates for the preunification problem $\{ s \unif t \}$, and
+  all remaining flex-flex constraints are solid.
+\end{lemma}
+\begin{proof}
+  This lemma is a modification of Lemma 5.2.1 and Theorem 5.2.6 from Prehofer's
+  PhD thesis \cite{cp-95-unifphd}. Correspondingly, the following proof closely
+  follows the proofs for these two lemmas. We also adopt the notion of an
+  \emph{isolated} variable from Prehofer's thesis: a variable is isolated in a
+  multiset $E$ of constraints if it appears exactly once in $E$.
+
+  \looseness=-1
+  First, similarly to the proof of previous lemma we conclude each transition
+  maintains the condition that the terms remain solid. Second, we have to show
+  that variables on left-hand sides remain isolated. For \textsf{Imitation} and
+  \textsf{Projection} rules, the preservation of this invariant is obvious.
+  Later, we also show that \textsf{Solution} preserves it. Third, since $s$ and
+  $t$ share no variables, and $s$ is linear, no rule can introduce a variable
+  from the right-hand side to the left-hand side.
+  
+  To prove termination of PT, we devise a measure that
+  decreases with each application of a PT transition. The measure
+  lexicographically compares the following properties:
+  \begin{description}
+    \item[A] number of occurrences of constant symbols and bound variables on left-hand sides that
+    are not below free variables
+    \item[B] number of free variables on right-hand sides
+    \item[C] multiset of the sizes of right-hand sides
+  \end{description}
+  
+  We show that each transition either trivially terminates or reduces the measure:
+  \begin{description}
+    \item[Deletion] A does not increase and at least one of A or B reduces.
+    \item[Decomposition] A reduces.
+    \item[Failure] Trivial. 
+    \item[Solution] This rule applies in two cases:
+
+    \begin{itemize}
+      \item $F \unif t$: since $F$ is isolated, A is unchanged, B is not
+      increased, and C reduces. All variables on left-hand sides remain isolated
+      since they are unaffected by this substitution.
+      \item $t \unif F $: since $F$ does not occur on any left-hand side and the
+      head of $t$ must be a constant or bound variable (otherwise the rule would
+      not be applicable), $A$ reduces. Even though $t$ might contain some free
+      variables and $F$ can have multiple occurrences on right-hand sides, all
+      free variables on left-hand sides remain isolated. Namely, all free variables
+      in $t$ occur exactly once in the multiset, and since $t \unif F$ is
+      removed, all of them either disappear or end up on right-hand sides.
+    \end{itemize}
+    \item[Imitation] We distinguish the following two forms of the selected constraint:
+    \begin{itemize}
+      \item $\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda \overline{x}. \,
+      \cst{f} \, \overline{u}_m$: 
+      We replace this constraint by 
+      $\{H_i \, \overline{v}_n \unif u_i \mid 1\le i\le m\}$
+      and apply the \textsf{Imitation} binding
+      $F \mapsto \lambda \overline{x}_n.\, \cst{f} \, (H_1 \, \overline{x}_n) \allowbreak
+      \ldots (H_m \, \overline{x}_n)$.
+      As $F$ is isolated, A and B do not increase.
+      Since $F$ is isolated, it does not occur on any right-hand side, and hence C decreases.
+      \item $\lambda \overline{x}. \, \cst{f} \, \overline{u}_m \unif \lambda \overline{x}. \, F \, \overline{v}_n $:
+      applying the \textsf{Imitation} transition 
+      as above will reduce A since $F$ cannot appear on any
+      left-hand side.
+    \end{itemize}
+    \item[Projection] Similarly to the previous transition rule, we have two cases:
+      \begin{itemize}
+        \item$\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda
+        \overline{x}. \, a \, \overline{u}_m$: if $a$ is a bound variable,
+        then for \textsf{Failure} not to be applicable afterwards, we have to
+        project $F$ onto argument $v_i$ equal to $a$. Then we proceed like for
+        \textsf{Imitation}. If $a$ is not a bound variable, then we have to
+        project to some base-type term $v_j$ (otherwise \textsf{Failure} would
+        be applicable afterwards). This reduces the problem to $\lambda
+        \overline{x}. \, v_j \unif \lambda \overline{x}. \, a \,
+        \overline{u}_m$. This is a solid matching problem, whose solutions
+        computed by PT are grounding substitutions (see Lemma
+        \ref{unif:lemma:pt-matching-ground}). Applying one of those solutions will
+        eliminate all the free variables in $\lambda \overline{x}.\, a \,
+        \overline{u}_m$. Since PT is parametrized by an admissible
+        selection function, we know that there are no constraints descending
+        from a simple projection in $E$ since the constraint $\lambda \overline{x}. \, F
+        \, \overline{v}_n \unif \lambda \overline{x}. \, a \, \overline{u}_m$ was
+        chosen,
+        which, due to solidity restrictions, cannot be such a descendant. 
+        Therefore, we know that PT will transform the descendants
+        of the matching problem $\lambda \overline{x}. \, v_j \unif \lambda
+        \overline{x}.\, a \, \overline{u}_m$ until either \textsf{Failure} is
+        observed (making PT trivially terminating) or until no descendant exists
+        and the grounding matcher is computed (see Lemmas
+        \ref{unif:lemma:pt-matching-ground} and \ref{unif:lemma:pt-matching-termination}).
+        This results in removal of the original constraint $\lambda
+        \overline{x}. \, F \, \overline{v}_n \unif \lambda \overline{x}. \,
+        a \, \overline{u}_m$ and application of the computed grounding
+        matcher, which will either remove all the free variables in the right-hand
+        side of the constraint (not increasing A and reducing B)
+        or not increasing A and B, reduce C if no free variables occur in the right-hand side.
+        \item $\lambda \overline{x}. \, a \, \overline{v}_n \unif \lambda
+        \overline{x}. \, F \, \overline{u}_m$: 
+        if $a$ is a bound variable, projecting $F$ onto argument $u_i$ will either enable
+        application of \textsf{Decomposition} as the next step reducing A, or it will result in \textsf{Failure},
+        trivially terminating. If $a$ is a constant, then projecting $F$ onto some $u_j$
+        will either yield  \textsf{Failure} or enable \textsf{Decomposition}, reducing A. \qedhere
+      \end{itemize} 
+    \end{description}
+\end{proof}
+
+Enumerating a CSU for a solid flex-flex pair may seem as hard as 
+for any other flex-flex pair; however,
+the following two lemmas show that solid pairs admit an MGU:
+
+\begin{lemma}
+    \label{unif:lemma:solid-var-same-mgu}
+    The unification problem 
+    $\{\lambda \overline{z}.\, F\,\overline{s}_m \unif   \lambda \overline{z}.\, F\,\overline{s}'_{m}\}$, where both terms are
+    solid, has an MGU of the form $\sigma=\{F \mapsto \lambda \overline{x}_m.\,
+    G \, x_{j_1} \ldots x_{j_r}\}$ where $G$ is an auxiliary variable, and $1 \leq
+    j_1 < \cdots < j_r \leq m$ are exactly those indices $j_i$ for which
+    $s_{j_i} = s'_{j_i}$.
+\end{lemma}
+\begin{proof}
+    Let $\varrho$ be a unifier for the given unification problem.
+    Let $\lambda \overline{x}.\, u = \varrho F$. Take an arbitrary subterm of $u$ whose head is a bound
+    variable $x_i$. If $x_i$ is of function type, it corresponds to either $s_i$
+    or $s'_i$ which, due to solidity restrictions, has to be a bound variable.
+    Furthermore, since $\varrho$ is a unifier, $s_i$ and $s'_i$ have to be the
+    syntactically equal. Similarly, if $x_i$ is of base type, it corresponds
+    to two ground terms $s_i$ and $s'_i$ which have to be syntactically equal.
+    We conclude that $\varrho$ can use variables from $\overline{x}_n$ only
+    if they correspond to syntactically equal terms. Therefore, 
+    there is a substitution $\theta$ such that $\rho X = \theta\sigma X$ for all $X \not = G$. 
+    Due to arbitrary choice of $\varrho$, we conclude that $\sigma$ is an MGU.
+\end{proof}
+
+
+\begin{lemma}
+  \label{unif:lemma:solid-vars-diff-mgu}
+  Let 
+  $\{\lambda \overline{x}.\, F \, \overline{s}_m \unif \lambda\overline{x}.\, F' \, \overline{s}'_{m'}\}$
+  be a solid unification problem
+  where $F \neq F'$.
+  By Lemma~\ref{unif:lemma:pt-matching-termination}, there exists a finite CSU $\{\sigma_i^1, \dots, \sigma_i^{k_i} \}$
+  of the problem $\{s_i \unif H_i \, \overline{s}'_{m'}\}$, 
+  where $H_i$ is a fresh free variable.
+  Let 
+  $\lambda\overline{y}_{m'}. \, s_i^j = \lambda\overline{y}_{m'}. \, \sigma_i^j(H_i) \,\overline{y}_{m'}$.
+  Similarly, also by Lemma~\ref{unif:lemma:pt-matching-termination}, 
+  there exists a finite CSU $\{ \tilde\sigma_i^1, \dots, \tilde\sigma_i^{l_i} \}$
+  of the problem $\{s'_i \unif \tilde H_i \, \overline{s}_m\}$, where $\tilde H_i$
+  is a fresh free variable. 
+  Let 
+  $\lambda \overline{x}_m. \, {s'}_i^j = \lambda \overline{x}_m. \, \tilde\sigma_i^j(\tilde H_i) \, \overline{x}_m$.
+  Let $Z$ be a fresh free variable.
+  An MGU $\sigma$ for the given problem is
+    \begin{align*} 
+      F &\mapsto \lambda \overline{x}_m.\, Z
+          \, \underbrace{x_1 \, \ldots \, x_1}_{k_1 \text{ times}} \, \ldots \,
+             \underbrace{x_m \, \ldots \, x_m}_{k_m \text{ times}} 
+             \, {s'}_1^1 \ldots {s'}_1^{l_1} \, \ldots \, {s'}_{m'}^1 \ldots {s'}_{m'}^{l_{m'}} \, \\
+      F' &\mapsto \lambda \overline{y}_{m'}. \, Z
+          \, s_1^1 \ldots s_1^{k_1} \ldots s_m^1 \ldots s_m^{k_m} \,
+      \underbrace{y_1 \, \ldots y_1}_{l_1 \text{ times}} \, \ldots \,
+      \underbrace{y_{m'} \, \ldots y_{m'}}_{l_{m'} \text{ times}}
+    \end{align*}
+  where the auxiliary variables are $H_1, \dots, H_m$, $\tilde H_1, \dots \tilde H_{m'}$, $Z$ and all auxiliary variables associated with the above CSUs.
+\end{lemma}
+\begin{proof}
+  Let $\varrho$ be an arbitrary unifier for the problem $\lambda
+  \overline{x}.\, F \, \overline{s}_m \unif \lambda\overline{x}.\, F' \,
+  \overline{s}'_{m'}$. We prove $\sigma$ is an MGU by showing that there exists a substitution
+  $\theta$ such that $\varrho X = \theta\sigma X$ for all non-auxiliary variables $X$. 
+  We can focus only on $X \in \{F, F'\}$
+  because all other non-auxiliary variables
+  do neither appear in the original problem nor in $\sigma F$ or $\sigma F'$; so we can simply define $\theta X = \varrho X$.
+
+  %In what follows we consider all terms
+  %in their $\beta$-reduced $\eta$-long form.
+
+  Let $\lambda \overline{x}_m. \, u = \varrho F$ and  $\lambda \overline{y}_{m'}. \, u' = \varrho{F'}$, where
+  the bound variables $\overline{x}_m$ and $\overline{y}_{m'}$ have been $\alpha$-renamed apart. We also assume
+  that the names of variables bound inside $u$ and $u'$ are $\alpha$-renamed so that they are different from $\overline{x}_m$ and
+  $\overline{y}_{m'}$. Finally, bound variables
+  from the definition of $\sigma$ have been $\alpha$-renamed to match $\overline{x}_m$ and $\overline{y}_{m'}$.
+  We
+  define $\theta$ to be the substitution
+  \[\theta = \{ Z \mapsto \lambda z_1^1 \ldots z_1^{k_1} \ldots z_m^1 \ldots z_m^{k_m} \, w_1^{1} \ldots w_1^{l_1} \ldots w_{m'}^1 \ldots  w_{m'}^{l_{m'}}. \, \textsf{diff}(u, u') \}\]
+  where \textsf{diff}$(v,v')$ is defined recursively as
+  \begin{alignat}{3}
+    &\textsf{diff}(\lambda x.\, v, \lambda y.\, v') &&{}={}&& \lambda x. \, \textsf{diff}(v, \{y \mapsto x\}v') \label{diff:alpha} \\
+    &\textsf{diff}(a \, \overline{v}_n, a \, \overline{v}'_n) &&=&&  a \, \textsf{diff}(v_1, v'_1) \ldots \textsf{diff}(v_n, v'_n) \label{diff:samehd} \\
+    &\textsf{diff}(x_i, v') &&=&&  z_i^k \text{, if $v' = {s}_i^k$ } \label{diff:xi}  \\
+    &\textsf{diff}(v, y_i) &&=&&  w_i^l \text{, if $v = {s'}_i^l$ } \label{diff:yi}  \\
+    &\textsf{diff}(x_i \, \overline{v}_n, y_j \, \overline{v}'_n) &&=&&  z_i^k \, \textsf{diff}(v_1, v'_1) \ldots \textsf{diff}(v_n, v'_n) \text{, if $y_j = s_i^k $ } \label{diff:xiyj} 
+  \end{alignat}
+
+  \looseness=-1
+  From \textsf{diff}'s definition it is clear that there are terms $v,v'$ for which it is undefined.
+  However, we will show that for each $u$ and $u'$ that are bodies of bindings from a unifier $\varrho$, 
+  \textsf{diff} is defined and has the desired property.
+  In equations \ref{diff:xi}, \ref{diff:yi}, and \ref{diff:xiyj}, if there are multiple numbers $k$ or $l$
+  that fulfill the condition, choose an arbitrary one.
+  We need to show that $\varrho F = \theta\sigma F$ and $\varrho F' = \theta\sigma F'$.
+  By the definitions of $u$, $u'$, $\theta$ and $\sigma$ and $\beta$-reduction, this is equivalent to
+  \begin{align*}
+    \lambda \overline{x}_m.\, u &= \lambda \overline{x}_m.\,
+    \{z_i^k \mapsto x_i, w_i^l \mapsto {s'}_i^l \text{ for all }k,l,i\}\,\textsf{diff}(u,u')\\
+    \lambda \overline{y}_{m'}.\, u' &= \lambda \overline{y}_{m'}.\,
+    \{z_i^k \mapsto s_i^k, w_i^l \mapsto y_i \text{ for all }k,l,i\}\,\textsf{diff}(u,u')
+  \end{align*}
+  %
+  We will show by induction that for any $\lambda \overline{x}_m.\, v$, $\lambda \overline{y}_m.\, v'$ such that 
+  \[\{x_1 \mapsto s_1, \ldots, x_m \mapsto  s_m\} v = \{y_1 \mapsto s'_1, \ldots, y_{m'} \mapsto  s'_{m'}\} v' \tag{$\star$}\]
+  we have
+  \begin{align*}
+    \tag{\textdagger}
+    \renewcommand{\arraystretch}{1.2}% Spread out array rows
+    \begin{array}{c@{\qquad}l}
+      v &=
+      \{z_i^k \mapsto x_i, w_i^l \mapsto {s'}_i^l \text{ for all }k,l,i\}\,\textsf{diff}(v,v')\\
+      v' &=
+      \{z_i^k \mapsto s_i^k, w_i^l \mapsto y_i \text{ for all }k,l,i\}\,\textsf{diff}(v,v')
+    \end{array}
+  \end{align*}
+  The equation ($\star$) holds for $v = u$ and $v' = u'$ because
+  $\varrho$ is a unifier of
+  $\lambda
+  \overline{x}.\, F \, \overline{s}_m \unif \lambda\overline{x}.\, F' \,
+  \overline{s}'_{m'}$.
+  Therefore, once we have shown that ($\star$) implies ($\dagger$),
+  we know that ($\dagger$) holds for $v = u$ and $v' = u'$ and we are done.
+  
+  We prove that ($\star$) implies ($\dagger$) by induction on the size of $v$ and $v'$. We consider
+  the following cases: 
+
+  \begin{description}
+    \item[$v = \lambda x. \, v_1$]  For ($\star$) to hold, $v$ and $v'$ must be of the
+    same type. Therefore, the $\lambda$-prefixes of their $\eta$-long representatives
+    must have the same length and we can apply equation
+    $\ref{diff:alpha}$. By the induction hypothesis, ($\dagger$) holds.
+    \item[$v = x_i$] In this case, $\{x_1 \mapsto s_1, \ldots, x_m \mapsto
+    s_m\} v = s_i$. Since ($\star$) holds, $v'$ must be an instance of a unifier from
+    the CSU of $s_i = H_i \, \overline{s}'_{m'}$. However, since $s_i$ and all
+    terms in $\overline{s}'_{m'}$ are ground, $\lambda \overline{y}_m. \, v' =
+    \sigma_i^k(H_i)$, for some $k$. Then, $\textsf{diff}(x_i, v') = z_i^k$, and
+    it is easy to check that ($\dagger$) holds.
+    \item[$v = x_i \, \overline{v}_n, n > 0$] In this case, $x_i$ is mapped to $s_i$
+    which, due to solidity restrictions, has to be a functional bound variable.
+    Since ($\star$) holds, we conclude that the head of $\{y_1 \mapsto s'_1, \ldots,
+    y_{m'} \mapsto  s'_{m'}\}v'$ must be $s'_{j}$, such that $s'_{j} = s_i$;
+    this also means that $v' = y_j \, \overline{v'}_n$. Therefore, it is easy to
+    check that some $\tau = \{ H_i \mapsto \lambda \overline{y}_{m'}. \, y_j\}$ is
+    a matcher for the problem $s_i = H_i \, \overline{s}'_{m'}$. For some $k$,
+    $\sigma_i^k = \tau$, i.e., $\textsf{diff}(v,v') = z_i^k \, \textsf{diff}(v_1, v'_1)
+    \ldots \textsf{diff}(v_n, v'_n) $. By induction hypothesis, we get that $(\dagger)$ holds.
+    \item[$v = a \, \overline{v}_n$] In the remaining cases $a$ is either a free variable, a loose bound variable
+    different than $x_1, \ldots, x_m$, or a constant. If $a$ is a free variable or a loose bound variable
+    different than $x_1, \ldots, x_m$, then $v' = a \, \overline{v'}_n$, since
+    ($\star$) holds, all of $\overline{s}'_{m'}$ are ground, and bound variables different than
+    $x_1, \ldots, x_m$ and $y_1, \ldots, y_{m'}$ are renamed to match by equation \ref{diff:alpha}. 
+    By the induction
+    hypothesis and by equation \ref{diff:samehd}, we obtain $(\dagger)$. If $a$ is a constant, we consider two
+    cases: either $v' = a \, \overline{v'}_n$, which allows us to apply the induction
+    hypothesis and obtain $(\dagger)$ as above, or $v' = y_j \, \overline{v'}_m$.
+    Since $a$ is a constant, $y_j$ cannot be a functional bound variable, since
+    then it would be mapped to $s'_j$, which due to solidity restrictions 
+    also has to be a functional bound
+    variable and $(\star)$ would not hold. Therefore $v' = y_j$. In this case, we
+    proceed as in the case $v = x_i$ with the roles of $v$ and $v'$ swapped. \qedhere
+  \end{description}
+  
+
+
+  % It is easy to check that, in the cases in which it is defined, \textsf{diff} specifies
+  % $\theta$ so that $\varrho \subseteq \theta \sigma$, as desired. Now let's show that $\textsf{diff}(u,u')$
+  % is defined for every unifier $\varrho$. This function computes the
+  % needed instantiation by inspecting all positions $p$ defined for both $u$ and
+  % $u'$. We reduce the problem of definability of $\textsf{diff}(u,u')$ to definability
+  % of $\textsf{diff}(u|_p,u'|_p)$ for all such $p$. Notably, \textsf{diff} is undefined for $u|_p$ and $u'|_p$ with heads that are
+  % different free variables, constants or variables bound in $u$ and $u'$
+  % (assuming they are $\alpha$-renamed as in equation \ref{diff:alpha}). However,
+  % if $u|_p$ and $u'|_p$ have such heads, $\varrho$ cannot be a
+  % unifier, due to solidity restrictions, justifying equation \ref{diff:samehd}. Similarly, since $u$ and $u'$ have the same type 
+  % then $u|_p$ and $u'|_p$ (i.e., one of the elements of their $\eta$-equivalence class) have $\lambda$-prefixes of the same
+  % size, justifying equation \ref{diff:alpha}.
+  % The remaining case is that $u|_p$ and $u'|_p$ have different heads and at least one of $u|_p$
+  % and $u'|_p$ has a head that is a variable bound in $\overline{x}_m$ or
+  % $\overline{y}_{m'}$. First, assume that this bound variable appears unapplied. 
+  % This corresponds to equations \ref{diff:xi} and \ref{diff:yi}. For brevity, we will consider the case that the head of
+  % $u|_p = x_i$. The other case is symmetrical. Bound variable
+  % $x_i$ corresponds to $s_i$ which is a ground term, due to solidity
+  % restrictions. Since $\varrho$ is a unifier, $(\lambda \overline{y}_{m'}. \,
+  % u'|_p) \, \overline{s}'_{m'} = s_i$. In other words, $u'|_p$ is the body of
+  % $\sigma_i^k H_i$ where $\sigma_i^k$ is one of the finitely many (see Lemma
+  % \ref{unif:lemma:pt-matching-termination}) matchers for the matching problem $s_i
+  % \unif H_i \, \overline{s}'_{m'}$. By definition of $\sigma$, one of those
+  % bodies has to be $s_i^j$. In this case, the needed instantiation is described
+  % by equation \ref{diff:xi}. Now let's consider the case $u|_p = x_i \, \overline{u}_n$. Clearly,
+  % $x_i$ corresponds to $s_i$ which must be a bound variable of functional type,
+  % due to solidity restrictions. Since $\varrho$ is a unifier, $u'|_p$ must have
+  % some $y_j$ (a variable bound in $\overline{y}_{m'}$) for a head. Bound
+  % variable $y_j$ corresponds to $s'_j$ which must be syntactically equal to
+  % $s_i$ for $\varrho$ to be a unifier. It is easy to see that $\tau = \{ H_i
+  % \mapsto \lambda \overline{y}_{m'}. \, y_j \}$ is a matcher for the problem
+  % $s_i = H_i \, \overline{s'}_{m'}$. Therefore, for some $k$, $\sigma_i^k = \tau$
+  % and by definition of $\sigma$, $s_i^k = y_j$. Equation \ref{diff:xiyj} shows
+  % how to instantiate $Z$ in that case.
+\end{proof}
+
+\begin{theorem}
+    \label{unif:thm:oracle}
+    Let $s$ and $t$ be
+    solid terms that share no free variables,
+    and let $s$ be linear.
+    Then the unification problem $\{s \unif t\}$ has a finite CSU.
+\end{theorem}
+\begin{proof}
+    \looseness=-1
+    By Lemma~\ref{unif:lemma:solid-termination-preunif}, 
+    PT terminates on $\{s \unif t\}$ with a finite set of preunifiers $\sigma$,
+    each associated with a multiset $E$ of solid flex-flex pairs.
+
+    
+    An MGU $\delta_E$ of the remaining multiset $E$
+    of solid flex-flex constraints can be found as follows.
+    Choose one constraint $(u \unif v) \in E$ and determine an MGU $\varrho$ for it
+    using Lemma \ref{unif:lemma:solid-var-same-mgu} or
+    \ref{unif:lemma:solid-vars-diff-mgu}.
+    Then the set $\varrho(E\setminus\{u \unif v\})$ also contains only solid flex-flex constraints,
+    and we iterate this process by choosing a constraint from $\varrho(E\setminus\{u \unif v\})$ next
+    until there are no constraints left, eventually
+    yielding an MGU $\varrho'$ of $\varrho(E\setminus\{u \unif v\})$. Finally, we obtain the MGU
+    $\delta_E = \varrho'\varrho$ of $E$.
+
+    Let $U = \{ \delta_E\sigma
+    \mid \text{PT produces preunifier $\sigma$ with constraints }E\}$. 
+    By termination of PT, $U$ is finite.
+    We show that $U$ is a CSU. 
+    Let $\varrho$ be an arbitrary unifier for $\{ s \unif t\}$. By Lemma~\ref{unif:lemma:pt-complete}, 
+    PT produces a preunifier $\sigma$ with flex-flex constraints $E$
+    such that there is a unifier $\theta$ of $E$ and
+    $\varrho X = \theta\sigma X$ for all $X$ not contained in the supply of fresh variables $V$. 
+    Since
+    $\delta_E$ is an MGU of $E$,
+    assuming that we use variables from $V$ in the role of the auxiliary variables,
+    there exists a
+    substitution $\theta'$ such that $\theta X = \theta' \delta_E X$ for all $X \not\in V$.
+    If we make sure that we never reuse fresh variables and that the supply $V$ does not contain any variables from the initial problem,
+    it follows that $\varrho X = \theta' \delta_E\sigma X$ for all $X \not\in V$.
+    Therefore, $U$ is a CSU.
+\end{proof}
+
+The proof of Theorem \ref{unif:thm:oracle}
+provides an effective way to calculate a CSU using PT and the results
+of Lemmas \ref{unif:lemma:solid-var-same-mgu} and \ref{unif:lemma:solid-vars-diff-mgu}.
+
+%@PETAR: I moved this example up by one paragraph. 
+% Unfortunately, I had to inline the unifier \sigma_3 to make this fit.
+% Maybe it should also use the same names for substitutions as in the previous para?
+ \begin{exa}
+   \label{unif:example:solid}
+   \looseness=-1
+  Let $\{F \, (\cst{f} \, \cst{a}) \unif \cst{g} \, \cst{a} \, (G \, \cst{a})\}$ be
+  the unification problem to solve. Projecting~$F$ onto the first argument will
+  lead to a nonunifiable problem, so we perform imitation of~$\cst{g}$ building a
+  binding $\sigma_1 = \{ F \mapsto \lambda x.\, \cst{g} \, (F_1 \, x) \, (F_2 \, x)
+  \}$. This yields the  problem $\{F_1
+  \, (\cst{f} \, \cst{a}) \unif \cst{a}, \allowbreak F_2 \, (\cst{f} \, \cst{a}) \unif G \,
+  \cst{a}\}$. Again, we can only imitate $\cst{a}$ for $F_1$ -- building a new 
+  binding $\sigma_2 = \{F_1 \mapsto \lambda x.\, \cst{a} \}$. Finally, this
+  yields the problem $\{ F_2 \, (\cst{f} \, \cst{a}) \unif G \, \cst{a} \}$.
+  According to Lemma \ref{unif:lemma:solid-vars-diff-mgu}, we find CSUs for the
+  problems $J_1 \, \cst{a} = \cst{f} \, \cst{a}$ and $I_1 \, (\cst{f} \, \cst{a})
+  \unif \cst{a}$ using PT. The latter problem has a singleton CSU $\{I_1 \mapsto \lambda x.\,
+  \cst{a}\}$, whereas the former has a CSU containing $\{ J_1 \mapsto \lambda x.\,
+  \cst{f} \, x \}$ and $\{ J_1 \mapsto \lambda x.\, \cst{f} \, \cst{a} \}$.
+  Combining these solutions, we obtain an MGU $\sigma_3 =
+  \{ F_2 \mapsto \lambda x.\, H \, x \, x \, \cst{a},\,
+  G   \mapsto \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x \}$ 
+  for $F_2 \, (\cst{f}\, \cst{a}) \unif G \, \cst{a}$.
+  %\begin{equation*}
+  %    F_2 \mapsto \lambda x.\, H \, x \, x \, \cst{a} \\
+  %    G   \mapsto \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x
+  %\end{equation*}
+  Finally, we get to the MGU of the original problem $\sigma = \sigma_3 \sigma_2 \sigma_1 = \{ F
+  \mapsto \lambda x.\, \cst{g} \, \cst{a} \, (H \, x \, x \, \cst{a}),\allowbreak G \mapsto
+  \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x  \}$.
+  For brevity, we omitted the intermediate bindings of auxiliary variables
+  in $\sigma$.
+\end{exa}
+
+The solid fragment is useful for automatic theorem provers based on
+$\lambda$-su\-per\-po\-si\-tion~\cite{bbtvw-21-sup-lam}. As Example \ref{unif:example:solid} shows, when the solid oracle
+is used, superposing from $F \, (\cst{f} \, \cst{a})$ into $\cst{g} \, \cst{a}
+\, (G \, \cst{a})$ yields a single clause; without it, our procedure does not
+terminate.
+
+
+Small examples that violate conditions of Theorem \ref{unif:thm:oracle} 
+and admit only infinite CSUs can be found easily. The problem $\{ \lambda x.\, F \, (\cst{f} \, x) \unif \lambda x.\, \cst{f} \,
+(F \, x) \}$ violates variable distinctness and is a well-known example of a problem with only infinite CSUs.
+%TODO: @PETAR: Do we have a citation, if this is well-known? 
+%It is really really well-known :)
+Similarly,
+$\lambda x.\, \cst{g} \, (F \, (\cst{f} \, x)) \, F  \unif \lambda x.\, \cst{g}
+\, (\cst{f} \, (G \, x)) \, G $, which violates linearity, reduces to the previous problem. 
+Only ground arguments to free variables are allowed because  $\{F \, X \unif G
+\, \cst{a}\}$ has only infinite CSUs. Finally, it is crucial that
+functional arguments to free variables are only bound variables: the problem
+$\{ \lambda y. \, X (\lambda x.\, x) \, y \unif \lambda y. \, y \}$ has only infinite CSUs.
+
+
 
 \section{An Extension of Fingerprint Indexing}
 \label{sec:unif:indexing}
