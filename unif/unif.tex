@@ -9,7 +9,7 @@ The completeness and termination of solid oracle was proven by me with Alexander
 Bentkamp's help.}
 
 \authors{Joint work with\\
-Alexander Betnkamp and Visa Nummelin}
+Alexander Bentkamp and Visa Nummelin}
 
 \begin{abstract}
   We developed a procedure to enumerate complete sets of higher-order unifiers based on work
@@ -32,7 +32,7 @@ Unification is concerned with finding a substitution that makes two terms
 equal, for some notion of syntactic equality. Since the invention of Robinson's first-order unification
 algorithm \cite{ar-65-resolution}, it has become an indispensable
 tool in theorem proving, logic
-programming, natural language processing, programming language compilation and other areas of computer science.
+programming, natural language processing, programming language compilation, and other areas of computer science.
 
 Many of these applications are based on higher-order formalisms and require
 higher-order unification. Due to its undecidability and explosiveness,
@@ -69,7 +69,7 @@ The new procedure addresses many of the issues that are
 detrimental to the performance of the JP procedure.
 %
 First, the JP procedure does not terminate in many cases of obvious
-nonunifiability, e.g., for $X \unif \cst{f} \, X$, where $X$ is a non-functional
+nonunifiability, e.g., for $X \unif \cst{f} \, X$, where $X$ is a nonfunctional
 variable and $\cst{f}$ is a function constant. This example also shows that
 the JP procedure does not generalize Robinson's first-order procedure gracefully. To address
 this issue, our procedure detects whether a unification problem belongs to a
@@ -190,15 +190,17 @@ in other words we shorten $\sigma(\theta(\varrho(s)))$ to $\sigma\theta\varrho \
 We use the definition of a CSU from Sect.~\ref{sec:pre:unif} because 
 JP's definition of a CSU, which we have adopted in our earlier work \cite{vbn-21-unif}, is flawed.
 JP's definition does not employ the notion of auxiliary variables,
-but instead requires $\rho X = \theta\sigma X$ for all variables mapped by $\rho$.
-This is problematic because nothing prevents $\rho$ from mapping the auxiliary variables.
+but instead requires $\varrho X = \theta\sigma X$ for all variables mapped by $\varrho$.
+This is problematic because nothing prevents $\varrho$ from mapping the auxiliary variables.
 For example, $\sigma = \{F \mapsto \lambda x y.\> G\>y\}$ is supposed
 to be an MGU for $F\>\cst{a}\>\cst{c} \unif F\>\cst{b}\>\cst{c}$.
-But for the unifier $\rho = \{F \mapsto \lambda x y.\> y,\> G \mapsto \lambda x.\> \cst{d}\}$,
+But for the unifier $\varrho = \{F \mapsto \lambda x y.\> y,\> G \mapsto \lambda x.\> \cst{d}\}$,
 without the notion of auxiliary variables,
 there exists no appropriate substitution $\theta$
-because $\rho G = \theta\sigma G$ requires $\theta G = \lambda x.\> \cst{d}$
-and $\rho F = \theta\sigma F$ requires $\theta G = \lambda x.\> x$.
+because $\varrho G = \theta\sigma G$ requires $\theta G = \lambda x.\> \cst{d}$
+and $\varrho F = \theta\sigma F$ requires $\theta G = \lambda x.\> x$. By declaring $G$ as an auxiliary variable,
+we focus only the important variables from the intitial problem (in this case only $F$),
+which allows $\sigma$ to be an MGU.
 
 
 
@@ -228,8 +230,9 @@ of substitutions to a unification pair; this mapping abstracts the
 concept of unification rules present in other unification procedures. Moreover,
 the transitions are parametrized by a selection function~$S$ mapping a multiset
 $E$ of unification constraints to one of those constraints $S(E) \in E$, the
-\emph{selected} constraint in $E$. The transitions, defined as follows, are only
-applied if the $\selected{\text{grayed}}$ constraint is selected.
+\emph{selected} constraint in $E$. In this chapter, we consider \emph{freshness}
+of the variables with respect to the free variables ocurring in $E$. The transitions, defined as follows, are only
+applied if the $\selected{\text{grayed}}$ constraint is selected. 
 \begin{description}[labelwidth=\widthof{\rm\textsf{Normalize$_{\alpha\eta}$}}]
   \item[\rm\unifrulename{Succeed}]
       $(\varnothing, \sigma) \newunifarrow \sigma$ 
@@ -237,9 +240,11 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
   \item[\rm\unifrulename{Normalize$_{\alpha\eta}$}]
       $(\{\selected{\lambda \overline{x}_m. \, s \unif \lambda \overline{y}_n. \, t}\}\uplus E, \sigma) 
       \newunifarrow 
-      (\{\lambda \overline{x}_m. \, s \unif \lambda \overline{x}_m. \, t'\, x_{n+1} \ldots x_m\}\uplus E, \sigma)$\\
+      (\{\lambda \overline{z}_m. \, s' \unif \lambda \overline{z}_m. \, t'\, z_{n+1} \ldots z_m\}\uplus E, \sigma)$\\
       % where $n \geq m$ and $t'=\{y_1\mapsto x_1,\ldots,y_m\mapsto x_m\}t$
-      where $m \geq n$, $\overline{x}_m \not= \overline{y}_n$, and $t'=\{y_1\mapsto x_1,\ldots,y_n\mapsto x_n\}t$
+      where $m \geq n$, $\overline{x}_m \not= \overline{y}_n$, $s$ and $t$ are not $\lambda$-abstractions,
+      $\overline{z}_m$ are bound variables fresh with respect to $s$ and $t$, $s' = \{x_1 \mapsto z_1, \ldots, x_m \mapsto z_m \}$,
+      and $t' = \{y_1 \mapsto z_1, \ldots, y_n \mapsto z_n \}$
   % \smallskip
   \item[\rm\unifrulename{Normalize$_\beta$}]
       $(\{\selected{\lambda \overline{x}. \, s \unif \lambda \overline{x}. \, t}\}\uplus E, \sigma) 
@@ -251,26 +256,26 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
       $(\{\selected{\lambda \overline{x}. \, F \, \overline{s} \unif \lambda \overline{x}. \, t}\}\uplus E, \sigma)
       \newunifarrow 
       (\{\lambda \overline{x}. \, (\sigma F) \,\overline{s} \unif \lambda \overline{x}. \, t\}\uplus E, \sigma)$\\
-      where none of the previous transitions apply and $F$ is mapped by $\sigma$
+      where none of the previous transitions applies and $F$ is mapped by $\sigma$
   % \smallskip
       \item[\rm\unifrulename{Fail}]
       $(\{\selected{\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda \overline{x}. \, b \, \overline{t}_n}\}
       \uplus E, \sigma) \newunifarrow \bot$\\
-      where none of the previous transitions apply, and
+      where none of the previous transitions applies, and
       $a$ and $b$ are different rigid heads
   % \smallskip
   \item[\rm\unifrulename{Delete}]  $(\{\selected{s \unif s}\}\uplus E, \sigma) \newunifarrow (E, \sigma)$\\
-      where none of the previous transitions apply
+      where none of the previous transitions applies
   % \smallskip 
   \item[\rm\unifrulename{OracleSucc}]
   $(\{\selected{s \unif t}\}\uplus E, \sigma) \newunifarrow (E, \varrho \sigma)$\\
-      where none of the previous transitions apply, 
+      where none of the previous transitions applies, 
       some oracle found a finite CSU $U$ for $\sigma s \unif \sigma t $ using fresh auxiliary variables,
       and $\varrho \in U$; if multiple oracles found a CSU, only one of them is considered
   % \smallskip
   \item[\rm\unifrulename{OracleFail}]
   $(\{\selected{s \unif t}\}\uplus E, \sigma) \newunifarrow \bot$\\
-  where none of the previous transitions apply, 
+  where none of the previous transitions applies, 
   and some oracle determined $\sigma s \unif \sigma t$ has no solutions
   % \smallskip
   \item[\rm\unifrulename{Decompose}]
@@ -279,14 +284,14 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
       \newunifarrow 
       ( \{s_1 \unif t_1, \ldots ,s_m \unif t_m\} \uplus E,
       \sigma)$\\
-      where none of the transitions \unifrulename{Succeed} to \unifrulename{OracleFail} apply
+      where none of the transitions \unifrulename{Succeed} to \unifrulename{OracleFail} applies
   % \smallskip
   % \item [\rm\textsf{Eliminate}] 
   %     $(\{\selected{\lambda \overline{x}_n. \, F \, \overline{s}_m \unif \lambda \overline{x}_n. \, F \, \overline{t}_m}\}
   %     \uplus E, \sigma)
   %     \newunifarrow
   %     (\{s_{j_{1}}\unif t_{j_{1}},\ldots,s_{j_{k}}\unif t_{j_{k}}\} \uplus E,\varrho \sigma)$\\
-  %     where none of the transitions \textsf{Succeed} to \textsf{OracleFail} apply,
+  %     where none of the transitions \textsf{Succeed} to \textsf{OracleFail} applies,
   %     $ 1 \leq j_1 < \cdots < j_k \leq n$, and
   %     % $(j_{i})_{i=1}^{k}$ is a subsequence
   %     % of $\left(i\right)_{i=1}^{m}$, and
@@ -297,9 +302,9 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
       \uplus E, \sigma) 
       \newunifarrow 
       (\{s \unif t\}
-      \uplus E, \rho \sigma)$\\
-      where none of the transitions \textsf{Succeed} to \textsf{OracleFail} apply,
-      and $\rho\in\mathcal{P}(s \unif t)$.
+      \uplus E, \varrho \sigma)$\\
+      where none of the transitions \textsf{Succeed} to \textsf{OracleFail} applies,
+      and $\varrho\in\mathcal{P}(s \unif t)$.
 \end{description}
 %
 The transitions are designed so that only \unifrulename{OracleSucc},
@@ -314,10 +319,9 @@ extend the current substitution. However,
 they are designed following different principles. \unifrulename{OracleSucc} solves
 the selected unification constraint using an efficient algorithm applicable only
 to certain classes of terms. On the other hand, \unifrulename{Bind} is applied to
-explore the whole search space for any given constraint. These rules are separated
-in two to make \unifrulename{Bind} applicable only if \unifrulename{OracleSucc}
-(or \unifrulename{OracleFail}) is not, so that possible solutions (or failures) are
-detected early.
+explore the whole search space for any given constraint. To compute CSU using efficient oracles and to discover
+failures early, \unifrulename{Bind} is applicable only if \unifrulename{OracleSucc}
+(or \unifrulename{OracleFail}) is not.
 
 Our approach is to apply substitutions and $\alpha\beta\eta$-normalize terms
 lazily. In this context, laziness means that the transitions
@@ -340,7 +344,7 @@ invoke oracles, such as pattern unification,
 to compute a CSU faster,
 produce fewer redundant unifiers, and
 discover nonunifiability earlier.
-In some cases, addition of oracles lets the procedure terminate more often.
+In some cases, the addition of oracles lets the procedure terminate more often.
 
 In the literature, oracles are usually stated under the assumption that their
 input belongs to the appropriate fragment. To check whether a unification
@@ -442,7 +446,8 @@ to create. The bindings are defined as follows:
 
 \noindent
 The following mapping $\mathcal{P}_\mathsf{c}(\lambda \overline{x}.
-\, s \unif \lambda \overline{x}. \, t)$ is used as the parameter $\mathcal{P}$ of the procedure:
+\, s \unif \lambda \overline{x}. \, t)$ is used as the parameter $\mathcal{P}$ of the procedure.
+It provides all the bindings that the procedures needs to be complete, and it is defined as follows:
 \begin{itemize}
   \setlength\itemsep{1\jot}
 
@@ -500,7 +505,7 @@ pairs}, such that $s = C[s_1,\ldots,s_n]$ and $t = C[t_1,\ldots,t_n]$. It
 chooses one of the disagreement pairs $(s_i, t_i)$.
 Depending on the context $C$ and the chosen disagreement pair $(s_i, t_i)$,
 it determines a set of bindings $\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$.
-For each of the bindings $\rho\in\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$, it creates a child node
+For each of the bindings $\varrho\in\mathcal{P}_\mathsf{JP}(C,s_i, t_i)$, it creates a child node
 $(\nf{(\varrho{s})}{\beta\eta} \unif \nf{(\varrho{t})}{\beta\eta}, \varrho\sigma)$,
 where $\nf{u}{\beta\eta}$ denotes a
 $\beta\eta$-normal form of a term $u$. 
@@ -536,15 +541,15 @@ Since the JP procedure never decomposes the common context of its only constrain
 iteration or elimination to be applied at a free variable above the disagreement
 pair, even if  bindings were already applied below that free variable. This can
 lead to many different paths to the same unifier. In contrast, our procedure
-makes the decision which binding to apply to a flex-flex pair with the same
+decides which binding to apply to a flex-flex pair with the same
 head as soon as it is observed. Also, it explores the possibility of not
-applying a binding and decomposing the pair. In either way, the flex-flex pair
+applying a binding and decomposing the pair. In either case, the flex-flex pair
 is never revisited, which improves the performance and returns fewer redundant
 unifiers. We show that this restriction prunes the search space without
-influencing the completeness.
+losing completeness.
 
-Our procedure makes the choice of child nodes based only on the heads of the
-chosen unification constraint. In contrast, the JP procedure tracks all the
+Our procedure chooses child nodes based only on the heads of the
+selected unification constraint. In contrast, the JP procedure tracks all the
 variables occurring in the common context. Thus, lazy normalization and lazy
 variable substitution cannot be integrated in the JP procedure a straightforward
 fashion. Moreover, as it does not feature a rule similar to
@@ -569,7 +574,7 @@ problem, resulting in poor performance on deep terms.
 One of the main drawbacks of the JP procedure is that it features a highly
 explosive, infinitely branching iteration rule. This rule is a more general
 version of Huet-style projection. Its universality enables finding elements of
-CSU for flex-flex pairs, for which Huet-style projection does not suffice.
+the CSU for flex-flex pairs, for which Huet-style projection does not suffice.
 However, the JP procedure applies iteration indiscriminately on both flex-flex and
 flex-rigid pairs. We discovered that our procedure remains complete if iteration
 is applied only on flex-flex pairs, and Huet-style projection only on
@@ -581,7 +586,7 @@ $\beta$-reduction.
 
 
 \looseness=-1
-The bindings of our procedure contain further optimizations that are absent in
+The bindings of our procedure contain further optimizations that are absent from
 the JP procedure: The JP procedure applies eliminations for one parameter
 at a time, yielding multiple paths to the same unifier. It applies imitations to
 flex-flex pairs, which we found to be unnecessary. Similarly, we found out that
@@ -600,7 +605,7 @@ identification as \textsf{Id},
 \unifrulename{Dereference} as \textsf{Dr},
 $\textsf{Normalize}_\beta$ as $\textsf{N}_\beta$,
 and
-\textsf{Bind} of a binding $x$ as $\textsf{B(}x\textsf{)}$.
+\textsf{Bind} of a binding $b$ as $\textsf{B(}b\textsf{)}$.
 Transitions of the JP procedure are denoted by $\Longrightarrow$.
 For the JP transitions we implicitly apply the generated bindings and fully
 normalize terms, which significantly shortens JP derivations.
@@ -779,8 +784,8 @@ $\mathcal{P}$, we can sacrifice completeness and obtain a pragmatic variant of
 the procedure that often performs better in practice. 
 %The simplest such modification
 %is to limit the number or kind of bindings applied to a single constraint. 
-Our preliminary experiments showed that using mapping $\mathcal{P}_\mathsf{p}$ defined as follows is a reasonable compromise between completeness and
-performance:
+Our preliminary experiments showed that using the mapping $\mathcal{P}_\mathsf{p}$ defined as follows is a reasonable compromise between performance and
+completeness:
 \begin{itemize}
     \setlength\itemsep{1\jot}
     \item If the constraint is rigid-rigid, $\mathcal{P}_\mathsf{p}(\lambda \overline{x}.
@@ -813,21 +818,21 @@ performance:
 \end{itemize}
 
 The pragmatic variant of our procedure removes all iteration bindings to enforce finite branching. 
-Moreover, it
+In addition, it
 imposes limits 
 on the number of bindings applied,
 counting the applications of bindings locally, per
-constraint. 
+constraint, as follows. 
 It is useful to distinguish the Huet-style projection cases where
 $\alpha_i$ is a base type (called \emph{simple projection}), which always
 reduces the problem size, and the cases where $\alpha_i$ is a functional type (called \emph{functional
 projection}). We limit the number applications of the following bindings:
-functional projections, eliminations, imitations and identifications.
+functional projections, eliminations, imitations, and identifications.
 In addition,
 a limit on the total number of applied bindings can be set. 
 An elimination binding that removes $k$ arguments counts as $k$
 elimination steps.
-Due to these limits, the pragmatic variant 
+Thanks to these limits, the pragmatic variant 
 terminates.
 
 To fail as soon as any of the limits
@@ -840,7 +845,7 @@ it reports that terms are outside its fragment. The trivial unifier prevents the
 easily unifiable flex-flex pairs.
 
 Careful tuning of each limit optimizes the procedure for a specific class of problems. 
-For problems originating from proof assistants, shallow unification depth usually suffices. However, hard
+For problems originating from proof assistants, low unification depth usually suffices. However, hard
 hand-crafted problems often need
 deeper unification.
 
@@ -850,7 +855,7 @@ deeper unification.
 \section{Proof of Completeness}
 \label{sec:unif:proof-of-completeness}
 
-Like the JP procedure, our procedure misses no unifiers:
+Like the JP procedure, our procedure, parametrized with $\mathcal{P}_\mathsf{c}$,  misses no unifiers:
 
 \begin{theorem}
 \label{thm:completeness}
@@ -928,7 +933,8 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   For a constant $\cst{f}$, if $\cst{f}\,\seq s \unif \cst{f}\,\seq t$ has a unifier,
   that unifier must clearly also unify $s_{i} \unif t_{i}$ for each~$i$. 
   For a free variable $X$, a unifier of $X\,\seq s \unif X\,\seq t$ does not necessarily
-  unify $s_{i} \unif t_{i}$.
+  unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \cst{a}\}$ is a unifier that does
+  refer to any of the arguments of $X$.
   The concept of $\omega$-simplicity is
   a criterion on unifiers that captures some of the cases where eager decomposition is possible.
   Non-$\omega$-simplicity
@@ -991,7 +997,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   \end{proof}
   \begin{lemma}[$\jp C{4 strengthened}$]\label{lem:eq-if-omega-simple}Let $\varrho$ be a substitution and $X$ a free
     variable. If $\varrho\left(\param X\,\seq s\right)=\varrho\left(\param X\,\seq t\right)$
-    and some occurrence of the $i^{\text{th}}$ parameter of $\varrho X$
+    and some occurrence of the $i$th parameter of $\varrho X$
     is base-simple, then $\varrho s_{i}=\varrho t_{i}$.
     \end{lemma}
     \begin{proof}
@@ -1019,7 +1025,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     \end{defi}
     A central part of the proof is to find a suitable measure for the
     remaining problem size. Showing that the measure is strictly decreasing
-    and well-founded guarantees that the procedure finds 
+    and well founded guarantees that the procedure finds 
     a suitable substitution in finitely many steps. We reuse the measure for remainder substitutions
     from JP \cite{jp-76-unif}, but embed it into a lexicographic measure
     to handle the decomposition steps and oracles of our procedure.
@@ -1038,20 +1044,20 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     \end{defi}
     \begin{defi}[$\jp D8$] \label{unif:def:ord}
     For multisets $E$ of unification constraints and
-    substitutions $\rho$, our measure on pairs $(E, \rho)$
+    substitutions $\varrho$, our measure on pairs $(E, \varrho)$
     is the lexicographic comparison of
     \begin{description}
-      \item[A] the sum of the sizes of the terms in $\rho E$
-      \item[B] the sum over the free weight of $\rho F$, 
-        for all variables $F$ mapped by $\rho$
-      \item[C] the sum over the bound weight of $\rho F$, 
-      for all variables $F$ mapped by $\rho$
-      \item[D] the sum over the number of parameters of $\rho F$, 
-      for all variables $F$ mapped by $\rho$
+      \item[A] the sum of the sizes of the terms in $\varrho E$
+      \item[B] the sum over the free weight of $\varrho F$, 
+        for all variables $F$ mapped by $\varrho$
+      \item[C] the sum over the bound weight of $\varrho F$, 
+      for all variables $F$ mapped by $\varrho$
+      \item[D] the sum over the number of parameters of $\varrho F$, 
+      for all variables $F$ mapped by $\varrho$
     \end{description}
-    We denote the quadruple containing these numbers as $\ord(E,\rho)$.
-    We denote the triple containing only the last three components of $\ord(E,\rho)$ as $\ord \rho$.
-    %ASK(VISA): Why is ord(E,\rho) with parentheses and ord \rho without them?
+    We denote the quadruple containing these numbers as $\ord(E,\varrho)$.
+    We denote the triple containing only the last three components of $\ord(E,\varrho)$ as $\ord \varrho$.
+    %ASK(VISA): Why is ord(E,\varrho) with parentheses and ord \varrho without them?
     We write $<$ for the lexicographic comparison of these tuples.
     \end{defi}
 
@@ -1066,7 +1072,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     The conclusion, let us call it \textbf{\emph{C}},
     is always the same: there exists a binding $\delta$ applicable to the problem $ u\unif v$, and
     there exists a substitution $\varrho'$ such that $\ord\varrho'<\ord\varrho$
-    and for all variables $X$ except the fresh variables introduced by the binding $\varrho X= \varrho'\, \delta X$.
+    and for all variables $X$ except the fresh variables introduced by the binding we have  $\varrho X= \varrho'\, \delta X$.
     For most of these lemmas, we refer to JP \cite{jp-76-unif} for proofs.
     Although JP only claim $\varrho X= \varrho'\, \delta X$
     for variables $X$ mapped by $\varrho$,
@@ -1083,7 +1089,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     $\varrho'G$ discards none of its parameters and has the body of $\varrho a$.
     \end{lemma}
     \begin{proof}
-    Let $\varrho a=\param t$ and let $\left(x_{j_{k}}\right)_{k=1}^{i}$
+    Let $\varrho a=\param t$ and let $(x_{j_{k}})_{k=1}^{i}$
     be the subsequence of $\seq x$ consisting of those variables which
     occur in the body $t$. It is a strict subsequence,\emph{ }since $\varrho a$
     is assumed to discard some parameter. Since the equal heads $a=b$ of the
@@ -1168,7 +1174,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     projective, we have $\varrho a = \lambda \overline{x}_n.\, x_k\,\overline{t}_m$
     for some $k$ and some terms $\overline{t}_m$.
     If $\varrho a$ is also simply projective,
-    then $x_k$ must be non-functional
+    then $x_k$ must be nonfunctional
     and since Huet-style projection and JP-style projection coincide
     in that case, Lemma~\ref{lem:jp-projection} applies.
     Hence, in the following we may assume that $\varrho a$ is not simply projective,
@@ -1203,7 +1209,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     and let $V$ be the supply of fresh variables provided to our procedure. 
     Let $\varrho$ be a unifier of $E$.
     We must show that there exists
-    a derivation $\left(E,\makeop{id}\right)\longrightarrow^{*}\sigma$ and a
+    a derivation $(E,\makeop{id})\longrightarrow^{*}\sigma$ and a
     substitution $\theta$ such that for all free variables $X\not\in V$, we have $\varrho X = \theta\sigma X$.
      
 
@@ -1216,17 +1222,17 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     to inductively define $E_{j}$, $\sigma_{j}$ and $\varrho_{j}$
     until we reach some $j$ such that $E_j = \varnothing$.
     To guarantee well-foundedness, we ensure that the measure 
-    $\ord\left(\varrho_{j},E_{j}\right)$ decreases with each step.
+    $\ord(\varrho_{j},E_{j})$ decreases with each step.
     We maintain the following invariants for all $j$:
     \begin{itemize}
     \item $(E_{j},\sigma_{j})\longrightarrow(E_{j+1},\sigma_{j+1})$;
-    \item $\ord(\varrho_{j},E_{j}) > \ord(\varrho_{j+1},E_{j+1})$;
+    \item $\ord(E_{j},\varrho_{j}) > \ord(E_{j+1}, \varrho_{j+1})$;
     \item $\varrho_{j}$ unifies $E_{j}$;
     \item $\varrho_{0} X = \varrho_{j}\sigma_{j} X$ for all free variables $X\not\in V$;
     \item every free variable occurring in $\varrho_{j}E_{j}$ does not occur in $E_{j}$ and is not contained in $V$;
-    \item for every identification variable $X$, $\rho_j X$ is not projective; and
-    \item for every elimination variable $X$, each parameter of $\rho_j X$ 
-          has occurrences in $\rho_j X$,
+    \item for every identification variable $X$, $\varrho_j X$ is not projective; and
+    \item for every elimination variable $X$, each parameter of $\varrho_j X$ 
+          has occurrences in $\varrho_j X$,
           all of which are base-simple.
     \end{itemize}
     If $E_j \not= \varnothing$, let $u\unif v$ be the selected constraint $S(E_{j})$ in $E_{j}$.
@@ -1258,7 +1264,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
 
     Otherwise we proceed by a case distinction on the form of $u\unif v$.
     Typically, one of the Lemmas \ref{lem:elimination}\textendash{}\ref{lem:huet-projection}
-    is going to apply. Any one of them gives substitutions $\varrho'$
+    will be applicable. Any one of them gives substitutions $\varrho'$
     and $\delta$ with properties that let us define $E_{j+1}=\delta E_{j}$,
     $\sigma_{j+1}=\delta\,\sigma_{j}$ and $\varrho_{j+1}=\varrho'$.
     The problem size always strictly decreases, because 
@@ -1309,7 +1315,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     than $\varrho_{j}E_{j}$ it suffices to check that constraints $\varrho_{j}u_{i}\unif\varrho_{j}v_{i}$
     together are smaller than $\varrho_{j}u\unif\varrho_{j}v$. Since
     all parameters of $\varrho_{j}a$ have base-simple occurrences, $\varrho_{j}u_{i}$
-    is a subterm of $\varrho_{j}u=\param\varrho_{j}a\,\left(\varrho_{j}\seq u\right)$
+    is a subterm of $\varrho_{j}u=\param\varrho_{j}a\,(\varrho_{j}\seq u)$
     by Lemma \ref{lem:base-simple->inj.}. Similarly for $\varrho_{j}v$.
     It follows that $\varrho_{j+1}E_{j+1}$ is smaller
     than $\varrho_{j}E_{j}$.
@@ -1384,7 +1390,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     that $E_{j}=\varnothing$ and $\varrho_{0} X = \varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$.
     Therefore, 
     $(E,\makeop{id})\longrightarrow^*(\varnothing,\sigma_{j})\longrightarrow\sigma_j$,
-    and $\rho X = \tau^{-1}\,\varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$,
+    and $\varrho X = \tau^{-1}\,\varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$,
     completing the proof. \qedhere
     \end{description}
     \end{proof}
@@ -1407,8 +1413,10 @@ $\alpha\beta\eta$-equivalence classes with the $\eta$-long $\beta$-reduced form
 as their canonical representative. Unlike previously, in this section we view
 unification constraints $s \unif t$ as ordered pairs.
 
-The following rules, however, are stated modulo orientation. The PT transition
-rules, adapted for our presentation style, are as follows:
+The following rules, however, are stated modulo orientation. This means that 
+if a rule applies to a constraint $s \unif t$, then it also applies to a constraint $t
+\unif s$. The PT transition rules, adapted for our presentation style, are as
+follows:
 
 \begin{description}[labelwidth=\widthof{\rm\unifrulename{\bf Decomposition}}]
     \item[\rm\textsf{Deletion}] 
@@ -1480,7 +1488,7 @@ The following lemma states that PT is \emph{complete for preunification}:
 
   \begin{description}
     \item[A] sum of the abstraction-free sizes of the terms $\varrho F$ for each variable $F$ mapped by $\varrho$
-    %TODO: What are the "bindings in \rho"? Maybe write "the terms $\varrho x$ for each variable $x$ mapped by $\rho$"? --Alex
+    %TODO: What are the "bindings in \varrho"? Maybe write "the terms $\varrho x$ for each variable $x$ mapped by $\varrho$"? --Alex
     %TODO: Done
     \item[B] multiset of the sizes of constraints in $E_0$
   \end{description}
@@ -1497,7 +1505,7 @@ $\text{afsize}(\lambda x.\, s) = \text{afsize}(s)$.
 
   Let $E_0 = \{\selected{s \unif t}\} \uplus E'_0$. Since $s \unif t$ is selected, at least
   one of $s$ and $t$ must have a rigid head. We distinguish several cases based on the
-  form of $s \unif t$ (modulo the constraint order):
+  form of $s \unif t$ (modulo constraint orientation):
   
   \begin{itemize}
     \item $s \unif s$: in this case, \textsf{Deletion} applies. This transition does not
@@ -1577,7 +1585,7 @@ argument of $F$ is a ground term of third order.
 Prehofer's thesis states that PT terminates on $\{s \unif t\}$
 if $s$ is linear, $s$ shares no free variables with~$t$, $s$ is strictly solid,
 and $t$ is second-order. Together with completeness of PT for preunification,
-this result implies that PT procedure can be used to enumerate finitely many
+this result implies that the PT procedure can be used to enumerate finitely many
 elements of complete set of preunifiers for this class of terms.
 
 Prehofer focused on the preunification problem as he remarks that the resulting
@@ -1600,7 +1608,7 @@ arbitrary type) or ground (arbitrary-order) terms of base type.
 In other words, we extend the above preunification decidability result
 for linear strictly solid terms along two axes: we create an oracle
 for the full unification problem and we lift the
-order constraints.
+order restrictions.
 %
 To enumerate a CSU for a problem $E_0 = \{s \unif t\}$, where $s$ and $t$ are solid,
 $s$ is linear and shares no free variables with~$t$, our oracle applies the following two steps:
@@ -1621,7 +1629,7 @@ the remaining flex-flex pairs (Lemma \ref{unif:lemma:solid-var-same-mgu} and
 
 
 
-Towards proving that the PT
+Toward proving that the PT
 procedure terminates on above described class of problems, we first consider the corresponding matching problem.
 A \emph{matching problem} is a unification problem
 $\{ s \unif t \}$ where $t$ is ground. In what
@@ -1633,7 +1641,7 @@ of a matching problem a \emph{matcher}.
 
 \begin{lemma}
     \label{unif:lemma:pt-matching-termination}
-    PT terminates on a solid matching problem $\{s \unif t\}$.
+    PT terminates on every solid matching problem $\{s \unif t\}$.
 \end{lemma}
 \begin{proof}
     We show termination by designing a measure on a matching problem $E$ that
@@ -1731,7 +1739,7 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
 \begin{lemma}
   \label{unif:lemma:solid-termination-preunif}
   \looseness=-1
-  If $s$ and $t$ are solid, $s$ is linear and shares no free variables with $t$, then
+  If $s$ and $t$ are solid, and $s$ is linear and shares no free variables with $t$, then
   PT terminates for the preunification problem $\{ s \unif t \}$, and
   all remaining flex-flex constraints are solid.
 \end{lemma}
@@ -1800,11 +1808,11 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
       \begin{itemize}
         \item$\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda
         \overline{x}. \, a \, \overline{u}_m$: if $a$ is a bound variable,
-        then for \textsf{Failure} not to be applicable afterwards, we have to
+        then for \textsf{Failure} not to be applicable afterward, we have to
         project $F$ onto argument $v_i$ equal to $a$. Then we proceed like for
         \textsf{Imitation}. If $a$ is not a bound variable, then we have to
         project to some base-type term $v_j$ (otherwise \textsf{Failure} would
-        be applicable afterwards). This reduces the problem to $\lambda
+        be applicable afterward). This reduces the problem to $\lambda
         \overline{x}. \, v_j \unif \lambda \overline{x}. \, a \,
         \overline{u}_m$. This is a solid matching problem, whose solutions
         computed by PT are grounding substitutions (see Lemma
@@ -1861,7 +1869,7 @@ the following two lemmas show that solid pairs admit an MGU:
     to two ground terms $s_i$ and $s'_i$ which have to be syntactically equal.
     We conclude that $\varrho$ can use variables from $\overline{x}_n$ only
     if they correspond to syntactically equal terms. Therefore, 
-    there is a substitution $\theta$ such that $\rho X = \theta\sigma X$ for all $X \not = G$. 
+    there is a substitution $\theta$ such that $\varrho X = \theta\sigma X$ for all $X \not = G$. 
     Due to arbitrary choice of $\varrho$, we conclude that $\sigma$ is an MGU.
 \end{proof}
 
@@ -1902,9 +1910,9 @@ the following two lemmas show that solid pairs admit an MGU:
   Let $\varrho$ be an arbitrary unifier for the problem $\lambda
   \overline{x}.\, F \, \overline{s}_m \unif \lambda\overline{x}.\, F' \,
   \overline{s}'_{m'}$. We prove $\sigma$ is an MGU by showing that there exists a substitution
-  $\theta$ such that $\varrho X = \theta\sigma X$ for all non-auxiliary variables $X$. 
+  $\theta$ such that $\varrho X = \theta\sigma X$ for all nonauxiliary variables $X$. 
   We can focus only on $X \in \{F, F'\}$
-  because all other non-auxiliary variables
+  because all other nonauxiliary variables
   do neither appear in the original problem nor in $\sigma F$ or $\sigma F'$; so we can simply define $\theta X = \varrho X$.
 
   %In what follows we consider all terms
@@ -1931,7 +1939,7 @@ the following two lemmas show that solid pairs admit an MGU:
   From \textsf{diff}'s definition it is clear that there are terms $v,v'$ for which it is undefined.
   However, we will show that for each $u$ and $u'$ that are bodies of bindings from a unifier $\varrho$, 
   \textsf{diff} is defined and has the desired property.
-  In equations \ref{diff:xi}, \ref{diff:yi}, and \ref{diff:xiyj}, if there are multiple numbers $k$ or $l$
+  In equations (\ref{diff:xi}), (\ref{diff:yi}), and (\ref{diff:xiyj}), if there are multiple numbers $k$ or $l$
   that fulfill the condition, choose an arbitrary one.
   We need to show that $\varrho F = \theta\sigma F$ and $\varrho F' = \theta\sigma F'$.
   By the definitions of $u$, $u'$, $\theta$ and $\sigma$ and $\beta$-reduction, this is equivalent to
@@ -1987,9 +1995,9 @@ the following two lemmas show that solid pairs admit an MGU:
     $\sigma_i^k = \tau$, i.e., $\textsf{diff}(v,v') = z_i^k \, \textsf{diff}(v_1, v'_1)
     \ldots \textsf{diff}(v_n, v'_n) $. By induction hypothesis, we get that $(\dagger)$ holds.
     \item[$v = a \, \overline{v}_n$] In the remaining cases $a$ is either a free variable, a loose bound variable
-    different than $x_1, \ldots, x_m$, or a constant. If $a$ is a free variable or a loose bound variable
-    different than $x_1, \ldots, x_m$, then $v' = a \, \overline{v'}_n$, since
-    ($\star$) holds, all of $\overline{s}'_{m'}$ are ground, and bound variables different than
+    different from $x_1, \ldots, x_m$, or a constant. If $a$ is a free variable or a loose bound variable
+    different from $x_1, \ldots, x_m$, then $v' = a \, \overline{v'}_n$, since
+    ($\star$) holds, all of $\overline{s}'_{m'}$ are ground, and bound variables different from
     $x_1, \ldots, x_m$ and $y_1, \ldots, y_{m'}$ are renamed to match by equation \ref{diff:alpha}. 
     By the induction
     hypothesis and by equation \ref{diff:samehd}, we obtain $(\dagger)$. If $a$ is a constant, we consider two
@@ -2097,7 +2105,7 @@ of Lemmas \ref{unif:lemma:solid-var-same-mgu} and \ref{unif:lemma:solid-vars-dif
   the unification problem to solve. Projecting~$F$ onto the first argument will
   lead to a nonunifiable problem, so we perform imitation of~$\cst{g}$ building a
   binding $\sigma_1 = \{ F \mapsto \lambda x.\, \cst{g} \, (F_1 \, x) \, (F_2 \, x)
-  \}$. This yields the  problem $\{F_1
+  \}$. After decomposition, this yields the  problem $\{F_1
   \, (\cst{f} \, \cst{a}) \unif \cst{a}, \allowbreak F_2 \, (\cst{f} \, \cst{a}) \unif G \,
   \cst{a}\}$. Again, we can only imitate $\cst{a}$ for $F_1$ -- building a new 
   binding $\sigma_2 = \{F_1 \mapsto \lambda x.\, \cst{a} \}$. Finally, this
@@ -2139,7 +2147,7 @@ $\lambda x.\, \cst{g} \, (F \, (\cst{f} \, x)) \, F  \unif \lambda x.\, \cst{g}
 \, (\cst{f} \, (G \, x)) \, G $, which violates linearity, reduces to the previous problem. 
 Only ground arguments to free variables are allowed because  $\{F \, X \unif G
 \, \cst{a}\}$ has only infinite CSUs. Finally, it is crucial that
-functional arguments to free variables are only bound variables: the problem
+functional arguments to free variables are only bound variables: The problem
 $\{ \lambda y. \, X (\lambda x.\, x) \, y \unif \lambda y. \, y \}$ has only infinite CSUs.
 
 
@@ -2158,8 +2166,8 @@ Higher-order indexing has received little attention compared to its
 first-order counterpart. However, recent research in higher-order theorem
 proving increased the interest in higher-order indexing
 \cite{ls-16-indexing,br-19-restricted-unif}.
-A \emph{fingerprint index} \cite{ss-12-fp-indexing} is an imperfect index based on
-the idea that the skeleton of the term consisting of all non-variable positions
+Recall from Chapter \ref{ch:ehoh} that a \emph{fingerprint index} \cite{ss-12-fp-indexing} is an imperfect index based on
+the idea that the skeleton of the term consisting of all nonvariable positions
 is not affected by substitutions. Therefore, we can easily determine that the terms
 are not unifiable (or matchable) if they disagree on a fixed set of sample
 positions.
@@ -2189,6 +2197,7 @@ determine the compatibility for retrieval operations:
     & $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
     \hline
     $\cst{f}_1\vphantom{^{()}}$ & & \xmark & & & \xmark \\
+    $\cst{f}_2\vphantom{^{()}}$ & \xmark &  & & & \xmark \\
     \AA & & & & & \xmark \\
     \BB & & & & & \\
     \NN & \xmark & \xmark & \xmark & &
@@ -2198,6 +2207,7 @@ determine the compatibility for retrieval operations:
     & $\cst{f}_1$ & $\cst{f}_2$ & \AA & \BB & \NN \\
     \hline
     $\cst{f}_1\vphantom{^{()}}$ & & \xmark & \xmark & \xmark & \xmark \\
+    $\cst{f}_2\vphantom{^{()}}$ & \xmark &  & \xmark & \xmark & \xmark \\
     \AA & & & & \xmark & \xmark \\
     \BB & & & & & \\
     \NN & \xmark & \xmark & \xmark & \xmark &
@@ -2225,7 +2235,7 @@ higher-order terms, we must address the issues of $\alpha\beta\eta$-normalizatio
 bound variables. To that end, we define a function $\hotofo{t}$, defined on
 %TODO: @PETAR \eta-long?
 % Yes
-$\beta$-reduced $\eta$-long terms in De Bruijn \cite{db-75-dbindices} notation:
+$\eta$-long $\beta$-reduced terms in De Bruijn \cite{db-75-dbindices} notation:
 %TODO: @PETAR: also mention that this is an encoding into FOL before the definition?
 % @ALEX: There is a sentence about that later. I do not see how it can easily fit in this description :(
 \begin{align*}
@@ -2304,7 +2314,7 @@ Each {\sf Bind} step will give rise to new unification problems $E_1, E_2,
 p_2, \ldots$ containing subsingletons of unifiers. To avoid postponing some
 unifier indefinitely, we use the dovetailing technique: we first take one
 subsingleton from $p_1$, then one from each of $p_1$ and $p_2$. We continue with
-one subsingleton from each of $p_1,p_2$ and $p_3$, and so on. Empty lazy lists are
+one subsingleton from each of $p_1,p_2$, and $p_3$, and so on. Empty lazy lists are
 ignored in the traversal. To ensure we do not remain stuck waiting for a unifier
 from a particular lazy list, the procedure will periodically return an empty
 set, indicating that the next lazy list should be probed. 
@@ -2314,7 +2324,7 @@ The implemented selection function for our procedure prioritizes selection of
 rigid-rigid over flex-rigid pairs, and flex-rigid over flex-flex pairs. However,
 since the constructed substitution $\sigma$ is not applied eagerly, heads can
 appear to be flex, even if they become rigid after dereferencing and
-normalization. To mitigate this issue to some degree, we
+normalization. To mitigate this issue, we
 dereference the heads with $\sigma$, but do not normalize, and use the resulting
 heads for prioritization.
 
@@ -2359,9 +2369,9 @@ Contrary to first-order unification, there is no widely available corpus of
 benchmarks designed solely for evaluating performance of higher-order
 unification algorithms. Thus, we used all 2606 monomorphic higher-order theorems
 from the TPTP library \cite{gs-17-tptp} and 832 monomorphic higher-order
-Sledgehammer (SH) generated problems \cite{ns-13-leo2sh} as our benchmarks\footnote{An archive with raw
+Sledgehammer (SH) generated problems \cite{ns-13-leo2sh} as our benchmarks.\footnote{An archive with raw
 results, all used problems, and scripts for running each configuration is
-available at \url{http://doi.org/10.5281/zenodo.4269591}}. 
+available at \url{http://doi.org/10.5281/zenodo.4269591}}
 Many TPTP problems require synthesis of complicated unifiers,
 whereas Sledgehammer problems are only mildly higher-order -- many of them are
 solved with first-order unifiers.
@@ -2376,7 +2386,7 @@ a variant of a well-performing configuration we used for the CASC-27 theorem pro
 The cv configuration and all of the pv
 configurations use only pattern unification as an underlying oracle. To test
 the effect of oracle choice, we evaluated the complete variant
-in 8 combinations: with no oracles
+in eight combinations: with no oracles
 (\textbf{n}), with only fixpoint (\textbf{f}), pattern (\textbf{p}), or solid (\textbf{s}) oracle,
 and with their combinations: \textbf{fp}, \textbf{fs}, \textbf{ps}, \textbf{fps}.
 
@@ -2391,7 +2401,7 @@ effects of using different oracles.
 The configuration of our procedure with no oracles outperforms the JP procedure with the first-order oracle. This
 suggests that the design of the procedure, in particular lazy normalization and
 lazy application of the substitution, already reduces the effects of the JP
-procedure's main bottlenecks. Raw evaluation data shows that on TPTP benchmarks, complete and pragmatic configurations
+procedure's main bottlenecks. The raw evaluation data show that on TPTP benchmarks, complete and pragmatic configurations
 differ in the set of problems they solve -- cv solves 19
 problems not solved by pv$^{4}_{2222}$, whereas pv$^{4}_{2222}$ solves 34
 problems cv does not solve. Similarly, comparing the pragmatic configurations with each other,
@@ -2498,7 +2508,7 @@ faster than other competitive higher-order provers.
 
 \section{Discussion and Related Work}
 \looseness=-1
-The problem addressed in this chapter is that of finding
+The problem addressed in this chapter is that of designing
 a complete and efficient higher-order unification procedure. Three main lines of
 research dominated the research field of higher-order unification over the last forty years. 
 
@@ -2521,7 +2531,7 @@ The second line of research is concerned with enumerating
 preunifiers. The most prominent procedure in this line of research is Huet's 
 \cite{gh-75-unification}. The Snyder--Gallier procedure restricted not to solve flex-flex pairs
 is a version of the PT procedure presented in Section \ref{sec:unif:solid-oracle}. It improves 
-Huet's procedure by featuring a Solution rule.
+Huet's procedure by featuring a \textsf{Solution} rule.
 
 The third line of research gives up the expressiveness of the full
 $\lambda$-calculus and focuses on decidable fragments. Patterns
@@ -2566,6 +2576,6 @@ a clear improvement over previously known procedures.
 The procedure was a very prolific playground for tuning various heuristics
 to improve the success rate. In Chapter \ref{ch:ho-techniques} we discuss
 some of the Zipperposition parameters we tuned to make better use of the procedure.
-It also makes the basis of the unification procedure implemented in $\lambda$E,
+The procedure also forms the basis of the unification procedure implemented in $\lambda$E,
 the full higher-order extension of Ehoh, described in Chapter \ref{ch:ehoh2}.
 
