@@ -784,8 +784,8 @@ $\mathcal{P}$, we can sacrifice completeness and obtain a pragmatic variant of
 the procedure that often performs better in practice. 
 %The simplest such modification
 %is to limit the number or kind of bindings applied to a single constraint. 
-Our preliminary experiments showed that using the mapping $\mathcal{P}_\mathsf{p}$ defined as follows is a reasonable compromise between performance and
-completeness:
+Our preliminary experiments showed that using the mapping $\mathcal{P}_\mathsf{p}$ defined as follows gives good
+performance, while finding most useful unifiers:
 \begin{itemize}
     \setlength\itemsep{1\jot}
     \item If the constraint is rigid-rigid, $\mathcal{P}_\mathsf{p}(\lambda \overline{x}.
@@ -952,7 +952,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   For a constant $\cst{f}$, if $\cst{f}\,\seq s \unif \cst{f}\,\seq t$ has a unifier,
   that unifier must clearly also unify $s_{i} \unif t_{i}$ for each~$i$. 
   For a free variable $X$, a unifier of $X\,\seq s \unif X\,\seq t$ does not necessarily
-  unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \lam{\overline{x}}{\cst{a}}\}$ is a unifier that does
+unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \lam{\overline{x}}{\cst{a}}\}$ is a unifier that does
   refer to any of the arguments of $X$.
   The concept of $\omega$-simplicity is
   a criterion on unifiers that captures some of the cases where eager decomposition is possible.
