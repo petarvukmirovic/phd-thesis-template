@@ -225,10 +225,10 @@ fresh variables used in $\sigma'$ are removed from the supply and cannot be used
 again as fresh variables.
 
 \looseness=-1
-The transitions are parametrized by a mapping~$\mathcal{P}$ that assigns a set
+The transitions are parameterized by a mapping~$\mathcal{P}$ that assigns a set
 of substitutions to a unification pair; this mapping abstracts the
 concept of unification rules present in other unification procedures. Moreover,
-the transitions are parametrized by a selection function~$S$ mapping a multiset
+the transitions are parameterized by a selection function~$S$ mapping a multiset
 $E$ of unification constraints to one of those constraints $S(E) \in E$, the
 \emph{selected} constraint in $E$. In this chapter, we consider \emph{freshness}
 of the variables with respect to the free variables ocurring in $E$. The transitions, defined as follows, are only
@@ -855,13 +855,13 @@ deeper unification.
 \section{Proof of Completeness}
 \label{sec:unif:proof-of-completeness}
 
-Like the JP procedure, our procedure, parametrized with $\mathcal{P}_\mathsf{c}$,  misses no unifiers:
+Like the JP procedure, our procedure, parameterized with $\mathcal{P}_\mathsf{c}$,  misses no unifiers:
 
 \begin{theorem}
 \label{thm:completeness}
 % \looseness=-1
 The procedure described in Section \ref{sec:unif:the-unification-procedure}
-parametrized by $\mathcal{P}_\mathsf{c}$ is complete, meaning that the
+parameterized by $\mathcal{P}_\mathsf{c}$ is complete, meaning that the
 substitutions on the leaves of the constructed tree form a CSU.
 More precisely, let $E$ be a multiset of constraints
 and let $V$ be the supply of fresh variables provided to the procedure. 
@@ -927,7 +927,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
 \end{exa}
 
 \begin{lemma}[$\jp L{3\text{ (1)}}$]\label{lem:principal-lemma}Let $\varrho$ be a substitution
-    and $X$, $Y$ be free variables such that $\varrho\left(X\,\seq s\right)=\varrho\left(Y\,\seq t\right)$
+    and $X$, $Y$ be free variables such that $\varrho(X\,\seq s)=\varrho(Y\,\seq t)$
     for some term tuples $\seq s$ and $\seq t$. Then for every opponent
     pair $u$, $v$ in $\varrho X$ and $\varrho Y$
     (Definition \ref{unif:def:opponents}), the head of $u$ or $v$ is a parameter
@@ -944,7 +944,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   flex-flex problems that does not mention parameters will not have opponent pairs. 
   For example, one solution for the 
   problem $X \, \cst{a}
-  \unif Y \, (\cst{f} \, \cst{a})$ is $\varrho = \{ X \mapsto \cst{c}, Y \mapsto \cst{c} \}$
+  \unif Y \, (\cst{f} \, \cst{a})$ is $\varrho = \{ X \mapsto \lamx{\cst{c}}, Y \mapsto \lamx{\cst{c}} \}$
   which has no opponent pairs.
 \end{exa}
   
@@ -952,7 +952,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   For a constant $\cst{f}$, if $\cst{f}\,\seq s \unif \cst{f}\,\seq t$ has a unifier,
   that unifier must clearly also unify $s_{i} \unif t_{i}$ for each~$i$. 
   For a free variable $X$, a unifier of $X\,\seq s \unif X\,\seq t$ does not necessarily
-  unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \cst{a}\}$ is a unifier that does
+  unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \lam{\overline{x}}{\cst{a}}\}$ is a unifier that does
   refer to any of the arguments of $X$.
   The concept of $\omega$-simplicity is
   a criterion on unifiers that captures some of the cases where eager decomposition is possible.
@@ -1006,11 +1006,8 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   Then for any sequence $\seq t$ of (at least $j$) terms, the body of
   $t_{j}$ is a subterm of $s\,\seq t$ (after normalization) at the position
   of $x_{j}\,\seq v$ up to renaming of the parameters of $t_{j}$. 
-  To compare positions of $s$ and $s\,\seq t$, ignore
-  the parameter count mismatch.
-  % ASK(ALEX), ASK(VISA): I am no expert, but isn't it unusual to use these
-  % kind of instructions in the statement of the theorem? Maybe it would be good
-  % to locally redefine the concept of position.
+  To compare positions of $s$ and $s\,\seq t$, we ignore
+  the outermost $\lambda$-binders of s.
   \end{lemma}
   \begin{proof}
   Consider the process of $\beta$-normalizing $s\,\seq t$. After substituting
@@ -1850,7 +1847,7 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
         computed by PT are grounding substitutions (see Lemma
         \ref{unif:lemma:pt-matching-ground}). Applying one of those solutions will
         eliminate all the free variables in $\lambda \overline{x}.\, a \,
-        \overline{u}_m$. Since PT is parametrized by an admissible
+        \overline{u}_m$. Since PT is parameterized by an admissible
         selection function, we know that there are no constraints descending
         from a simple projection in $E$ since the constraint $\lambda \overline{x}. \, F
         \, \overline{v}_n \unif \lambda \overline{x}. \, a \, \overline{u}_m$ was
@@ -2331,7 +2328,7 @@ We implemented our procedure in Zipperposition.
 
 \looseness=-1
 We used OCaml's functors to create a modular implementation. The core of our
-procedure is implemented in a module which is parametrized by another module
+procedure is implemented in a module which is parameterized by another module
 providing oracles and implementing the \textsf{Bind} step. In this way we can
 obtain the complete or pragmatic procedure and seamlessly integrate
 oracles while reusing as much common code as possible.
