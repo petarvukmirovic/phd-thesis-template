@@ -2269,12 +2269,12 @@ $\eta$-long $\beta$-reduced terms in De Bruijn \cite{db-75-dbindices} notation:
 % @ALEX: There is a sentence about that later. I do not see how it can easily fit in this description :(
 \begin{align*}
 & \hotofo{F \, \overline{s}} = F
-&& \hotofo{x_i \, \overline{s}_n } = \cstdba{i}(\hotofo{s_1}, \ldots, \hotofo{s_n})
+&& \hotofo{\dbvar{i} \, \overline{s}_n } = \cstdba{i}(\hotofo{s_1}, \ldots, \hotofo{s_n})
 && \hotofo{\cst{f} \, \overline{s}_n } = \cst{f}(\hotofo{s_1}, \ldots, \hotofo{s_n}) &&
 \hotofo{\lambda \overline{x}. \, s  } = \hotofo{s}
 \end{align*}
 \looseness=-1
-We let $x_i$ be a bound variable of type $\alpha$ with De Bruijn index $i$,
+We let $\dbvar{i}$ be a bound variable of type $\alpha$ with De Bruijn index $i$,
 and $\cstdba{i}$ be a fresh constant corresponding to this variable. All constants
 $\cstdba{i}$ must be fresh. 
 Effectively, $\hotofo{\;}$ transforms a $\eta$-long $\beta$-reduced higher-order term to an untyped first-order term. Let $\nf{t}{\beta\eta}$ be
