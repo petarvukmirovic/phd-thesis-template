@@ -168,6 +168,7 @@ Boolean type ($o$) \emph{formulas} and denote them by $f,g,h, \ldots$; we use
 $p,q,r, \ldots$ for free variables whose result type is $o$ and
 $\cst{p},\cst{q},\cst{r}$ for constants with the same result type.
 %
+Formulas whose top-level symbol is not logical are called \emph{atoms}.
 Unless stated otherwise, we view terms as
 $\alpha\beta\eta$-equivalence classes, with $\eta$-long $\beta$-reduced form as
 the representative. 
@@ -175,8 +176,156 @@ the representative.
 \looseness=-1
 Given a formula $f$ we call its Boolean subterm $f|_p$ a \emph{top-level
 Boolean} if for all proper prefixes $q$ of $p$, the head of $f|_q$ is a logical
-constant. Otherwise, we call it a \emph{nested Boolean}. For example, in the formula
-$f = \cst{h} \, \cst{a} \ieq \cst{g} \, (\cst{p} \iimplies \cst{q}) \llor
-\inot\cst{p}$, $f|_1$ and $f|_2$ are top-level Booleans, while $f|_{1.2.1}$ is
-a nested Boolean, as well as its subterms. First-order logic allows only top-level Booleans, whereas nested Booleans are characteristic for
+constant. Otherwise, we call it a \emph{nested Boolean}. For example, in the
+formula $f = \cst{h} \, \cst{a} \ieq \cst{g} \, (\cst{p} \iimplies \cst{q})
+\llor \inot\cst{p}$, $f|_1$ and $f|_2$ are top-level Booleans, while
+$f|_{1.2.1}$ is a nested Boolean, as well as its subterms. First-order logic
+allows only top-level Booleans, whereas nested Booleans are characteristic for
 higher-order logic. 
+
+\section{The Native Approach} 
+\label{sect:bool:native}
+
+\looseness=-1
+Zipperposition already had some support for Boolean reasoning before we
+started extending the calculus of Bentkamp et al. In this section, we first
+describe the internals of Zipperposition responsible for reasoning with
+Booleans. We continue by describing \NumberOK{15} rules that we have
+implemented. For ease of presentation we divide them in three categories.
+\subsection{Support for Booleans in Zipperposition}
+\label{subsect:bool:zip-bools}
+
+As mentioned in Chapter~\ref{ch:unif}, Zipperposition is an open source prover
+written in OCaml. From its inception, it was designed as a prover that supports
+easy extension of its base superposition calculus to various theories, including
+arithmetic, induction and limited support for higher-order logic
+\cite{sc-15-simon-phd}.
+
+In Zipperposition, applications are represented in flattened, spine notation. In
+addition, Zipperposition uses associativity of $\iand$ and $\ior$ to flatten out
+the nested applications of these symbols. For example, terms $\cst{p} \iand
+(\cst{q} \iand \cst{r})$ and $(\cst{p} \iand \cst{q}) \iand \cst{r}$ are
+internally stored as $\iand \, \cst{p} \, \cst{q} \, \cst{r}$. 
+Zipperposition's support for $\lambda$-terms is used to represent quantified nested
+Booleans: Formulas $\iforall x. \, \, f$ and $\iexists x. \, f$ are represented as
+$\iforall \, (\lamx{f})$ and $\iexists \, (\lamx{f})$. After clausification of the
+input problem, no nested Booleans will be modified or renamed using fresh
+predicate symbols.
+
+The version of Zipperposition preceding our modifications distinguished between non\-equational
+and equational literals. Following E \cite{scv-19-e23}, we
+modified Zipperposition to represent all literals equationally: a nonequational
+literal $f$ is stored as $f \eq \itrue$, whereas $\neg f$ is stored as $f
+\noteq \itrue$. Equations of the form $f \eq \ifalse $ and $f \noteq \ifalse$ are
+transformed into $f \noteq \itrue$ and $f \eq \itrue$, respectively.
+
+\subsection{Core Rules}
+\label{subsect:bool:core}
+
+\looseness=-1
+Kotelnikov et al.\ \cite{kotelnikov-15-fool}, to the best of our
+knowledge, pioneered the approach of extending a first-order superposition prover to support
+nested Booleans. They call effects of including the axiom $\iforall
+p. \; p \eq \itrue \ior p \ieq \ifalse$ a  ``recipe for disaster''. To combat the
+explosive behavior of the axiom, they imposed the following two requirements to
+the simplification order $\succ$: $\itrue \succ \ifalse$ and
+$\itrue$ and $\ifalse$ are two smallest ground terms with respect to $\succ$. If
+these requirements are met, there is no self-paramodulation of the clause
+and only paramodulation possible is from literal $p \eq \itrue$ of the mentioned axiom
+into a Boolean subterm of another clause. Finally, Kotelnikov et al.\ replace
+the axiom with the inference rule \emph{FOOL Paramodulation} (\infname{FP}):
+%
+$$ \namedinference{FP}{C[f]}{C[\itrue] \vee f \eq \ifalse} $$
+%
+\looseness=-1
+where $f$ is a nested non-variable Boolean subterm of clause $C$, different from
+$\itrue$ and $\ifalse$. In addition, they translate the initial problem containing nested
+Booleans  to first-order logic without interpreted Booleans; thus, symbols $\itrue$ and $\ifalse$, and type $o$
+correspond to proxy symbols and types introduced during the translation. 
+
+We created two rules that are syntactically similar to \infname{FP} but
+are adapted for higher-order logic with one key distinction -- we do not perform any translation:
+%
+\begin{align*}
+  & \namedinference{Cases}{C[f]}{C[\ifalse] \vee f \eq \itrue}
+  && \namedsimp{CasesSimp}{C[f]}{C[\ifalse] \vee f \eq \itrue \quad C[\itrue] \vee f \noteq \itrue}
+\end{align*}
+%
+\looseness=-1
+Clearly, the prover that uses the rules should not include them both at the same time.
+In addition, since
+literals $f \eq \ifalse$ are represented as negative equations $f \noteq \itrue$, which cannot be used to paramodulate from,
+we change the first requirement on the order to $\ifalse \succ
+\itrue$.
+
+\newcommand{\eqneq}{\mathrel{\dot{\eq}}}
+These two rules hoist Boolean subterms $f$ to the literal level; therefore,
+some results of \infname{Cases} and \infname{CasesSimp} will have literals of the form $f \eq \itrue$ (or
+$f \noteq \itrue$) where $f$ is not an atom. This introduces the need for the rule
+called eager clausification (\infname{EC}):
+%
+$$ \namedsimp{EC}{C}{D_1 \; \cdots \; D_m} $$
+%
+We say that a clause is \emph{standard} if all of its literals are of the form $s \eqneq t$,
+where $s$ and $t$ are not Booleans or of the form $f \eqneq \itrue$, where the head of $f$
+is not a logical symbol and $\eqneq$ denotes $\eq$ or $\not\eq$. The rule \infname{EC}
+is applicable if clause $C = L_1 \llor
+\cdots \llor L_n$ is not standard.
+The resulting clauses $\tuple{D}{m}$ represent
+the result of clausification of the formula $\iforall\,\tuple{x}{}. \; L_1 \ior
+\cdots \ior L_n$ where $\tuple{x}{}$ are all free variables of $C$.
+Using Boolean extensionality, Zipperposition's clausification
+algorithm treats Boolean equality as equivalence (i.e., it replaces
+$\mathop{\eq}\typeargs{o}$ with $\iimplies$).
+
+\looseness=-1
+An advantage of leaving nested Booleans unmodified is that the prover will be able
+to prove some problems containing them without using the prolific rules described
+above. For example, given two clauses $\cst{f} \, (\cst{p} \, x
+\iimplies \cst{p} \, y) \eq \cst{a}$ and $\cst{f} \, (\cst{p} \,
+\cst{a} \iimplies \cst{p} \, \cst{b}) \noteq \cst{a}$, the empty clause can
+easily be derived without the above rules. A disadvantage of this approach
+is that the proving process will periodically be interrupted by expensive calls
+to the clausifier.
+\pagebreak[2]
+
+\looseness=-1
+If implemented naively, rules \infname{Cases} and \infname{CasesSimp} can result in many redundant clauses. Consider the following
+example: let $\cst{p} : o \rightarrow o$, $\cst{a} : o$ and consider a clause
+set containing $\cst{p} \, (\cst{p} \, (\cst{p} \, (\cst{p} \, \cst{a}))) \eq
+\itrue$. Then, the clause $C = \cst{a} \eq \itrue \llor \cst{p} \, \ifalse \eq \itrue$ can be
+derived in eight ways using the rules, depending on which nested Boolean subterm was
+chosen for the inference. In general, if a clause has a subterm occurrence of the form $\cst{p}^n \, \cst{a}$,
+where both $\cst{p}$ and $\cst{a}$ have result type $o$, the clause $\cst{a} \eq \itrue \llor \cst{p} \, \ifalse \eq \itrue$ can be derived in $2^{n-1}$ ways.
+% Boolean subterms occurring in different
+% eligible literals cause similar explosive behavior.
+To combat these issues we
+implemented pragmatic restrictions of the rule: only $f$ which is
+the leftmost outermost (or innermost) eligible subterm will be considered. With
+this modification $C$ can be derived in only one way. Furthermore,
+some intermediate conclusions of the rules will not be derived, pruning the search space.
+
+The clausification algorithm by Nonnengart and Weidenbach \cite{nw-01-small-cnf}
+aggressively simplifies the input problem using well-known Boolean equivalences before clausifying it. For example,
+the formula $\cst p\land\itrue$ will be replaced by $\cst p$. To simplify nested Booleans we implemented the rule
+\pagebreak[2]
+\[
+\namedsimp{BoolSimp}{C[f\sigma]}{C[g\sigma]}
+\]
+where $f \longrightarrow g \in E$ runs over fixed set of rewrite rules $E$,
+and $\sigma$ is any substitution. In the current implementation of Zipperposition, $E$ contains the rules
+described by Nonnengart and Weidenbach \cite[Section~3]{nw-01-small-cnf}. This set contains
+the rules describing how each logical symbol behaves when given arguments $\itrue$ or $\ifalse$: for example, 
+it includes $(\itrue \iimplies p)~\longrightarrow~p $ and $(p \iimplies \itrue) \longrightarrow \itrue$. %full list visa report Sect 4.2
+Leo-III implements a similar rule, called \textsf{simp} \cite[Section 4.2.1.]{as-18-phd}.
+
+
+Our decision to represent negative atoms as negative equations was motivated by
+the need to alter Zipperposition's earlier behavior as little as possible. 
+Namely, negative atoms were not used as literals that can be used
+to paramodulate from, and as such added to the laziness of the superposition calculus.
+However, it might be useful to consider unit clauses of the form $f \noteq \itrue$
+as $f \eq \ifalse$ to strengthen rewriting. To that end, we have introduced the following
+rule:
+%
+$$ \namedsimp{BoolDemod}{f \noteq \itrue \qquad C[f\sigma]}{f \noteq \itrue \qquad C[\ifalse]} $$
