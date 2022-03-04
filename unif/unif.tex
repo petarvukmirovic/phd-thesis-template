@@ -920,6 +920,12 @@ Then the disagreement pairs of $t'$ and $s'$ are called
 \emph{opponent pairs} in $t$ and $s$.
 \end{defi}
 
+\begin{exa} To determine the opponent pairs of $\lamx{\cst{g} \, (\cst{g} x)}$
+  and $\lamx{\cst{g} \, x}$ we first $\alpha$-rename the second term to 
+  $\lam{y}{\cst{g}\,{y}}$. Then, we identify the common context of $\cst{g} \, (\cst{g} x)$ and $\cst{g} \, y$
+  as $\cst{g} \, \square $, which leads us to the opponent pair $(\cst{g} \, x, y)$.
+\end{exa}
+
 \begin{lemma}[$\jp L{3\text{ (1)}}$]\label{lem:principal-lemma}Let $\varrho$ be a substitution
     and $X$, $Y$ be free variables such that $\varrho\left(X\,\seq s\right)=\varrho\left(Y\,\seq t\right)$
     for some term tuples $\seq s$ and $\seq t$. Then for every opponent
@@ -928,6 +934,19 @@ Then the disagreement pairs of $t'$ and $s'$ are called
     of $\varrho X$ or $\varrho Y$.
     \end{lemma}
   %
+\begin{exa}
+  Let $\varrho$ be the substitution $\{ X \mapsto \lamx{\cst{f} \, x}, Y
+  \mapsto \lamx{x} \}$. Clearly, $\varrho$ unifies the problem $X \, \cst{a}
+  \unif Y \, (\cst{f} \, \cst{a})$. The opponent pair for $\varrho\,X$ and $\varrho\,Y$
+  is $(\cst{f} \, x, y)$ which clearly adheres to the conclusion of Lemma \ref{lem:principal-lemma}.
+%
+  Intuitively, one of the consequences of this lemma is that any solution for
+  flex-flex problems that does not mention parameters will not have opponent pairs. 
+  For example, one solution for the 
+  problem $X \, \cst{a}
+  \unif Y \, (\cst{f} \, \cst{a})$ is $\varrho = \{ X \mapsto \cst{c}, Y \mapsto \cst{c} \}$
+  which has no opponent pairs.
+\end{exa}
   
   In contrast to applied constants, applied variables should not be eagerly decomposed.
   For a constant $\cst{f}$, if $\cst{f}\,\seq s \unif \cst{f}\,\seq t$ has a unifier,
@@ -951,6 +970,18 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   of $t$.
   \end{enumerate}
   \end{defi}
+  
+  \begin{exa}
+    % \newcommand{\boldboundvar}[1]{\ensuremath{\mathit{\mathbf{#1}}}}
+    Following Example 1 in JP's work \cite{jp-76-unif}, we denote
+    $\omega$-simple occurrences of parameters using boldface. For example,
+    $\lambda xy. \, \cst{f} \, \mathbfit{x} \, \mathbfit{y}$ and $\lamx{\cst{g}
+    \, (\lam{y}{\mathbfit{x}\, y})}$ have several $\omega$-simple occurrences.
+    In the following two examples, boldface occurrences are \emph{not}
+    $\omega$-simple: $\lamx{\cst{g} \, (\lam{y}{\cst{f} \, y \, \mathbfit{x}})},\;
+    \lam{xy}{\cst{h} \, (x \, \mathbfit{y})}$. In the first case $x$ is not applied to parameter $y$ and in the second $y$
+    occurs as an argument to $x$.
+  \end{exa}
   This definition is slightly too restrictive for our purposes.
   It is unfortunate that condition~1 requires $x$ to be applied to
   \emph{all} instead of just some of the bound variables. The JP
@@ -967,6 +998,7 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   of $t$.
   \end{enumerate}
   \end{defi}
+
   %
   \begin{lemma}\label{lem:base-simple->inj.}
   Let $s$ have parameters $\seq x$ and a subterm $x_{j}\,\seq v$ 
