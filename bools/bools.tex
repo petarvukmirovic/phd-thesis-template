@@ -1,3 +1,182 @@
 \chapter{Boolean Reasoning in a Higher-Order Superposition Prover}
 \setheader{Boolean Reasoning in a Higher-Order Superposition Prover}
 \label{ch:bools}
+
+
+\blfootnote{In this work I implemented and evalauted most of the described approaches.
+Visa Nummelin implemented the FOOL preprocessing module.}
+
+\authors{Joint work with Visa Nummelin}
+
+\begin{abstract}
+    We present a pragmatic approach to extending a Boolean-free higher-order
+    superposition calculus to support Boolean reasoning. Our approach extends
+    inference rules that have been used only in a first-order setting, uses some
+    well-known rules previously implemented in higher-order provers, as well as new rules.
+    We have implemented the approach in the Zipperposition
+    theorem prover. The evaluation shows highly competitive performance of our approach
+    and clear improvement over previous techniques.
+\end{abstract}
+
+\newpage
+
+\section{Introduction} 
+\label{sect:bool:introduction}
+
+In the last decades, automatic theorem provers have been used
+successfully as backends to ``hammers'' in proof assistants
+\cite{ku-15-holyhammer, pb-12-sh} and to software
+verifiers \cite{fp-13-why3}. Most advanced provers, such as CVC4
+\cite{cbetal-11-cvc4}, E \cite{scv-19-e23}, and Vampire
+\cite{lkav-13-vampire}, are based on first-order logic, whereas
+most frontends that use them are based on versions of higher-order logic. Thus,
+there is a large gap in expressiveness between front- and backends.
+%
+\looseness=-1
+This gap is bridged using well-known translations from higher-order to
+first-order logic \cite{ar-70-hol,
+mp-08-trans}. However, as shown in Chapter \ref{ch:ehoh}, translations are usually less efficient than native support. The
+distinguishing features of higher-order logic used by proof assistants that the
+translation must eliminate include
+$\lambda$-binders, function extensionality---the property that functions are
+equal if they agree on every argument, described by the axiom $\iforall xy. \allowbreak\, (\iforall z. \, x \, z \ieq y \,z)
+\iimplies x \ieq y$, and formulas occurring as arguments of function symbols \cite{mp-08-trans}.
+
+\looseness=-1
+A group of authors including Vukmirovi\'c\ \cite{bbtvw-21-sup-lam} designed an
+extension of superposition for extensional Boolean-free higher-order logic. The extension removes the need to translate the
+first two above mentioned features of higher-order logic. Kotelnikov et al.\
+\cite{kotelnikov-15-fool,kotelnikov-16-fool} extended the language of
+first-order logic to support the third feature of higher-order logic that
+requires translation. They described two approaches: One based on calculus-level
+treatment of Booleans and the other, which requires no changes to the calculus,
+based on preprocessing.
+
+\looseness=-1 To fully bridge the gap between higher-order and first-order tools,
+we combine the two approaches: we use the efficient higher-order superposition
+calculus and extend it with inference rules that reason with
+Boolean terms. In early work, Kotelnikov et al.\ 
+\cite{kotelnikov-15-fool} have described a \emph{FOOL paramodulation}
+rule that, under some order requirements, removes the need for the axiom
+describing the Boolean domain---$\iforall p. \; p \ieq \itrue \llor p
+\ieq \ifalse$. In this approach, it is assumed that a problem with formulas occurring as
+arguments of symbols is translated to first-order logic. 
+
+\looseness=-1
+The backbone of our approach is based on an extension of this rule to higher-order
+logic: We do not translate away any Boolean structure that is nested inside
+non-Boolean terms and allow our rule to hoist the nested Booleans to the
+literal level. Then, we clausify the resulting formula (i.e., a clause containing formulas in literals) using a new rule.
+
+
+\looseness=-1 An important feature that we inherit by building on top of Bentkamp
+et al. \cite{bbtvw-21-sup-lam} is support for (function) extensionality. Moving to higher-order
+logic with Booleans also means that we need to consider \emph{Boolean extensionality}: $\iforall pq. \, (p
+\iequiv q) \iimplies p \ieq q$. We extend the rules of Bentkamp et al.\ 
+that treat function extensionality to also treat Boolean extensionality.
+
+\looseness=-1
+Rules that extend the two orthogonal approaches form the basis of our support
+for Boolean reasoning (Section \ref{sect:bool:native}). In addition, we have
+implemented rules that are inspired by the ones used in the
+higher-order provers Leo-III \cite{sb-21-leo3} and Satallax
+\cite{cb-12-satallax}, such as elimination of Leibniz equality, primitive
+instantiation and treatment of choice operator \cite{pa-01-classical-ty-thy}. We
+have also designed new rules that use higher-order unification to resolve
+Boolean formulas that are hoisted to literal level, delay clausification of non-atomic
+literals, reason about formulas under $\lambda$-binders, and many others. Even
+though the rules we use are inspired by the ones of refutationally complete
+higher-order provers, we do not guarantee completeness of our extension of
+$\lambda$-superposition.
+
+
+\looseness=-1
+We compare our native approach with two alternatives based on
+preprocessing (Section \ref{sect:bool:alternative}). First, we compare it to  an
+axiomatization of the theory of Booleans. Second, inspired by work of
+Kotelnikov et al.\ \cite{kotelnikov-16-fool}, we implemented the preprocessing approach that does not
+require introduction of Boolean axioms.
+We also discuss some examples, coming from TPTP \cite{gs-17-tptp}, that
+illustrate advantages and disadvantages of our approach (Section \ref{sect:bool:examples}).
+
+Our approach is implemented in the Zipperposition theorem prover
+\cite{sc-15-simon-phd,sc-supind-17}. Zipperposition is an easily
+extensible open source prover that Bentkamp et al.\ used to implement their
+higher-order superposition calculus. We further extend their implementation.
+
+\looseness=-1
+We performed an extensive evaluation of our approach (Section \ref{sect:bool:eval}).
+In addition to evaluating different configurations of our new rules, we have
+compared them to full higher-order provers CVC4, Leo-III,  Satallax and Vampire.
+The results suggest that it is beneficial to natively support Boolean reasoning
+-- the approach outperforms preprocessing-based approaches. Furthermore, it is
+very competitive with state-of-the-art higher order provers. We discuss the differences between our approach and the
+approaches we base on, as well as related approaches (Section
+\ref{sect:bool:discussion}).
+
+
+\section{Background} 
+\label{sect:bool:background}
+
+We base our work (and parts of the following text) on Bentkamp et al.'s \cite{bbtvw-21-sup-lam} extensional
+polymorphic clausal higher-order logic. We extend the syntax of this logic by
+adding logical connectives to the signature. The semantic of the logic
+is extended by interpreting Boolean type $o$ as a two-element domain. This
+amounts to extending Bentkamp et al's fragment of higher-order logic to
+full-higher order logic (HOL). Taking a different perspective, this logic is an extension of the one
+presented in Chapter \ref{ch:ehoh} with $\lambda$ abstraction, polymorphic
+types, and native logical connectives. For reference, we provide precise definition of this polymorphic logic.
+
+\looseness=-1
+A signature is a quadruple $(\Sigmaty, \Vty, \Sigma, \VV)$ where $\Sigmaty$ is a
+set of type constructors, $\Vty$ is a set of type variables and $\Sigma$ and
+$\VV$ are sets of constants and term variables, respectively. We require nullary
+type constructor $o$, as well as binary constructor $\rightarrow$
+to be in $\Sigmaty$. A type $\tau, \upsilon$ is either a type variable $\alpha \in
+\Vty$ or of the form $\kappa(\tau_1, \ldots \tau_n)$ where $\kappa$ is an
+$n$-ary type constructor. We write $\kappa$ for $\kappa()$, $\tau \rightarrow
+\upsilon$ for $\rightarrow(\tau, \upsilon)$, and we drop parentheses to shorten 
+$\tau_1 \rightarrow (\cdots \rightarrow (\tau_{n-1} \rightarrow \tau_n) \cdots)$ into $\tau_1 \rightarrow \cdots \rightarrow
+\tau_n$. Each symbol in $\Sigma$ is
+assigned a type declaration of the form $\forallty{\tuplen{\alpha}} \tau$ where all variables
+occurring in $\tau$ are among $\tuplen{\alpha}$.
+
+\looseness=-1
+Function symbols $\cst{a}, \cst{b}, \cst{f}, \cst{g}, \ldots$ are elements of
+$\Sigma$; their type declarations are written as $\cst{f} :
+\forallty{\tuplen{\alpha}} \tau$. Set $\VV$ contains both free and bound variables, following
+the distinction introduced in Sect.~\ref{sec:pre:hol}. Term variables from the set $\VV$ are written
+$F,G,X,Y \ldots$ and we denote their types as $X : \tau$. When the type is not
+important, we omit type declarations. We assume that symbols $\itrue,
+\ifalse,\inot,\iand, \ior,\iimplies,\iequiv$ with their standard meanings and type declarations are elements of
+$\Sigma$. Furthermore, we assume that polymorphic symbols $\iforall$ and $\iexists$
+with type declarations $\forallty{\alpha} (\alpha \rightarrow o) \rightarrow o$
+and $\ieq \; : \forallty{\alpha} {\alpha \rightarrow \alpha \rightarrow o}$ are
+in $\Sigma$, with their standard meanings. All these symbols are called \emph{logical
+symbols}. We use infix notation for binary logical symbols.
+
+\looseness=-1 Terms are defined inductively as follows. Free ($X : \tau$)  and bound ($x : \tau$) variables   are
+terms of type $\tau$. If $\cst{f} : \forallty{\tuplen{\alpha}} \tau$ is in
+$\Sigma$ and $\tuplen{\upsilon}$ is a tuple of types, called type arguments, then
+$\cst{f}\typeargs{\tuplen{\upsilon}}$ (written as $\cst{f}$ if $n=0$, or if type
+arguments can be inferred from the context) is a term of type $\tau \{
+\tuplen{\alpha} \mapsto \tuplen{\upsilon} \}$, called constant. If $x$ is a bound variable
+of type $\tau$ and $s$ is a term of type $\upsilon$ then $\lamx{s}$ is a term of type
+$\tau \rightarrow \upsilon$. If $s$ and $t$ are of type $\tau \rightarrow \upsilon$ and
+$\tau$, respectively, then $s \, t$ is a term of type $\upsilon$. We call terms of
+Boolean type ($o$) \emph{formulas} and denote them by $f,g,h, \ldots$; we use
+$p,q,r, \ldots$ for free variables whose result type is $o$ and
+$\cst{p},\cst{q},\cst{r}$ for constants with the same result type.
+%
+Unless stated otherwise, we view terms as
+$\alpha\beta\eta$-equivalence classes, with $\eta$-long $\beta$-reduced form as
+the representative. 
+
+\looseness=-1
+Given a formula $f$ we call its Boolean subterm $f|_p$ a \emph{top-level
+Boolean} if for all proper prefixes $q$ of $p$, the head of $f|_q$ is a logical
+constant. Otherwise, we call it a \emph{nested Boolean}. For example, in the formula
+$f = \cst{h} \, \cst{a} \ieq \cst{g} \, (\cst{p} \iimplies \cst{q}) \llor
+\inot\cst{p}$, $f|_1$ and $f|_2$ are top-level Booleans, while $f|_{1.2.1}$ is
+a nested Boolean, as well as its subterms. First-order logic allows only top-level Booleans, whereas nested Booleans are characteristic for
+higher-order logic. 
