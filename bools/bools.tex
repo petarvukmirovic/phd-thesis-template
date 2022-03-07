@@ -1102,4 +1102,66 @@ basis for further extensions. Leo-III uses SMT solver CVC4, which features
 native support for Booleans, as a backend. It is possible that the use of CVC4 is
 one of the reasons for massive improvement in success rate of cooperative
 configuration of Leo-III, compared with the pure version. Therefore, we conjecture
-that including support for SMT backends in Zipperposition might be beneficial.
+that including support for SMT backends in Zipperposition might be beneficial.\section{Discussion and Related Work} 
+\label{sect:bool:discussion}
+
+Our work is primarily motivated by the goal of closing the gap between
+higher-order ``hammer'' or software verifier frontends and first-order backends.
+Considerable amount of research effort has gone into making the translations of
+higher-order logic as efficient as possible. Descriptions of hammers like
+HOLyHammer \cite{ku-15-holyhammer} and Sledgehammer
+\cite{pb-12-sh} for Isabelle contain details of these
+translations. Software verifiers Boogie \cite{lr-10-boogie} and Why3
+\cite{bfcp-11-why3} use similar translations.
+
+\looseness=-1
+Established higher-order provers like Leo-III and Satallax perform very
+well on TPTP benchmarks; however, recent evaluations (including the one in Sect.~\ref{sec:ehoh:evaluation}) show that on Sledgehammer
+problems they are outperformed by translations to first-order logic
+\cite{bbtvw-21-sup-lam, %EHOH CHAPTER,
+cbetal-11-cvc4}. Those two provers are built from the ground up as
+higher-order provers -- treatment of exclusively higher-order issues such as
+extensionality or choice is built into them usually using explosive rules. Those
+explosive rules might contribute to their suboptimal performance on mostly
+first-order Sledgehammer problems.
+
+In contrast, the approach taken in this thesis is to start with a first-order prover and gradually extend it
+with higher-order features. The work performed in the context of Matryoshka project~\cite{matryoshka}, 
+in which I participate, resulted in adding support for
+$\lambda$-free higher-order logic with Booleans to E (Chapter~\ref{ch:ehoh})
+and veriT \cite{cbetal-11-cvc4}, and adding support for Boolean-free higher-order
+logic to Zipperposition. Authors of many all state-of-the-art
+first-order provers have implemented some form of support for higher-order reasoning. This
+is true both for SMT solvers, witnessed by the recent extension of CVC4 and veriT~\cite{cbetal-11-cvc4},
+ and for superposition provers, witnessed
+by the extension of Vampire \cite{br-19-restricted-unif}. All of those approaches were
+arguably more focused on functional aspects of higher-order logic, such as
+$\lambda$-binders and function extensionality, than on Boolean aspects such as
+Boolean subterms and Boolean extensionality. A notable exception is work by
+Kotelnikov et al.\ that introduced support for Boolean subterms to first-order
+Vampire \cite{kotelnikov-15-fool,kotelnikov-16-fool}.
+
+The main merit of our approach is that it combines two successful complementary
+approaches to support features of higher-order logic that have not been combined
+before in a modular way. It is based on a higher-order superposition calculus
+that incurs around 1\% of overhead on first-order problems compared with classic
+superposition \cite{bbtvw-21-sup-lam}. We conjecture that it is
+this efficient reasoning base on which the approach is based that contributes to
+its competitive performance.
+
+\section{Conclusion} 
+\label{sect:bool:conclusion}
+
+We presented a pragmatic approach to support Booleans in a modern automatic prover
+for clausal higher-order logic. Our approach combines
+previous research efforts that extended first-order provers with complementary
+features of higher-order logic. It also proposes some solutions for the issues that
+emerge with this combination. The implementation shows clear improvement over previous
+techniques and competitive performance.
+
+What our work misses is an overview of heuristics that can be used to curb the
+explosion incurred by some of the rules described in this paper. In the next chapter,
+we explore exactly this topic.
+
+
+
