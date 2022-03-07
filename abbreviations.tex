@@ -17,16 +17,16 @@
 \newcommand{\lam}[2]{\ensuremath{\lambda #1.\> #2}}
 \newcommand{\lamx}[1]{\lam{x}{#1}}
 
-\newcommand{\ifalse}{\pmb\bot}
-\newcommand{\itrue}{\pmb\top}
+\newcommand{\ifalse}{\pmb{\bot}}
+\newcommand{\itrue}{\pmb{\top}}
 \newcommand{\inot}{\pmb{\neg\,}}
-\newcommand{\iand}{\pmb\land}
-\newcommand{\ior}{\pmb\lor}
-\newcommand{\iimplies}{\pmb\rightarrow}
-\newcommand{\iequiv}{\pmb\leftrightarrow}
-\newcommand{\iforall}{\pmb\forall}
-\newcommand{\iexists}{\pmb\exists}
-\newcommand{\ieq}{\pmb\approx}
+\newcommand{\iand}{\pmb{\land}}
+\newcommand{\ior}{\pmb{\lor}}
+\newcommand{\iimplies}{\pmb{\rightarrow}}
+\newcommand{\iequiv}{\pmb{\leftrightarrow}}
+\newcommand{\iforall}{\pmb{\forall}}
+\newcommand{\iexists}{\pmb{\exists}}
+\newcommand{\ieq}{\pmb{\approx}}
 \newcommand{\ineq}{\pmb{\not\approx}}
 \newcommand{\equi}{\longleftrightarrow^*_{\alpha\beta\eta}}
 
@@ -46,14 +46,14 @@
 
 
 
-\newcommand\infname[1]{\textsc{#1}}
+\newcommand\infname[1]{\ensuremath{\textsc{#1}}}
 % Inference rule
-\newcommand{\namedinference}[3]{\prftree[r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
-\newcommand{\inference}[2]{\namedinference{}{\strut#1}{\strut#2}}
+\newcommand{\namedinference}[3]{\ensuremath{\prftree[r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}}
+\newcommand{\inference}[2]{\ensuremath{\namedinference{}{\strut#1}{\strut#2}}}
 
 % Simplification rule
-\newcommand{\namedsimp}[3]{\prftree[d][r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
-\newcommand{\simp}[2]{\namedinference{}{\strut#1}{\strut#2}}
+\newcommand{\namedsimp}[3]{\ensuremath{\prftree[d][r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}}
+\newcommand{\simp}[2]{\ensuremath{\namedinference{}{\strut#1}{\strut#2}}}
 \newcommand{\ourmodel}{\ensuremath{\mathscr{J}}}
 \newcommand{\NumberOK}[1]{#1}
 
@@ -169,4 +169,4 @@
 \newcommand\foralltynospace[1]{\Pi\,#1.}
 \newcommand\forallty[1]{\foralltynospace{#1}\;}
 \newcommand{\typeargs}[1]{{\langle#1\rangle}}
-
+\newcommand{\typ}[1]{{\mathit{#1}}}
