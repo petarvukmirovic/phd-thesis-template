@@ -905,3 +905,201 @@ formula renaming to mitigate these effects. Moreover, when the problem is prepro
 size before the proving process starts and can adjust its heuristics properly. E, Zipperposition and Vampire, instructed to perform FOOL unfolding,
 solve the problem swiftly, using their default modes. However, if problem is not preprocessed, Zipperposition struggles to prove it using
 \infname{Cases(Simp)} and due to the large number of (redundant) clauses it creates, succeeds only if specific heuristic choices are made.
+
+\section{Evaluation} 
+\label{sect:bool:eval}
+
+We performed extensive evaluation to determine usefulness of our approach. As
+our benchmark set, we used all 2606 monomorphic theorems from the TPTP library,
+given in THF format. All of the experiments described in this section were
+performed on StarExec \cite{sst-14-starexec} servers with Intel Xeon E5-2609 0 CPUs clocked at 2.40 GHz. The evaluation is separated in two parts that
+answer different questions: How useful are the new rules? How 
+does our approach compare with state-of-the-art higher-order provers?
+
+\subsection{Evaluation of the Rules}
+
+\looseness=-1
+For this part of the evaluation, we fixed a single well-performing Zipperposition configuration
+called \emph{base} (\emph{b}). Since we are testing a single configuration, we
+used the CPU time limit of \NumberOK{15} s -- roughly the time a single configuration is
+given in a portfolio mode. Configuration \emph{b} uses the pragmatic variant
+pv$_{1121}^{2}$ (Sect.~\ref{sec:unif:evaluation}) of the unification algorithm described in Chapter~\ref{ch:unif}. 
+It enables \infname{BoolSimp} rule,
+\infname{EC} rule, \infname{PI} rule in \emph{Pragmatic} mode with $k=2$,
+\infname{ElimLeibniz} and \infname{ElimPredVar} rules, \infname{BoolER} rule, and \infname{BoolEF} rules. 
+To evaluate the usefulness of
+all rules we described above, we enable, disable or change the
+parameters of a single rule, while keeping all other parameters of $b$ intact. 
+In figures that contain sufficiently different configurations, cells are of the form $n (m)$ where $n$ is the total
+number of proved problems by a particular configuration and $m$ is the number of
+unique problems that a given configuration solved, compared to the other
+configurations in the same figure. Intersections of rows and columns
+denote corresponding combination of parameters.
+Result for the base configuration is written in \emph{cursive}; the best result
+is written in \textbf{bold}.
+
+First, we tested different parameters of \infname{Cases} and \infname{CasesSimp}
+rules. In Figure \ref{fig:cases} we report the results. The columns correspond to
+three possible options to choose subterm on which the inference is performed:
+\textbf{a} stands for any eligible subterm, \textbf{lo} and \textbf{li} stands
+for leftmost outermost and leftmost innermost subterms, respectively. The rows
+correspond to two different rules: 
+\textbf{b} is the base configuration, which uses \infname{CasesSimp}, and \textbf{b$_\text{c}$}
+swaps this rule for \infname{Cases}. Although the margin is slim, the results show it is usually preferable to select leftmost-outermost
+subterm.
+
+% \newcommand\HEAD[1]{\hbox to \wd\mybox{\hfill\hbox{#1}\hfill}}
+% \newcommand\Z{\phantom{0}}
+% \newcommand\MIDLINE{\\[.25ex]\hline\rule{0pt}{3ex}}
+
+\begin{figure}[t]
+  \begin{center}
+    \def\arraystretch{1.1}%
+    \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c}
+      \strut                & a           & lo     & li  
+      \MIDLINE
+      b                     &  \emph{1646}   &  \textbf{1648}   &  1640  \\
+      b$_\text{c}$          &  1644   &  1645   &  1644 
+    \end{tabular}}
+    \caption{Effect of the \infname{Cases}(\infname{Simp}) rule on success rate }
+    \label{fig:cases}
+  \end{center}
+\end{figure}
+
+\looseness=-1
+Second, we evaluated all the modes of \infname{PI} rule with 3 values for
+parameter $k$: 1, 2, and~8 (Figure \ref{fig:pi}). The columns denote, from left to
+right: disabling the \infname{PI} rule, \emph{Pragmatic} mode, \emph{Full} mode,
+and \emph{Imit}$_\star$ modes with appropriate logical symbols. The rows denote
+different values of $k$. The results show that different values for $k$ have a
+modest effect on success rate. The raw data reveal that when we focus our
+attention to configurations with $k=2$, mode \emph{Full} can solve 10 problems
+no other mode (including disabling \infname{PI} rule) can. Modes
+\emph{Imit}$_{\iand}$ and \emph{Pragmatic} solve 2  problems, whereas
+\emph{Imit}$_{\ior}$ solves one problem uniquely. This result suggests that, even
+though this is not evident from Figure \ref{fig:pi}, sets of problems solved 
+solved by different modes somewhat differ.
+
+Figure \ref{fig:elim-leibniz} gives results of evaluating rules that treat
+Leibniz equality on the calculus level: EL stands for \infname{ElimLeibniz},
+whereas EPV denotes \infname{ElimPredVar}; signs $-$ and $+$ denote that rule is
+removed from or added to configuration b, respectively. Disabling both rules
+severely lowers the success rate. The results suggest that including
+\infname{ElimLeibniz} is beneficial to performance.
+
+\begin{figure}[t]
+  \begin{center}
+    \def\arraystretch{1.1}%
+    \relax{\begin{tabular}{@{}l@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1.5em}c}
+      \strut                    & $-$\infname{PI}                 & b$_p$       & b$_f$       & b$_{\iand}$ & b$_{\ior}$  & b$_{\ieq}$  & b$_{\inot}$ & b$_{\iforall\iexists}$ 
+      \MIDLINE
+      $k=1$                     &  \multirow{3}{*}{1636}      &  \textbf{1648}   & 1628    & 1637  & 1634  & 1630 & 1641 & 1637 \\
+      $k=2$                     &                                 &  \emph{1646}   &  1629   & 1636  & 1631  & 1627 & 1638 & 1634 \\
+      $k=8$                     &                                 &  1643   &  1625   & 1633  & 1631  & 1623 & 1637 & 1635
+    \end{tabular}}
+    \caption{Effect of \infname{PI} rule on success rate}
+    \label{fig:pi}
+  \end{center}
+\end{figure}
+\begin{figure}[t]
+  \centering
+  \begin{minipage}{.48\textwidth}
+    \begin{center}
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c}
+        \strut        & $-$EL       & $+$EL  
+        \MIDLINE
+        $-$EPV        &  1584 (0)   &  1644 (0)   \\
+        $+$EPV        &  1612 (0)   &  \emph{\textbf{1646 (0)}} \\
+      \end{tabular}}
+      \caption{Effect of Leibniz equality elimination rules }
+      \label{fig:elim-leibniz}
+    \end{center}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{.45\textwidth}
+    \begin{center}
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c}
+        \strut        & $-$BEF       & $+$BEF  
+        \MIDLINE
+        $-$BER        &  1644 (2)   &  1643 (0)   \\
+        $+$BER        &  1645 (0)   &  \emph{\textbf{1646 (0)}}   \\
+      \end{tabular}}
+      \caption{Effect of \infname{BoolER} and \infname{BoolEF} rules}
+      \label{fig:bool-rules}
+    \end{center}
+  \end{minipage}
+\end{figure}
+
+Similarly, Figure \ref{fig:bool-rules} discusses merits of including ($+$) or
+excluding ($-$) \infname{BoolER} (BER) and \infname{BoolEF} (BEF) rules. Our
+expectations were that inclusion of those two rules would make bigger impact on
+success rate. It turned out that, in practice, most of the effects of these
+rules could be achieved using a combination of the \infname{PI} rule and
+superposition rules.
+\pagebreak[2]
+
+\looseness=-1
+Combining these two rules with lazy clausification is more useful: when the rule
+\infname{IC} is replaced by the rule \infname{DC}, the success rate increases
+(compared to 1646 problems solved by $b$) to 1660 problems. We also discovered
+that reasoning with choice is useful: when rule \infname{Choice} is enabled, the
+success rate increases to 1653. We determined that including or excluding the
+conclusion $D$ of \infname{Choice}, after it is simplified, makes no difference.
+Counterintuitively, disabling \infname{BoolSimp} rule results in 1640 problems,
+which is only 6 problems short of configuration $b$. Disabling \infname{Abs} and
+\infname{Interpret-$\lambda$} rules results in solving 25 and 31 problems less,
+respectively. Raw data show that in total, using configurations from Figure
+\ref{fig:cases} to Figure \ref{fig:bool-rules}, 1682 problems can be solved.
+
+Last, we compare our approach to alternatives. Axiomatizing Booleans brings
+Zipperposition down to a grinding halt: only 1106 problems can be solved using
+this mode. On the other hand, preprocessing is fairly competitive: it solves
+only 8 problems less than the $b$ configuration.
+
+
+\subsection{Comparison with Other Higher-Order Provers} 
+
+\looseness=-1
+We compared Zipperposition with all higher-order theorem provers that took part
+in THF division of CASC-27 \cite{gs-19-casc27}: CVC4 1.8 prerelease \cite{cbetal-11-cvc4},
+Leo-III 1.4 \cite{sb-21-leo3}, Satallax 3.4
+\cite{cb-12-satallax}, and Vampire-THF 4.4
+\cite{lkav-13-vampire}. In this part of the evaluation, Zipperposition is ran
+in portfolio mode that runs configurations in different time slices. 
+We set the CPU time limit to 180 s, the time allotted to each prover at CASC-27.
+
+
+Leo-III and Satallax are cooperative theorem provers -- they periodically invoke
+first-order provers to finish the proof attempt. Leo-III uses CVC4, E and
+iProver \cite{kk-08-iprover} as backends, while Satallax uses Ehoh
+% \cite{EHOH CHAPTER}
+ as backend. Zipperposition can use Ehoh as backend as well. To test how successful each calculus is, we run
+the cooperative provers in two versions: \emph{pure}, which disables backends,
+and \emph{coop} which uses all supported backends.
+
+
+
+\begin{figure}[t]
+  \label{fig:higher-order-provers}
+  \begin{center}
+    \def\arraystretch{1.1}%
+    \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c}
+      & CVC4             & Leo-III & Satallax              & Vampire & Zipperposition
+      \MIDLINE
+      pure    & 1806 (5) &  1627 (0) & 2067 (0)            & 1924 (7) & 1980 (\phantom{0}0)                \\
+      coop    & --       &  2085 (3) & \textbf{2214 (9)}   & --       & 2190 (17)
+    \end{tabular}}
+    \caption{Comparison with other higher-order provers}
+  \end{center}
+\end{figure}
+
+\looseness=-1
+In both pure and cooperative mode, Satallax is the winner.
+Zipperposition comes in close second, showing that our approach is a promising
+basis for further extensions. Leo-III uses SMT solver CVC4, which features
+native support for Booleans, as a backend. It is possible that the use of CVC4 is
+one of the reasons for massive improvement in success rate of cooperative
+configuration of Leo-III, compared with the pure version. Therefore, we conjecture
+that including support for SMT backends in Zipperposition might be beneficial.
