@@ -312,7 +312,7 @@ information.
 
 Before spelling out the inference rules of standard, first-order superposition
 let us introduce some helpful notation, following Schulz \cite{ss-02-brainiac}.
-With $t|_p$ we denote subterm of $t$ at position $p$ and with $t[p \leftarrow
+With $t|_p$ we denote the subterm of $t$ at position $p$ and with $t[p \leftarrow
 t']$ replacement of this subterm with $t'$. Let \selfun{} be a selection function,
 $\succ$ a reduction ordering, $C = l \llor C'$ a clause, and $\sigma$ a
 substitution. We say that \sigmacl{l} is eligible for resolution if: (1) nothing
@@ -346,7 +346,7 @@ superposition are as follows:
     \multicolumn{2}{l}{{\bf Superposition into positive literals} (SP)} \\[\jot]
     $\namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{\sigmacl{u[p \leftarrow t] \eq v \llor C \llor D}}$ 
         & where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-        $\sigmacl{s \eq t}$ is eligible for paramodulation, just like $\sigmacl{u \eq v}$ and $u|_p$ is not a variable
+        $\sigmacl{s \eq t}$ and $\sigmacl{u \eq v}$ are eligible for paramodulation, and $u|_p$ is not a variable
 \end{tabular}
 
 \medskip
@@ -368,14 +368,14 @@ conclusion $\cst{even}(X)$ to obtain $\cst{even}(\cst{2})$. The \infname{EF}
 rule can be used to find instances of the clause that can be further simplified.
 Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
 \cst{p}(X, Y)$. Applying \infname{EF} to its first two literals yields $\cst{a}
-\noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$. This clause
+\noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ (with $\sigma = \{ Y \mapsto X \}$). This clause
 then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
 
-Lastly, superposition rules are used to simulate what mathematicians do when
-they ``replace equals by equals''. Left premise intuitively states that an
+Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what mathematicians do when
+they ``replace equals by equals''. The left premise intuitively states that an
 equation $s \eq t$ holds under condition $C$ (or more precisely, its negation).
 Similarly, the right premise asserts that a (dis)equation holds under a
-condition. Superposition rule simply concatenates the conditions for both
+condition. The superposition rule simply concatenates the conditions for both
 premises and replaces equals by equals in two main inference terms. For example
 given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and $\neg
 \cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition between their

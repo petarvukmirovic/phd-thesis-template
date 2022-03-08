@@ -404,7 +404,7 @@ where only the variables on the left-hand side can be instantiated.
 An easy but inefficient way to implement unification and matching for \lfhol{}
 is to apply the applicative encoding (Sect.~\ref{sec:ehoh:logic}), perform
 first-order unification or matching, and decode the resulting
-substitution. To avoid the overhead, we generalize the first-order unification
+substitution. To avoid overhead, we generalize the first-order unification
 and matching procedures to operate directly on \lfhol{} terms.
 
 \subsection{Unification}
@@ -1883,7 +1883,7 @@ $\GfpfRTL$ coincides with $\Gfpf$ on first-order terms.
 The fingerprint $\FpRTL(t)$ of a term $t$ is defined analogously as before,
 and the same compatibility matrices can be used.
 
-The key difference between $\Gfpf$ and $\GfpfRTL$ concerns applied variable.
+The key difference between $\Gfpf$ and $\GfpfRTL$ concerns applied variables.
 Given the sample positions $(\varepsilon, 2, 1)$,
 the fingerprint of $x$ is $(\AA, \BB, \BB)$ as before, whereas
 the fingerprint of $x \; \cst{c}$ is $(\AA, \BB, \cst{c}).$
@@ -2161,7 +2161,7 @@ injective function symbols:
 \vskip\belowdisplayskip
 
 \noindent
-where $\textsf{sk}$ is a fresh Skolem symbol,
+where $\textsf{sk}$ is a fresh Skolem symbol, and
 $J$ is the largest subset of $\{1, \ldots, n$\} such that $x_j = y_j$ for every $j \in J$.
 We denote the subsequence of $\tuple{x}{n}$ indexed by $J$ by $\tuple{x}{J}$.
 Moreover, we require that
@@ -2450,7 +2450,7 @@ mode. We call it \emph{boa} (``best of \emph{auto}'')\begin{conf}.\end{conf}\beg
 \end{description}
 %
 The clause selection scheme consists of five queues, each of which is
-specified by a weight function template. The prefixes $n$\texttt{.} next to
+specified by a weight function template. The prefixes $n$\texttt{.}\ next to
 the template names indicate that the queue will be visited $n$ times in the round-robin scheme
 before moving to the next one. The first argument to each
 template is the clause priority scheme.
@@ -2505,8 +2505,11 @@ whereas $\{y\;\cst{a} \noteq \cst{a}\}$ is satisfiable in \lfhol{}. (In full
 higher-order logic, the second clause set would be unsatisfiable thanks to
 the $\{y \mapsto \lambda x.\; x\}$ instance and $\beta$-conversion.)
 %
-For the moment, we have simply disabled definition unfolding in Ehoh. We will
-enable it again once we have added support for $\lambda$-terms.
+For the moment, we have simply disabled definition unfolding in Ehoh. We have
+not measured the effect of this choice, but we conjecture it is not substantial.
+Namely, appropriately chosen term order will result in a similar outcome without
+removing the defined symbol. We will enable definition unfolding again once we
+have added support for $\lambda$-terms.
 
 Higher-order logic treats formulas as terms of Boolean type, erasing
 the distinction between terms and formulas. As a consequence, formulas might appear
@@ -3013,8 +3016,7 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
   architecture.
   Finally, there is work by the developers of Vampire
   % br-20-full-sup-w-combs
-  \cite{br-19-restricted-unif} and of the SMT
-  (satisfiability modulo theories) solvers CVC4 and veriT
+  \cite{br-19-restricted-unif} and of the SMT solvers CVC4 and veriT
   \cite{brotb-19-ho-smt} to extend their provers to higher-order logic.
   \end{sloppypar}
   
@@ -3060,7 +3062,7 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
   In practice, on problems with a large first-order component, translations
   perform very well compared with the existing native provers
   \cite{ns-13-leo2sh}. Largely thanks to Sledgehammer, Isabelle often came
-  in close second at CASC, even defeating Satallax in 2012
+  in a close second at CASC, even defeating Satallax in 2012
   \cite{gs-13-cascj6}.
   \end{rep}
   
