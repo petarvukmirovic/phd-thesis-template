@@ -1702,7 +1702,7 @@ of a matching problem a \emph{matcher}.
     \begin{description}
       \item[Deletion] A decreases.
       \item[Decomposition] A decreases.
-      \item[Failure] Trivial -- represents a terminal node.
+      \item[Failure] Trivial---represents a terminal node.
       \item[Solution] This transition applies on 
         constraints of the form
         $F \unif t$. This reduces A, since the constraint $F \unif t$ is removed
@@ -2142,7 +2142,7 @@ of Lemmas \ref{unif:lemma:solid-var-same-mgu} and \ref{unif:lemma:solid-vars-dif
   binding $\sigma_1 = \{ F \mapsto \lambda x.\, \cst{g} \, (F_1 \, x) \, (F_2 \, x)
   \}$. After decomposition, this yields the  problem $\{F_1
   \, (\cst{f} \, \cst{a}) \unif \cst{a}, \allowbreak F_2 \, (\cst{f} \, \cst{a}) \unif G \,
-  \cst{a}\}$. Again, we can only imitate $\cst{a}$ for $F_1$ -- building a new 
+  \cst{a}\}$. Again, we can only imitate $\cst{a}$ for $F_1$---building a new 
   binding $\sigma_2 = \{F_1 \mapsto \lambda x.\, \cst{a} \}$. Finally, this
   yields the problem $\{ F_2 \, (\cst{f} \, \cst{a}) \unif G \, \cst{a} \}$.
   According to Lemma \ref{unif:lemma:solid-vars-diff-mgu}, we find CSUs for the
@@ -2263,8 +2263,7 @@ retrieval condition. For the remaining terms, a unification or matching
 procedure must be invoked to determine whether they satisfy the condition or not.
 
 The fundamental idea of first-order fingerprint indexing carries over to
-higher-order terms -- 
-application of a substitution does not change the rigid skeleton of a term.
+higher-order terms---application of a substitution does not change the rigid skeleton of a term.
 However, to extend fingerprint indexing to
 higher-order terms, we must address the issues of $\alpha\beta\eta$-normalization and figure out how to cope with $\lambda$-abstractions and
 bound variables. To that end, we define a function $\hotofo{t}$, defined on
@@ -2438,7 +2437,7 @@ The configuration of our procedure with no oracles outperforms the JP procedure 
 suggests that the design of the procedure, in particular lazy normalization and
 lazy application of the substitution, already reduces the effects of the JP
 procedure's main bottlenecks. The raw evaluation data show that on TPTP benchmarks, complete and pragmatic configurations
-differ in the set of problems they solve -- cv solves 19
+differ in the set of problems they solve---cv solves 19
 problems not solved by pv$^{4}_{2222}$, whereas pv$^{4}_{2222}$ solves 34
 problems cv does not solve. Similarly, comparing the pragmatic configurations with each other,
 pv$^{6}_{3333}$ and pv$^{4}_{2222}$ each solve 13 problems that the other one does not.  The overall higher success rate of pv$^2_{1020}$ compared to
@@ -2507,7 +2506,7 @@ useful addition to the set of available oracles.
 \looseness=-1 
 A subset of TPTP benchmarks, concerning operations on Church numerals, is designed to test the efficiency of
 higher-order unification. Our procedure performs exceptionally well
-on these problems -- it solves all of them, usually
+on these problems---it solves all of them, usually
 faster than other competitive higher-order provers.
   There are 11 benchmarks in the \texttt{NUM} category of TPTP that contain conjectures about
   Church numerals: \texttt{NUM020\^{}1}, \texttt{NUM021\^{}1}, \texttt{NUM415\^{}1},

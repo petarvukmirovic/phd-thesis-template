@@ -23,24 +23,17 @@ Visa Nummelin implemented the FOOL preprocessing module.}
 \section{Introduction} 
 \label{sect:bool:introduction}
 
-In the last decades, automatic theorem provers have been used
-successfully as backends to ``hammers'' in proof assistants
-\cite{ku-15-holyhammer, pb-12-sh} and to software
-verifiers \cite{fp-13-why3}. Most advanced provers, such as CVC4
-\cite{cbetal-11-cvc4}, E \cite{scv-19-e23}, and Vampire
-\cite{lkav-13-vampire}, are based on first-order logic, whereas
-most frontends that use them are based on versions of higher-order logic. Thus,
-there is a large gap in expressiveness between front- and backends.
-%
-\looseness=-1
-This gap is bridged using well-known translations from higher-order to
-first-order logic \cite{ar-70-hol,
-mp-08-trans}. However, as shown in Chapter \ref{ch:ehoh}, translations are usually less efficient than native support. The
+In Chapter~\ref{ch:intro} we motivated our work by the need to bridge the gap
+between higher-order frontends and first-order backends. This gap is
+traditionally bridged using well-known translations from higher-order to
+first-order logic \cite{ar-70-hol, mp-08-trans}. However, as shown in Chapter
+\ref{ch:ehoh}, translations are usually less efficient than native support. The
 distinguishing features of higher-order logic used by proof assistants that the
-translation must eliminate include
-$\lambda$-binders, function extensionality---the property that functions are
-equal if they agree on every argument, described by the axiom $\iforall xy. \allowbreak\, (\iforall z. \, x \, z \ieq y \,z)
-\iimplies x \ieq y$, and formulas occurring as arguments of function symbols \cite{mp-08-trans}.
+translation must eliminate include $\lambda$-binders, function
+extensionality---the property that functions are equal if they agree on every
+argument, described by the axiom $\iforall xy. \allowbreak\, (\iforall z. \, x
+\, z \ieq y \,z) \iimplies x \ieq y$, and formulas occurring as arguments of
+function symbols \cite{mp-08-trans}.
 
 \looseness=-1
 A group of authors including Vukmirovi\'c\ \cite{bbtvw-21-sup-lam} designed an
@@ -246,7 +239,7 @@ Booleans  to first-order logic without interpreted Booleans; thus, symbols $\itr
 correspond to proxy symbols and types introduced during the translation. 
 
 We created two rules that are syntactically similar to \infname{FP} but
-are adapted for higher-order logic with one key distinction -- we do not perform any translation:
+are adapted for higher-order logic with one key distinction---we do not perform any translation:
 %
 \begin{align*}
   & \namedinference{Cases}{C[f]}{C[\ifalse] \vee f \eq \itrue}
@@ -383,10 +376,10 @@ of both $\iforall$ and $\iexists$).
 \looseness=-1
 While experimenting with our implementation we have noticed some proof patterns
 that led us to come up with the following modifications. First, it often
-suffices to perform \infname{PI} only on initial clauses -- which is why we
+suffices to perform \infname{PI} only on initial clauses---which is why we
 allow the rule to be applied only to the clauses created using at most $k$
 generating inferences. Second, if the rule was used in the proof, its premise
-is usually only used as part of that inference -- which is why we implemented
+is usually only used as part of that inference---which is why we implemented
 a version of \infname{PI} that removes the clause after all possible \infname{PI}
 inferences have been performed. We observed that the mode \emph{Imit}$_\star$ is useful in practice since often only a single
 approximation of a logical symbol is necessary.
@@ -439,12 +432,10 @@ $\textsf{dp}(s,t) = \emptyset$ if $s$ and $t$ are equal; $\textsf{dp}(a \,
 $\textsf{dp}(\lam{x}{s}, \lam{y}{t}) = \{ (\lam{x}{s}, \lam{y}{t}) \}$;
 $\textsf{dp}(a \, \tuplen{s}, a \, \tuplen{t}) = \bigcup_{i=1}^{n}
 \textsf{dp}(s_i, t_i)$. Then the extensionality rules are stated as follows:
-$$
-\namedinference{AbsSup}
-  {s \eq t \llor C \qquad u[s'] \mathrel{\dot{\eq}} v \llor D}
-  {\sigmacl{s_1 \noteq s'_1 \llor \cdots \llor s_n \noteq s'_n \llor  u[t] \mathrel{\dot{\eq}} v \llor C \llor D}} $$
-\pagebreak[2]
 \begin{align*}
+  & \namedinference{AbsSup}
+  {s \eq t \llor C \qquad u[s'] \mathrel{\dot{\eq}} v \llor D}
+  {\sigmacl{s_1 \noteq s'_1 \llor \cdots \llor s_n \noteq s'_n \llor  u[t] \mathrel{\dot{\eq}} v \llor C \llor D}} \\
   &\namedinference{AbsER}{s \noteq s' \llor C}{\sigmacl{s_1 \noteq s'_1 \llor \cdots \llor s_n \noteq s'_n \cdots \llor  C}} \\
   &\namedinference{AbsEF}{s \eq t \llor  s' \eq u \llor C}{\sigmacl{s_1 \noteq s'_1 \llor \cdots \llor s_n \noteq s'_n \llor t \noteq u \llor  s' \eq u \llor C}}
 \end{align*}
@@ -920,7 +911,7 @@ does our approach compare with state-of-the-art higher-order provers?
 \looseness=-1
 For this part of the evaluation, we fixed a single well-performing Zipperposition configuration
 called \emph{base} (\emph{b}). Since we are testing a single configuration, we
-used the CPU time limit of \NumberOK{15} s -- roughly the time a single configuration is
+used the CPU time limit of \NumberOK{15} s---roughly the time a single configuration is
 given in a portfolio mode. Configuration \emph{b} uses the pragmatic variant
 pv$_{1121}^{2}$ (Sect.~\ref{sec:unif:evaluation}) of the unification algorithm described in Chapter~\ref{ch:unif}. 
 It enables \infname{BoolSimp} rule,
@@ -1070,7 +1061,7 @@ in portfolio mode that runs configurations in different time slices.
 We set the CPU time limit to 180 s, the time allotted to each prover at CASC-27.
 
 
-Leo-III and Satallax are cooperative theorem provers -- they periodically invoke
+Leo-III and Satallax are cooperative theorem provers---they periodically invoke
 first-order provers to finish the proof attempt. Leo-III uses CVC4, E and
 iProver \cite{kk-08-iprover} as backends, while Satallax uses Ehoh
 % \cite{EHOH CHAPTER}
@@ -1119,7 +1110,7 @@ well on TPTP benchmarks; however, recent evaluations (including the one in Sect.
 problems they are outperformed by translations to first-order logic
 \cite{bbtvw-21-sup-lam, %EHOH CHAPTER,
 cbetal-11-cvc4}. Those two provers are built from the ground up as
-higher-order provers -- treatment of exclusively higher-order issues such as
+higher-order provers---treatment of exclusively higher-order issues such as
 extensionality or choice is built into them usually using explosive rules. Those
 explosive rules might contribute to their suboptimal performance on mostly
 first-order Sledgehammer problems.
