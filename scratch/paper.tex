@@ -1,0 +1,2117 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+
+%
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+\documentclass[smallcondensed,draft]{svjour3}     % onecolumn (ditto)
+%\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+\usepackage[utf8]{inputenc}
+\usepackage[misc]{ifsym}
+\usepackage[final]{graphicx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{cite}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{prftree}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumerate}
+\usepackage{stmaryrd}
+\usepackage{booktabs}
+\usepackage{algorithmicx}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage[noend]{algpseudocode}% http://ctan.org/pkg/algorithmicx
+\usepackage[
+   a4paper,
+   pdftex,
+   pdftitle={Making Higher-Order Superposition Work},
+   pdfauthor={Petar Vukmirovi\'c, Alexander Bentkamp, Jasmin Blanchette, Simon Cruanes, Visa Nummelin, and Sophie Tourret},
+   pdfkeywords={},
+   pdfborder={0 0 0},
+   draft=false,
+   bookmarksnumbered,
+   bookmarks,
+   bookmarksdepth=2,
+   bookmarksopenlevel=2,
+   bookmarksopen]{hyperref}
+
+\usepackage{mathptmx}      % use Times fonts if available on your TeX system
+
+\DeclareSymbolFont{letters}{OML}{txmi}{m}{it} %% for Greek
+
+% insert here the call for the packages your document requires
+%\usepackage{latexsym}
+% etc.
+%
+% please place your own definitions here and don't use \def but
+% \newcommand{}{}
+%
+% Insert the name of "your journal" with
+\journalname{Journal of Automated Reasoning}
+
+\makeatletter
+
+\def\vthinspace{\kern+0.083333em}
+\newcommand\CORR{{(\vthinspace\Letter\vthinspace)}}
+
+\def\orcid#1{{\href{http://orcid.org/#1}{\protect\raisebox{-1.25pt}{\protect\includegraphics{orcid.pdf}}}}}
+
+% mathcal
+\DeclareFontFamily{OT1}{pzc}{}
+\DeclareFontShape{OT1}{pzc}{m}{it}{<-> s * [1.10] pzcmi7t}{}
+\DeclareMathAlphabet{\mathcalx}{OT1}{pzc}{m}{it}
+%\DeclareMathAlphabet{\mathcalx}{OMS}{zplm}{m}{n}
+
+%%% HACK Springer's style to get bold subsection headings --JB
+\def\subsection{\@startsection{subsection}{2}{\z@}%
+    {-21dd plus-8pt minus-4pt}{10.5dd}
+     {\normalsize\bfseries\boldmath}}
+
+\spnewtheorem{definitionx}[theorem]{Definition}{\bfseries}{\rmfamily}
+\spnewtheorem{examplex}[theorem]{Example}{\bfseries}{\rmfamily}
+
+
+\begin{document}
+
+\title{Making Higher-Order Superposition Work}
+% \subtitle{Do you have a subtitle?\\ If so, write it here}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{Petar~Vukmirović~\orcid{0000-0001-7049-6847}\and
+Alexander~Bentkamp~\orcid{0000-0002-7158-3595}\and
+Jasmin~Blanchette~\orcid{0000-0002-8367-0936}\and
+Simon~Cruanes~\orcid{0000-0003-3969-5850}\and
+Visa~Nummelin~\orcid{0000-0003-0078-790X} \and
+Sophie~Tourret~\orcid{0000-0002-6070-796X}}
+
+\authorrunning{Petar Vukmirović et al.} % if too long for running head
+
+\institute{
+  Petar~Vukmirovi\'c \CORR \and
+  Alexander Bentkamp\and
+  Jasmin Blanchette\and
+  Visa Nummelin\at%
+    Vrije Universiteit Amsterdam, Amsterdam, the Netherlands\\
+    \email{\{p.vukmirovic,a.bentkamp,j.c.blanchette,visa.nummelin\}@vu.nl}
+  \and
+  Jasmin Blanchette\and Sophie Tourret \at%
+    Universit\'e de Lorraine, CNRS, Inria, LORIA, Nancy, France
+    \\
+    \email{\{jasmin.blanchette,sophie.tourret\}@inria.fr}
+  \and
+  Jasmin Blanchette\and Sophie Tourret \at  Max-Planck-Institut f\"ur Informatik, Saarbr\"ucken,~Germany \\
+  \email{\{jblanche,stourret\}@mpi-inf.mpg.de}
+  \and
+  Simon Cruanes \at Imandra, Austin, Texas, USA \\
+  \email{simon@imandra.ai}
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+
+\maketitle
+
+\begin{abstract}
+Superposition is among the most successful calculi for first-order logic. Its
+extension to higher-order logic introduces new challenges such as infinitely
+branching inference rules, new possibilities such as reasoning about
+Booleans, and the need to curb the explosion of specific higher-order rules. We
+describe techniques that address these issues and extensively evaluate their
+implementation in the Zipperposition theorem prover. Largely thanks to their use,
+Zipperposition won the higher-order division of the CASC-J10 competition.
+\end{abstract}
+
+\newcommand{\ifalse}{\pmb\bot}
+\newcommand{\itrue}{\pmb\top}
+\newcommand{\inot}{\pmb{\neg\,}}
+\newcommand{\iand}{\pmb\land}
+\newcommand{\ior}{\pmb\lor}
+\newcommand{\iimplies}{\pmb\rightarrow}
+\newcommand{\iequiv}{\pmb\leftrightarrow}
+\newcommand{\iforall}{\pmb\forall}
+\newcommand{\iexists}{\pmb\exists}
+\newcommand{\ieq}{\pmb\approx}
+\newcommand{\ineq}{\pmb{\not\approx}}
+
+\newcommand{\comb}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\neglit}[1]{\ensuremath{#1 \eq \ifalse}}
+\newcommand{\poslit}[1]{\ensuremath{#1 \eq \itrue}}
+\newcommand{\skbci}{\textsf{SKBCI}}
+\def\negvthinspace{\kern-0.083333em}
+
+
+\newcommand{\cst}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\var}[1]{{\mathit{#1}}}
+\newcommand{\typ}[1]{{\mathit{#1}}}
+\newcommand\foralltynospace[1]{\mathsf{\Pi}#1.}
+\newcommand\forallty[1]{\foralltynospace{#1}\;}
+\newcommand{\typeargs}[1]{{\negvthinspace\langle#1\rangle\negvthinspace}}
+\let\oldDelta=\Delta
+\let\oldSigma=\Sigma
+\renewcommand\Sigma{\mathrm{\oldSigma}}
+\newcommand{\Sigmaty}{\Sigma_\mathsf{ty}}
+\newcommand{\VV}{\mathscr{V}}
+\newcommand{\Vty}{\VV_\mathsf{ty}}
+
+
+% Equality predicate
+\newcommand{\eq}{\approx}
+\newcommand{\noteq}{\not\eq}
+\newcommand{\lland}{\mathrel\land}
+\newcommand{\llor}{\mathrel\lor}
+\newcommand{\ccup}{\mathrel\cup}
+\newcommand{\ccap}{\mathrel\cap}
+
+\newcommand{\tuple}[2]{\overline{#1}_{#2}}
+\newcommand{\tuplen}[1]{\overline{#1}_{n}}
+
+\newcommand{\lam}[2]{\ensuremath{\lambda #1.\> #2}}
+\newcommand{\lamx}[1]{\lam{x}{#1}}
+
+% Names of inference rules
+\newcommand{\infname}[1]{\textsc{#1}}
+
+% Inference rule
+\newcommand{\namedinference}[3]{\prftree[r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
+\newcommand{\inference}[2]{\namedinference{}{\strut#1}{\strut#2}}
+
+% Simplification rule
+\newcommand{\namedsimp}[3]{\prftree[d][r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
+\newcommand{\simp}[2]{\namedinference{}{\strut#1}{\strut#2}}
+\newcommand{\lamsupraw}{$\lambda$-super\-po\-si\-tion}
+\newcommand{\lamsup}{{\color{black}\lamsupraw}}
+\newcommand{\ofreelamsup}{{\color{black}Boolean-free \lamsupraw}}
+\newcommand{\olamsup}{{\color{black}Boolean \lamsupraw}}
+
+\newcommand\NumberOK[1]{#1}
+\newcommand\NumberNOK[1]{\colorbox{red}{#1}}
+\newcommand{\ourparagraph}[1]{\paragraph{\upshape\bfseries#1}}
+
+\hyphenation{su-per-po-si-tion Zip-per-posi-tion tab-leau tab-leaux Bent-kamp ab-strac-tion
+  Bool-ean}
+
+\newcommand{\confrep}[2]{#2}
+
+\section{Introduction}
+\label{sec:intro}
+
+%In recent decades,
+Superposition-based first-order automatic theorem provers
+have emerged as useful reasoning tools. They dominate at the annual CASC
+\cite{gs-2016-casc} theorem prover competition, having always won the
+first-order theorem division. They are also used as backends to proof assistants
+\cite{ck-18-coqhammer,ku-15-holyhammer,pb-12-sh}, automatic
+higher-order theorem provers \cite{sb-21-leo3}, and software verifiers
+\cite{fp-13-why3}.
+
+The superposition calculus has only recently been extended
+to higher-order logic (more precisely, extensional simple type theory
+\cite{henkin-1950-completeness}), resulting in
+\emph{\ofreelamsup} \cite{bbtvw-21-sup-lam}, which we developed
+together with Waldmann, as well as \emph{combinatory superposition}
+\cite{br-20-full-sup-w-combs} by Bhayat and Reger. Although these two
+calculi do not support an interpreted Boolean type,
+they can be extended by ad hoc rules \cite{our-bool-paper} that support
+most of the Boolean reasoning necessary in practice.
+
+Both higher-order superposition calculi were designed to gracefully
+extend first-order reasoning. As most steps in higher-order
+proofs tend to be essentially first-order, extending the most successful first-order
+calculus to higher-order logic seemed worth trying.
+Our first attempt at testing this idea was in 2019:
+Zipperposition~1.5, based on \ofreelamsup, finished third
+in the higher-order theorem division of CASC-27 \cite{gs-19-casc27},
+12~percentage points behind the winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
+
+Studying the competition results, we found that higher-order tableaux have
+some advantages over higher-order superposition. To bridge the gap, we developed
+techniques and heuristics that simulate tableaux in the
+context of saturation. We implemented them in Zipperposition~2, which took part
+in CASC-J10 \cite{gs-21-cascj10} in 2020. This time, our prover won the division, proving 84\% of
+the problems, a whole 20~percentage points ahead of the runner-up, Satallax
+3.4.
+
+In this article, we describe the main techniques that explain this reversal
+of fortunes. They cover most parts of a modern higher-order theorem prover, from
+preprocessing to additional calculus rules to heuristics to backend
+integration. We use a newer version of Zipperposition, based on a newer
+calculus:\ Instead of \ofreelamsup{} augmented with ad hoc Boolean rules,
+we work with \emph{\olamsup} \cite{bbtv-21-full-ho-sup}, a principled extension of superposition to full
+higher-order logic, including an interpreted Boolean type.
+
+Many higher-order problems extensively use symbol definitions to simplify
+their representation. We describe several ways to exploit the definitions,
+%of which the most successful is
+such as turning them into rewrite rules (Sect.~\ref{sec:preprocessing}).
+%Interesting patterns can be observed in various higher-order problem encodings.
+%We show how we can exploit these to simplify problems (Sect.~\ref{sec:preprocessing}).
+%
+By working on formulas rather than clauses, tableau techniques take a more
+holistic view of a higher-order problem.
+Through its support for delayed clausification and, more generally,
+calculus-level formula manipulation, \olamsup{} enables us to
+simulate most successful tableau techniques in a saturating prover
+(Sect.~\ref{sec:formulas}). This calculus also supports \emph{Boolean selection
+functions}, a mechanism that allows us to choose on which Boolean subterms
+to perform inferences first.
+We implemented some Boolean selection functions and
+evaluated them (Sect.~\ref{sec:bool-select}).
+
+The main drawback of both \lamsup{} variants compared with combinatory
+superposition is that they rely on rules that enumerate possibly infinite sets
+of unifiers. We describe a mechanism that interleaves infinitely
+branching inferences with the standard saturation process
+(Sect.~\ref{sec:infinite-branching}). The prover
+retains the same behavior as
+before on first-order problems, smoothly scaling with
+increasing numbers of higher-order clauses.
+%
+We also propose some heuristics to curb the explosion induced by highly
+prolific calculus rules (Sect.~\ref{sec:explosiveness}).
+
+Using first-order backends to finish the proof is common practice in
+higher-order reasoning. Since \lamsup{} coincides with standard
+superposition on first-order clauses, invoking backends may
+seem redundant; yet Zipperposition is nowhere as efficient as E
+\cite{scv-19-e23} or Vampire \cite{lkav-13-vampire}, so invoking a more
+efficient backend does make sense. We describe how to achieve a balance
+between allowing native higher-order reasoning and
+delegating reasoning to a backend (Sect.~\ref{sec:backends}).
+%
+Finally, we compare Zipperposition~2 with other provers on all monomorphic
+higher-order TPTP benchmarks \cite{gs-17-tptp} to perform a more extensive
+evaluation than at CASC (Sect.~\ref{sec:comparison}). Our evaluation
+corroborates the competition results.
+
+This article is an extended version of a paper accepted at CADE-28
+\cite{making-ho-work}. Compared with the conference paper, it
+describes a new preprocessing technique, explores the effects of Boolean
+selection functions, evaluates %some previously unevaluated
+more techniques,
+introduces new benchmark sets, and presents more examples.
+
+\section{Background and Setting}
+\label{sec:background}
+
+We focus on monomorphic higher-order logic, without the axiom of infinity 
+or the axiom of at least two individuals. However, the techniques can easily be
+extended with polymorphism. Indeed, Zipperposition already supports some
+of them polymorphically.
+
+\ourparagraph{Higher-Order Logic}
+We define terms $s, t, u, v$ inductively as free variables $F, X$, bound
+variables $x, y, z, \dotsc$, constants $\cst{f}, \cst{g},\allowbreak
+\cst{a},\allowbreak \cst{b}, \dotsc$, term applications $s \, t$, and
+$\lambda$-abstractions $\lamx{s}$. The syntactic distinction between free and
+bound variables yields \emph{loose bound variables} (e.g., $y$ in $\lamx{y \,
+\cst{a}}$) \cite{tn-93-patterns}.
+%We shorten iterated application $s \, t_1 \, \cdots \, t_n$ to $s \,
+%\overline{t}_n$ and $\lambda$-abstraction $\lambda x_1. \, \cdots \, \lambda
+%x_n. \> s$ to $\lam{\overline{x}_n}{s}$.
+We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$ and
+$\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. The $n$-fold application of
+a unary term $s$ to a term $t$ is denoted by $s^n \, t$. Every
+$\beta$-normal term can be written as $\lam{\overline{x}_m}{s \,
+\overline{t}_n}$, where $s$ is not an application; we call $s$ the \emph{head}
+of the term. If the type of a term $t$ is of the form $\tau_1 \to \cdots \to
+\tau_n \to o$, where $o$ is the distinguished Boolean type and $n \ge 0$, we
+call $t$ a \emph{predicate}. A term of type $o$ is called a \emph{formula}.
+
+A literal $l$ is an equation $s \eq t$ or a disequation $s \not\eq t$. A clause is
+a finite multiset of literals, interpreted and written disjunctively $l_1 \llor
+\cdots \llor l_n$. Logical symbols that may occur within terms are written in
+boldface: $\pmb{\neg}, \iand, \ior, \iimplies, \iequiv, \dots$. Quantified
+formulas are expressed using (a type-indexed
+family of) constants $\iforall$ and $\iexists$ as $\iforall \,
+(\lambda x. \, t)$ and $\iexists \, (\lambda x. \, t)$, usually abbreviated to
+$\iforall x.\,t$ and $\iexists x.\,t$. Following %the convention of
+\olamsup{}, predicate literals are encoded as equations with $\itrue$ or
+$\ifalse$: for example, $\cst{even}(x)$ becomes $\poslit{\cst{even}(x)}$, and
+$\neg\,\cst{even}(x)$ becomes $\neglit{\cst{even}(x)}$.
+
+\ourparagraph{Higher-Order Calculi}
+\looseness=-1
+The \olamsup{} calculus \cite{bbtv-21-full-ho-sup} is a refutationally
+complete inference system and redundancy criterion for higher-order logic with
+rank-1 polymorphism, Hilbert choice, and functional and Boolean extensionality.
+The calculus relies on
+\emph{complete sets of unifiers}
+(\emph{CSUs}). The CSU for $s$ and $t$ with respect to a finite set of variables
+$V$, denoted by $\mathrm{CSU}_V(s,t)$, is a set of unifiers of $s$~and~$t$ such
+that for any unifier $\varrho$ of $s$~and~$t$, there exist substitutions $\sigma
+\in \mathrm{CSU}_V(s,t)$ and $\theta$ such that $\varrho(X) = \sigma(\theta(X))$
+for all variables $X \in V$. The set $V$ is used to distinguish
+important variables from auxiliary variables (which may arise in intermediary
+states of the unification procedure). We usually omit it.
+
+Unlike \ofreelamsup, this calculus 
+does not require axioms defining the logical symbols to cope with formulas.
+Instead, it includes Boolean inference rules that mimic
+superposition from such axioms into Boolean subterms,
+while avoiding the explosion incurred by adding these axioms to the proof state. It
+also includes rules that simulate Boolean inferences below applied variables.
+Both sets of rules are disabled or replaced with incomplete, ad hoc rules
+described by Vukmirović and Nummelin \cite{our-bool-paper} in most configurations
+of the CASC portfolio.
+A new feature of the calculus that we explore in detail is
+the ability to select Boolean subterms
+to restrict Boolean and superposition inferences.
+
+In contrast to both \lamsup{} variants, combinatory superposition can
+avoid enumerating CSUs by
+using a form of first-order unification.
+Essentially, it enumerates higher-order terms
+using rules that instantiate applied variables with partially applied
+combinators from the complete combinator set $\{\cst{S}, \cst{K}, \cst{B},
+\cst{C}, \cst{I}\}$. This calculus is the basis of Vampire~4.5
+\cite{br-20-full-sup-w-combs}, which finished
+closely behind Satallax 3.4 %~and~3.5
+at CASC-J10.
+
+\looseness=-1
+A different, very successful calculus is Satallax's SAT-guided tableaux
+\cite{backes-brown-2011}. Satallax was the leading higher-order prover of the
+2010s. Its simple and elegant tableaux avoid deep superposition-style rewriting
+inferences.
+Nevertheless, our working hypothesis for the past six years has been
+that superposition would likely provide a stronger basis for higher-order
+reasoning.
+Other competing higher-order calculi include SMT (implemented in CVC4
+\cite{brotb-19-ho-smt, cbetal-11-cvc4}) and extensional paramodulation (implemented in Leo-III \cite{sb-21-leo3}).
+
+
+\ourparagraph{Zipperposition}
+Zipperposition \cite{sc-15-simon-phd,bbtvw-21-sup-lam} is a higher-order
+theorem prover that implements both \lamsup{} variants, combinatory
+superposition, and other superposition-like calculi.
+The prover was conceived as a testbed for rapidly
+experimenting with extensions of first-order superposition, but over time it
+has assimilated many of E's techniques and heuristics and become quite powerful.
+
+Several of our techniques extend the \emph{given clause procedure}, the standard
+saturation procedure pioneered by McCune and Wos \cite[Sect.~2.3]{mcw-1997-otter}. It partitions the proof
+state into a set $P$ of \emph{passive} clauses and a set $A$ of \emph{active}
+clauses. Initially, $P$ contains all input clauses, and $A$ is empty. At each
+iteration, a \emph{given} clause is moved from $P$ to $A$ (i.e., it is
+\emph{activated}), all inferences between it and clauses in $A$ are performed,
+and the conclusions are added to $P$. Because Zipperposition fully simplifies
+clauses only when they are activated, it implements a DISCOUNT-style loop
+\cite{adf-1995-discount}.
+
+\ourparagraph{Experimental Setup}
+To assess our techniques, we carried out experiments with Zipperposition~2. We
+used two sets of benchmarks:\ all 2851~monomorphic higher-order problems from the
+TPTP library \cite{gs-17-tptp} version~7.4.0 (labeled \emph{TPTP})
+and 1253 Sledgehammer-generated
+monomorphic higher-order problems (labeled \emph{SH}).
+Although some techniques support polymorphism, we
+uniformly used monomorphic benchmarks.
+
+We fixed a \emph{base} configuration
+of Zipperposition parameters as a baseline for all comparisons. This is an
+incomplete, pragmatic configuration of \olamsup{} using heuristics expected to perform
+well on a wide range of problems.
+%Note that
+%we use a different baseline configuration than in our earlier paper \cite{making-ho-work}.
+%%% That goes without saying. We use a different calculus! Now clarified in intro. --JB
+In each experiment, we varied
+the parameters associated with a specific technique to evaluate it. The
+experiments were run on StarExec Miami \cite{sst-14-starexec} servers, equipped with
+Intel Xeon E5-2620 v4 CPUs clocked at 2.10 GHz. Unless otherwise stated, we used a
+CPU time limit of 15~s, roughly the time each configuration is given in the
+CASC portfolio mode. The raw evaluation results are available online.%
+\footnote{\url{http://doi.org/10.5281/zenodo.5007440}}
+
+
+\section{Preprocessing Higher-Order Problems}
+\label{sec:preprocessing}
+
+The TPTP library contains thousands of higher-order problems. Despite their
+diversity, they have a markedly different flavor from the TPTP first-order
+problems. Notably, they extensively use the \verb|definition| role to identify
+universally quantified equations (and equivalences) that define symbols.
+%
+Definitions $s \eq t$ (or $(s \iequiv t) \eq \itrue$) can be replaced by rewrite
+rules $s \rightarrow t$,
+using the orientation given in the input problem. If there are multiple
+definitions for the same symbol, only the first one is replaced by a rewrite rule.
+Then, whenever a clause is picked in the given clause procedure, it will be rewritten
+using the collected rules.
+Alternatively, we can rewrite
+the input formulas as a preprocessing step. This ensures that the input
+clauses will be fully simplified when the proving process starts and no
+defined symbols will occur in clauses, which usually helps the heuristics.
+
+Since the TPTP format enforces no constraints on
+definitions, rewriting might diverge. To ensure
+termination, we limit the number of applied rewrite steps. In
+practice, most TPTP problems are well behaved: Only one
+definition is given for each symbol, and the definitions are acyclic.
+
+Turning the defining equations into rewrite rules, unfolding the definitions, and
+$\beta$-reduc\-ing the result can eliminate all of a problem's higher-order features, making
+it amenable to first-order methods. However, this can inflate the problem
+beyond recognition and compromise the refutational completeness of
+superposition.
+
+\begin{examplex} 
+  Removing higher-order features of a problem can have adverse effects.
+  Consider the TPTP problem \texttt{NUM636\^{}3}, which defines the predicate $\cst{m}$
+  as $\lambda x.\, \cst{s} \, x \ineq x$ and states its conjecture as $\iforall
+  x.\, \cst{m} \, x $, where $\cst{s}$ is the standard Peano-style natural number
+  successor constructor. When this definition is kept as is, the
+  prover can superpose from either $\cst{m}$ or its definition into the
+  (clausified) induction axiom, which is also given in the problem, and quickly prove
+  the conjecture, without using any advanced inductive reasoning. In contrast,
+  when the definition is
+  unfolded and the problem is $\beta$-reduced, both $\cst{m}$ and the
+  corresponding $\lambda$-abstraction disappear, forcing the prover to guess the
+  correct instantiation for the induction axiom.
+\end{examplex}
+
+We describe two techniques to mitigate these issues. The first one is based on the observation that in practice,
+the explosion associated with definition unfolding mostly
+manifests itself on definitions of nonpredicate symbols. In some cases, it is
+preferable to rely on superposition's term order and powerful simplification
+engine to rewrite the proof state rather than to blindly rewrite definitions. On
+the other hand, superposition's reasoning with equivalences is often inadequate
+\cite{bbtv-21-full-ho-sup, gs-05-boolsup}. Thus, it makes sense to treat only
+predicate definitions as rewrite rules.
+
+The second technique aims at preserving completeness: We can try to force the term order that
+parameterizes superposition to orient as many definitions as possible and rely on
+demodulation to simplify the proof state. Usually, the Knuth--Bendix order (KBO)
+\cite{db-1970-kbo} is used. It compares terms by first comparing their weights,
+which is the sum of all the weights assigned to the symbols it contains. Given a
+symbol weight assignment $\mathcal{W}$, we can update it so that it orients
+acyclic definitions from left to right assuming that they are of the form $
+\cst{f} \, \overline{X}_m \eq \lambda \overline{Y}_n. \, t$, where the only free
+variables in $t$ are $\overline{X}_m$, no free variable is repeated or appears
+applied in $t$, and $\cst{f}$ does not occur in $t$. Then we traverse the
+symbols $\cst{f}$ that are defined by such equations following the dependency
+relation, starting with a symbol $\cst{f}$ that does not depend on any other
+defined symbol. For each $\cst{f}$, we set $\mathcal{W}(\cst{f})$ to $w + 1$,
+where $w$ is the maximum weight of the right-hand sides of $\cst{f}$'s
+definitions, computed using $\mathcal{W}$. By construction, for each equation
+the left-hand side is heavier. Thus, the equations are orientable from left to
+right.
+
+
+
+\begin{examplex} 
+  Many of the problems in the TPTP library's \verb|LCL| category encode modal logic
+  in higher-order logic. More complex modal operators (such as
+  implication and equivalence) are defined in terms of basic connectives (such as negation
+  and disjunction). Some of the definitions present in the problems are
+  $\cst{mnot} := \lambda p\, x. \, \inot \, p \, x$, $\cst{mor} := \lambda p\, q\, x.
+  \, p \, x \ior q \, x$,  and $\cst{mimplies} = \lambda p\, q. \allowbreak\, \cst{mor} \,
+  (\cst{mnot} \, p) \, q$. Assuming that the weight of $\lambda$, bound
+  variables, and basic connectives is 2, we can orient equations using
+  the above described approach as follows. Starting from symbols that do not
+  depend on the other ones, we set $\mathcal{W}(\cst{mnot}) = 11$ and
+  $\mathcal{W}(\cst{mor}) = 17$. Then, we use these values to set
+  $\mathcal{W}(\cst{mimplies}) = 37$. Clearly, these weights
+  enable us to orient all definitions from left to right.
+\end{examplex}
+
+
+% Many higher-order problems, especially those generated from proof assistants,
+% contain hundreds of needless axioms.
+% To filter out axioms that are unlikely to be useful in a proof attempt, many
+% theorem provers rely on the SInE algorithm \cite{hv-2011-sine}. SInE starts with
+% the set of symbols occurring in the conjecture and tries to find axioms that
+% define the properties of these symbols. Then it looks for the definitions of
+% newly found symbols until it reaches a fixpoint. Axioms annotated with
+% \verb|definition| ease this search because they explicitly record the
+% dependency between a symbol and its characterization. To exploit
+% this information, we modified SInE to optionally include the definitions of
+% symbols in the conjecture, regardless of whether they are filtered out or not.
+% Similarly, we implemented mode of SInE which selects only conjecture and axioms
+% annotated with \verb|definition|.
+
+\ourparagraph{Evaluation and Discussion}
+
+% The \textit{base} configuration treats all axioms annotated with
+% \texttt{definition} as rewrite rules applied as preprocessing.
+% In addition, we tested
+We designed and evaluated the following strategies for handling
+\texttt{definition} axioms:
+
+\begin{enumerate}[\rm no-RW$+$KBO~]
+  \item[\rm pre-RW~] rewrite all definitions as a preprocessing step;
+  \item[\rm in-RW~] rewrite all definitions during the saturation, as an inprocessing step;
+  \item[\rm $o$-RW~] rewrite only predicate definitions, during preprocessing;
+  \item[\rm $o$-RW$+$KBO~] like $o$-RW but with adjusted KBO weights for the remaining
+    definitions;
+  \item[\rm no-RW~] no special treatment of definitions;
+  \item[\rm no-RW$+$KBO~] like $no$-RW but adjusting KBO weights for all definitions.
+\end{enumerate}
+
+The results are given in Fig.~\ref{fig:rewrite}. In all the figures, each
+cell gives the number of proved problems, and cells marked with $\star$
+correspond to the base configuration. The highest number in a category is typeset in
+\relax{bold}. SH benchmarks are not
+included because they do not contain the \texttt{definition} role.
+
+\newcommand{\unknownres}{\ensuremath{{\varnothing}}}
+\newcommand{\colalign}{\phantom{0}}
+
+\begin{figure}[t]
+  \centering
+  \def\arraystretch{1.1}%
+  \relax{\begin{tabular}{@{}l@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+                & pre-RW                 & in-RW        & $o$-RW               & $o$-RW$+$KBO    & no-RW        & no-RW$ + $KBO  \\ \midrule
+           TPTP & {\bf 1635}$^\star$     & 1619         & 1620                 & 1621            & 1298         & 1296
+           \\ \bottomrule
+         \end{tabular}}
+       \captionof{figure}{Impact of the definition rewriting method}
+       \label{fig:rewrite}
+     \end{figure}
+
+
+
+% {\tt Points to discuss:
+% \begin{itemize}
+%   \item On TPTP problems, there are only 2 problem proved by no-RW$+$KBO but not no-RW --- both after 11s: probably because of some strange effects
+%   \item On TPTP problems, there are 4 problems proved by o-RW$+$KBO but not o-RW --- 2 of them under 1 second: suppressing superposition into rhs of definitions
+%   \item 13 problems (some of them of rating 1) proved by oRW but not regular one
+%   %  zip-jar-hot_defs_oRW(13) : NUM/NUM638^4.p,SEU/SEU800^1.p,NUM/NUM701^4.p,NUM/NUM699^4.p,SEU/SEU603^1.p,NUM/NUM647^4.p,SEU/SEU695^2.p,SEU/SEU630^2.p,NUM/NUM648^4.p,SEU/SEU540^1.p,SYO/SYO531^1.p,SEU/SEU594^1.p,SEU/SEU648^1.p
+%   \item SH problems do not use definition tag, so this is just noise.
+% \end{itemize}
+% }
+
+%%% @PETAR: I find this para very confusing. I don't know when you're talking
+%%% about the old paper's numbers and the present one's. Lert's keep it simple
+%%% and avoid mentions to the old paper. It's subsumed.
+%%%
+%%% Also, careful with words like "counterintuitively". What's counterintuitive
+%%% to you might be intuitive to the reader. E.g. my experience is that hardly
+%%% any well-meant change to a prover makes a big difference on performance,
+%%% so I certainly wasn't surprised.
+%
+%In our earlier paper \cite{making-ho-work}, only an
+%approximation of KBO weight adjustment was implemented: no checks for loops and
+%no topological sorting was performed. For this article, we implemented the
+%feature as described above. Counterintuitively, this did not substantially
+%influence the performance of Zipperposition:
+
+The four configurations in which definitions are treated as rewrite rules
+perform much better than the other two. In contrast, adjusting KBO weights gives
+no substantial improvement: Looking at raw data, we found only
+\NumberOK{2}~problems proved by $o$-RW$+$KBO but not by $o$-RW in which the
+feature was used in the proof. For no-RW and no-RW$+$KBO, the
+\NumberOK{2}-problem difference may be just noise. Even though it proves fewer
+problems, the configuration $o$-RW has some advantages over pre-RW: It proves
+\NumberOK{16} problems that pre-RW does not, \NumberOK{3} of which have a TPTP
+difficulty rating (the ratio of eligible %TPTP
+provers that cannot prove the problem) of~1.
+
+% \looseness=-1
+Rewriting after clausification avoids getting stuck rewriting parts of the
+proof state that might not contribute to the proof. In practice, we noticed that
+rewriting can be so expensive that the prover can spend all
+allotted CPU time in the preprocessing phase. The evaluation results confirm this
+observation: There are \NumberOK{64} problems proved by in-RW but not by
+pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
+by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
+
+\section{Reasoning about Formulas}
+\label{sec:formulas}
+
+Higher-order logic identifies formulas with terms of Boolean type. To prove a problem, we often
+need to instantiate a variable with the right predicate.
+Finding this predicate can be easier if the problem is not clausified.
+Consider the conjecture $\iexists f. \, f \, \cst{p} \, \cst{q} \iequiv \cst{p}
+\iand \cst{q}$. Expressed in this form, the formula is easy to prove by taking
+$f := \lambda x \, y. \> x  \iand y$. By contrast, guessing the right
+instantiation for the negated, clausified form $ \neglit{F \, \cst{p} \,
+\cst{q}} \llor \neglit{\cst{p}} \llor \neglit{\cst{q}},
+\poslit{F \, \cst{p} \, \cst{q}} \llor \poslit{\cst{p}}$, $\poslit{F \, \cst{p}
+\, \cst{q}} \llor \poslit{\cst{q}}$ is more challenging.
+One of the strengths of higher-order tableau provers is that they do not clausify the input
+problem. This might partly explain Satallax's dominance in the THF division of CASC
+competitions until CASC-J10.
+
+% Traditionally, superposition provers clausify the input problem, simplify the
+% initial clause set, and start the saturation loop. We propose to integrate
+% clausification tightly in the saturation loop.
+% %
+% Instead of clausifying the input, we represent the input formula $\varphi$
+% as a higher-order clause $\poslit{\varphi}$. Then we use Vukmirović and Nummelin's
+% \emph{lazy clausification} rules \cite[Sect.~3.4]{our-bool-paper},
+% which extend \ofreelamsup{}. These incrementally clausify top-level
+% logical symbols; for example, a clause $C' \llor \neglit{(\cst{p} \iand \cst{q})}$ yields a
+% new clause $C' \llor \neglit{\cst p} \llor \neglit{\cst q}$.
+% Lazy clausification rules admit advanced
+% forms of formula renaming and Skolem symbol reusing that are not available in
+% standard clausification algorithms.
+% \looseness=-1
+The \olamsup{} calculus supports \emph{delayed clausification rules}
+that insert problems into the proof state in their original,
+nonclausified form, and clausify them gradually. 
+Delayed clausification
+allows the prover to analyze the syntactic structure of formulas during saturation,
+whereas the more traditional approach of \emph{immediate clausification}
+applies a standard clausification algorithm \cite{nw-01-small-cnf}
+both as a preprocessing step and whenever predicate variables are instantiated.
+
+An earlier evaluation of the \olamsup{} calculus \cite{bbtv-21-full-ho-sup} showed
+that the \emph{outer} variant of delayed clausification substantially increases this calculus's performance.
+The outer variant clausifies
+top-level logical symbols, proceeding from the outside inwards;
+for example, a clause $C \llor \neglit{(\cst{p} \iand \cst{q})}$ is transformed into $C \llor
+\neglit{\cst p} \llor \neglit{\cst q}$. The calculus also supports \emph{inner} delayed
+clausification, which uses only the core calculus rules to clausify problems.
+Even though this is the laziest approach to clausification, the earlier
+evaluation showed that this approach is inefficient. Thus, we focus only on the
+outer rules.
+
+\looseness=-1
+Delayed clausification rules can be used as inference rules (which add conclusions
+to the passive set) or as simplification rules (which delete premises and add
+conclusions to the passive set).
+%
+Inferences give more flexibility, since all
+intermediate clausification states will be stored in the proof state, at the
+cost of producing many clauses. Simplifications produce fewer clauses,
+but risk destroying informative syntactic structure.
+Since clausifying equivalences can destroy a lot of syntactic structure
+\cite{gs-05-boolsup}, we never apply simplifying rules
+on them.
+
+Delayed clausification can interfere with clause splitting techniques.
+Zipperposition supports a lightweight variant of AVATAR \cite{av-2014-avatar},
+an architecture that partitions the search space by
+splitting clauses into variable-disjoint subclauses. This lightweight AVATAR is described
+by Ebner et al.\ \cite[Sect.~7]{2021-ebt-unifying-splitting}. Combining it
+with delayed clausification makes it possible to split a %higher-order
+clause $(\varphi_1 \ior \cdots \ior \varphi_n) \eq \itrue$, where
+the $\varphi_i$'s are arbitrarily complex formulas that share no free
+variables with each other, into clauses $\varphi_i \eq \itrue$.
+%
+To finish the proof, it suffices to derive the empty clause under each assumption
+$\varphi_i \eq \itrue$. Since the split is performed at the formula level, this
+technique resembles tableaux, but it exploits the strengths of superposition,
+such as its powerful redundancy criterion and simplification machinery, to
+close the branches.
+
+\newcommand{\instset}{\ensuremath{\mathit{Inst}}}
+% When delayed clausification is used, the prover can make
+% heuristic choices based on information obtained from the formulas on which
+% clausification rules are applied.
+% In particular, we look for $\lambda$-abstractions whose bodies are formulas
+% in each active clause and store them in a set
+% $\mathit{Inst}$. Optionally, $\mathit{Inst}$ can contain \emph{primitive
+% instantiations} \cite{our-bool-paper}---that is, imitations (in the sense
+% of higher-order unification) of logical symbols that approximate the shape of
+% a formula that can instantiate a predicate variable. These instantiations resemble
+% the ones tableau provers perform during the proof search.
+
+Beyond splitting, interleaving clausification and saturation allows us to simulate another tableau-inspired
+technique. Whenever dynamic clausification substitutes a fresh variable $X$ for
+a predicate variable $x$ in a clause of the form $(\iforall x.\, \varphi) \eq
+\itrue \llor C$, yielding $\varphi\{x \mapsto\nobreak X\}
+\eq \itrue \llor C$, we can create additional clauses in which $x$ is replaced
+with $t \in \instset$, where $\instset$ is a set of heuristically chosen terms.
+This set contains $\lambda$-abstractions whose bodies are formulas and that
+occur in activated clauses, and \emph{primitive instantiations}
+\cite{our-bool-paper}---that is, imitations (in the sense of higher-order
+unification) of logical symbols that approximate the shape of a predicate that
+can instantiate a predicate variable.
+
+Since a new term $t$ can be added to $\mathit{Inst}$ after a clause with a
+quantified variable of $t$'s type has been activated, we 
+remember the clauses $\varphi\{x \mapsto X\} \eq \itrue\allowbreak \llor C$ and instantiate
+them when $\mathit{Inst}$ is extended.
+Conveniently, these instantiated clauses are not recognized as subsumed by
+Zipperposition, which uses an optimized, incomplete higher-order subsumption
+algorithm.
+
+Given a disequation $\cst{f}\,\tuple{s}{n} \not\eq \cst{f}\,\tuple{t}{n}$, the
+\emph{abstraction} of $s_i$ is $\lambda x.\, u \ieq v$, where $u$ is obtained by
+replacing all occurrences of $s_i$ in $\cst{f}\,\tuple{s}{n}$ with $x$ and $v$ is
+obtained by replacing all occurrences of $s_i$ in
+$\cst{f}\,\tuple{t}{n}$ with $x$. For \confrep{}{an equation }$\cst{f}\,\tuple{s}{n} \eq
+\cst{f}\,\tuple{t}{n}$, the analogous abstraction is $\lambda x.\, \inot (u \ieq
+v)$.
+%
+%
+Adding abstractions of the literals occurring in the conjecture to $\mathit{Inst}$ can
+provide useful instantiations for formulas such as induction principles of
+datatypes. As the conjecture is negated\confrep{}{ in refutational theorem proving},
+the equation's polarity is inverted in the
+abstraction. 
+
+\begin{examplex}
+\label{ex:dat056-2}
+The clausified conjecture of the problem \texttt{DAT056\^{}2}
+\cite{ns-13-leo2sh} from the TPTP library is $\cst{ap} \, \cst{xs}
+\, (\cst{ap} \, \cst{ys} \, \cst{zs}) \not\eq \cst{ap} \, (\cst{ap} \, \cst{xs} \,
+\cst{ys}) \, \cst{zs}$, where $\cst{ap}$ is the \confrep{}{list }append operator defined
+recursively on its first argument and $\cst{xs}$, $\cst{ys}$, and $\cst{zs}$ are
+of list type. Abstracting $\cst{xs}$ from the disequation yields $t = \lambda \mathit{xs}.\, \cst{ap} \, \mathit{xs} \, (\cst{ap} \, \cst{ys} \, \cst{zs})
+\allowbreak\ieq\allowbreak \cst{ap} \, (\cst{ap} \, \mathit{xs} \, \cst{ys}) \, \cst{zs}$, which is added
+to $\mathit{Inst}$.
+Included in the problem is the induction axiom
+for the list datatype: $\iforall p. \, p \, \cst{nil} \iand (\iforall x \,
+\mathit{xs}. \, p \, \mathit{xs} \iimplies\allowbreak p \, (\cst{cons} \, x \,
+\mathit{xs})) \iimplies\allowbreak \iforall \mathit{xs}. \, p \, \mathit{xs}$, where
+$\cst{nil}$ and $\cst{cons}$ have the usual meanings.
+Instantiating $p$ with $t$ and
+using the $\cst{ap}$ definition, we can prove
+$\iforall \mathit{xs}. \, \cst{ap} \, \mathit{xs} \, (\cst{ap} \, \cst{ys} \, \cst{zs})
+\ieq \cst{ap} \, (\cst{ap} \, \mathit{xs} \, \cst{ys}) \, \cst{zs}$,
+from which we easily derive a contradiction.
+\end{examplex}
+
+
+\ourparagraph{Evaluation and Discussion}
+
+\begin{figure}
+\centering
+  \def\arraystretch{1.1}%
+  \begin{tabular}{@{}l@{\hskip 1.5em}l@{\hskip 0.5em}@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+    & & $+$\relax{LA} & $-$\relax{LA} \\ \midrule
+    TPTP &
+%    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{TPTP}}}&
+      \relax{IC}  & 1616  & 1635$^\star$    \\
+    & \relax{DCI} & 1507  & 1532\phantom{$^\star$}    \\
+    & \relax{DCS} & 1668  & {\bf 1703}\phantom{$^\star$} \\ \midrule
+    SH &
+%    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{SH}}} &
+      \relax{IC}  & \colalign425 & \colalign452$^\star$    \\
+    & \relax{DCI} & \colalign362 & \colalign385\phantom{$^\star$}    \\
+    & \relax{DCS} & \colalign441 & \colalign\textbf{457}\phantom{$^\star$} \\ \bottomrule
+  \end{tabular}
+  \caption{Impact of clausification and~lightweight AVATAR}
+  \label{fig:avatar-clause}
+\end{figure}
+
+The base configuration (\emph{base}) uses immediate clausification (\relax{IC}) and 
+disables lightweight AVATAR ($-$\relax{LA}). To test
+the merits of delayed clausification, we vary \emph{base}'s parameters along two axes: We
+choose immediate clausification (\relax{IC}), delayed clausification as inference
+(\relax{DCI}), or delayed clausification as simplification (\relax{DCS}), and we
+either enable ($+$\relax{LA}) or disable ($-$\relax{LA}) lightweight AVATAR.
+Neither of the configurations uses instantiation with terms from $\instset$.
+
+Figure~\ref{fig:avatar-clause} shows that using delayed clausification as
+simplification greatly increases the success rate, regardless of whether
+lightweight AVATAR is used. Using delayed clausification as inference has the
+opposite effect on both problem sets, presumably due to the large number of
+clauses it creates. By manually inspecting the  proofs found by the \relax{DCS}
+configuration, we noticed that a main reason for its success is that it does
+not simplify away equivalences.
+%
+Overall, the lightweight AVATAR harms performance, but the sets of
+problems proved with and without it are vastly different. For example,
+the \relax{IC}$+$\relax{LA} configuration proves \NumberOK{38} problems not
+proved by \relax{IC}$-$\relax{LA} (i.e., \emph{base}) on TPTP benchmarks and
+\NumberOK{14} such problems on SH benchmarks.
+
+\looseness=-1
+The Boolean instantiation technique presented above requires delayed
+clausification.
+We assessed it in the best configuration from
+%To assess it, we enabled it in the best configuration from
+Fig.~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
+Zipperposition proves \NumberOK{1700} TPTP problems and \NumberOK{456} SH
+problems.
+On TPTP, even though $+$\relax{BI} solves \NumberOK{3} problems less
+than \relax{DCS}$-$LA, it is very useful: \NumberOK{41}
+problems can be proved with $+$\relax{BI} but not with \relax{DCS}$-$\relax{LA}. 
+Conversely, \NumberOK{44} problems are solved with \relax{DCS}$-$\relax{LA},
+but not with $+$\relax{BI}, which suggests that Boolean instantiation can be 
+explosive.
+%
+One of the problems Boolean instantiation helps solve is \texttt{NUM636\^{}2} (a
+re-encoding of \texttt{NUM636\^{}3}).
+It conjectures that $\iforall x.\, \cst{s} \, x \ineq x$, where $x$ ranges over
+Peano-style numbers specified by $\cst{z}$ and $\cst{s}$. The given axioms are
+the induction principle $\forall p.\, p \, \cst{z} \,\iand\, \forall x. \, (p \,
+x \iimplies p \, (\cst{s} \, x)) \iimplies \forall x. \, p\, x$, injectivity
+$\forall x y. \, \cst{s}\,x \ieq \cst{s}\,y \iimplies x \ieq y$, and
+distinctness $\forall x. \, \cst{s}\,x \ineq \cst{z}$. The conjecture is easily
+proved if Boolean instantiation is enabled: Even though the conjecture literal
+cannot be abstracted, instantiating $p$ with the term $\lambda x.\, \cst{s}
+\, x \ineq x$ used in the encoding of the (nonclausified) conjecture leads to a proof in just
+\NumberOK{22} given clause loop iterations. Zipperposition also finds a
+proof using the \relax{DCI}$-$\relax{LA} configuration, but this requires
+\NumberOK{294} iterations.
+
+%Raw data reveals that Boolean instantiation
+The $+$\relax{BI} configuration proves \NumberOK{18} TPTP problems no other
+configuration from Fig.~\ref{fig:avatar-clause} can prove. Among these is
+\texttt{DAT056\^{}2} (Example~\ref{ex:dat056-2}). In contrast, on SH benchmarks, only
+\NumberOK{6} problems are proved using $+$\relax{BI} and not
+\relax{DCS}$-$\relax{LA}. For all these problems, Boolean instantiation does not
+appear in the proof, suggesting that this result is due to the randomness in the
+evaluation environment. The fact that \relax{BI} has no effect on SH benchmarks
+is to be expected because Sledgehammer does
+not include lemmas whose name contains the substring \texttt{.induct} and that
+contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
+
+\section{Exploring Boolean Selection Functions}
+\label{sec:bool-select}
+
+Superposition calculi are parameterized by a literal selection function and a
+term order that help prune considerable swaths of the search space without
+jeopardizing completeness. The core inferences apply only to a clause's
+\emph{eligible} literals, defined as either the clause's selected
+literals or, if none are selected, the clause's literals that are maximal with
+respect to the term order. To further restrict which terms can be targeted by
+an inference, the \olamsup{} calculus introduces \emph{Boolean selection
+functions}. 
+
+A Boolean selection function chooses \emph{green subterms} of Boolean type
+(different than $\top$ or $\bot$ and not occurring at either side of a positive
+literal) in a clause and gives rise to a notion of eligibility that considers
+the formula structure. Green subterms correspond to the first-order skeleton of
+a higher-order term; that is, they do not occur in positions under applied
+variables, quantifiers, or $\lambda$-abstractions.
+
+%In particular, green
+%subterms are subterms arising inside first-order-like contexts, and for first
+%other problems, all subterms are green.
+
+
+\begin{definitionx}[Green subterms and green positions]
+  \,Green subterms and green positions are defined inductively as
+  follows: $t$ is a green subterm of $t$ at green position $\varepsilon$; if $t$ is a green subterm of $u_i$ at green position $p$
+  and $\cst{f}$ is a constant different from $\iforall$ and $\iexists$, then
+  $t$ is a green subterm of $\cst{f} \, \tuplen{u}$ at green position $i.p$,
+  assuming $i \leq n$.
+\end{definitionx}
+
+\begin{examplex} The green subterms of the term $F \, \cst{a} \, \iand \, \cst{p} \,
+(\iforall \, (\lambda x. \, \cst{q} \, x)) \, \cst{b}$ are the term itself, $F \, \cst{a}$, $\cst{p} \, (\iforall \, (\lambda x. \, \cst{q} \, x))
+\, \cst{b}$, $\iforall \, (\lambda x. \, \cst{q} \, x)$, and $\cst{b}$.
+\end{examplex} 
+%
+Green positions are lifted to clauses as follows: If $p$ is the green position
+of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
+t\}$ of $C$, the green position of the same subterm in the clause is denoted by $l.s.p$.
+\olamsup{} mandates additional restrictions on the Boolean selection function:
+$\itrue$, $\ifalse$ and variable-headed terms cannot be selected; for literals
+$s \eq t$, neither $s$ not $t$ cannot be selected; if a term $s$ contains a
+variable $X$ as a green subterm, and $X\> \tuplen{u}$, with $n \ge 1$, is a
+maximal term of the clause, $s$ cannot be selected.
+
+\begin{definitionx}[Eligibility]
+  \,Given a substitution $\sigma$ and term order $\succ$, we say a literal $l$
+  is (strictly) eligible with respect to $\sigma$ in $C$ if it is selected in
+  $C$ or there are no selected literals and no selected Boolean subterms in
+  $C$ and $l\sigma$ is (strictly) maximal in $C\sigma$ with respect to the
+  term order.
+%
+  The eligible subterms of a clause $C$ with respect to a substitution
+  $\sigma$ are inductively defined as follows:
+  Any subterm selected by the Boolean selection function is eligible.
+  %Any selected subterm is eligible.
+  For a strictly eligible literal $s \eq t$ with $t\sigma \not\succ
+  s\sigma$, $s$ is eligible. For an eligible literal $s \not\eq t$ with
+  $t\sigma \not\succ s\sigma$, $s$ is eligible. If a subterm $t$ is eligible
+  and the head of $t$ is not $\ieq$ or $\ineq$, all direct green subterms of
+  $t$ are eligible. If a subterm $t$ is eligible and $t$ is of the form $u
+  \ieq v$ or $u \ineq v$, then $u$ is eligible if $v\sigma \not\succ u\sigma$
+  and $v$ is eligible if $u\sigma \not\succ v\sigma$.
+\end{definitionx}
+
+The above definitions of green subterms and eligibility were originally introduced
+with Boolean $\lambda$-superposition \cite{bbtv-21-full-ho-sup}.
+The Boolean selection function plays a similar role as the literal
+selection function in standard superposition.
+Literal selection functions eliminate some of the nondeterminism present in the superposition
+calculus by focusing on selected parts of the search space. Boolean selection functions achieve
+the same goal, but in a different context: They eliminate nondeterminism that is not
+present in standard superposition, namely, the choice of subformula on which 
+the Boolean calculus rules are to be applied. As with literal selection functions,
+selecting few (and smaller) subterms can give rise to fewer possible inferences
+and reduce clause proliferation.
+
+%
+This notion of eligibility opens up possibilities for reasoning with
+formulas that are hard to simulate with the existing superposition machinery.
+For example, given a formula $\varphi \iimplies \psi$, selecting the antecedent
+simulates forward reasoning, whereas selecting the consequent simulates backward
+reasoning. The new eligibility also makes it possible to restrict the proof
+search to a small, promising part of a formula. Note that
+literal selection can override Boolean selection: Selecting a literal 
+might make some of its green subterms eligible, regardless
+of Boolean selection.
+
+In our previous work \cite{nbtv-2021-foboolsup}, we left this area of new
+possibilities largely unexplored. We designed simple functions that selected
+smallest, largest, innermost, or outermost terms, but they did not impact
+performance much. Here, we propose alternatives.
+%
+Intuitively, a well-performing literal selection
+function might succeed at taming the combinatorial explosion if the
+selected literal can take part in few inferences
+\cite{hrsv-16-selsel}. However, Boolean selection functions
+introduce another factor to consider:\ the context in which the selected
+subterm occurs. This suggests the following definition:
+
+\begin{definitionx}[Contextualized Boolean selection function]
+  \label{def:context-bool-sel}
+  \,Let $\mathit{ctx}(C)$ be a function that maps a clause $C$ to a set of green positions
+  $p$ such that $C|_p$ is a selectable Boolean subterm, and let
+  $\vartriangleright$ be a partial order on pairs of terms and green positions.
+  The \emph{context
+  Boolean selection function} $\mathit{Sel\/}_{\mathit{ctx}}^{\,\vartriangleright}(C)$
+  selects all terms $t$ such that $t=C|_p$, $p \in \mathit{ctx}(C)$, and
+  $(t,p)$ is maximal with respect to $\vartriangleright$.
+\end{definitionx}
+
+In the above definition, the function $\mathit{ctx}$ lets
+us choose the context in which the Boolean subterm appears. Then, among
+the terms in the chosen context, we choose the ones that are maximal with
+respect to $\vartriangleright$.
+
+Ganzinger and Stuber considered Boolean subterm selection for their extension of
+first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus requires
+selection of subterms occurring in negative green positions, defined below.
+
+\begin{definitionx}[Polarity of green positions]
+ \,Negative and positive green positions in a clause $C = l_1 \llor \cdots \llor
+ l_n$ are defined inductively as follows: For each
+ $1 \leq i \leq n$, the green position $l_i.s$ is positive if $l_i = \poslit{s}$ and negative if $l_i
+ = \neglit{s}$. If $p$ is positive (negative) and $C|_p = s \,
+ \tuplen{t}$ where $s$ is either $\iand$ or $\ior$, then each
+ $p.i, 1 \leq i \leq n$, is positive (negative). If $p$ is positive and $C|_p =
+ \inot \, s$, then $p.1$ is negative; if $p$ is negative and $C|_p = \inot \, s$,
+ then $p.1$ is positive. If $p$ is positive and $C|_p = s \iimplies t$, then
+ $p.1$ is negative and $p.2$ is positive; if $p$ is negative and $C|_p = s
+ \iimplies t$, then $p.1$ is positive and $p.2$ is negative.
+\end{definitionx}
+Note that the polarity of $p$ is undefined whenever $C|_p$ is not a green Boolean subterm
+or it occurs under a (dis)equivalence or an uninterpreted symbol.
+To assess how the function $\mathit{ctx}$ affects performance, we use the following
+selection functions that consider green positions of selectable Boolean terms:
+%
+\begin{enumerate}[\rm\texttt{Backward}~]
+  \item[\rm\texttt{Any}~] select all green positions;
+  \item[\rm\texttt{Pos}~] select all positive green positions;
+  \item[\rm\texttt{Neg}~] select all negative green positions;
+  \item[\rm\texttt{Forward}~] select all green positions $p = q.1$ such that $C|_q = s \iimplies t$;
+  \item[\rm\texttt{Backward}~] select all green positions $p = q.2$ such that $C|_q = s \iimplies t$;
+  \item[\rm\texttt{Deep}~] select all green positions of maximal length;
+  \item[\rm\texttt{Shallow}~] select all green positions of minimal length.
+\end{enumerate}
+
+\looseness=-1
+We also introduce three partial orders for selecting subterms from a given
+context. For all three orders, if exactly one of the subterms has a logical head,
+then the subterm with the nonlogical head is larger, because logical symbols
+are more explosive. Otherwise, the orders use the following criteria:
+%
+\begin{enumerate}[$\vartriangleright_\text{ground}$~]
+  \item[$\vartriangleright_\text{ground}$~] If exactly one of the subterms is ground, make the
+  ground subterm larger; otherwise, if exactly one of the subterms is of the form $s \ieq
+  t$, make this subterm larger.
+
+\smallskip
+
+  \item[$\vartriangleright_\text{depth}$~] If one of the subterms has larger subterm depth
+  (longest valid green subterm position), make this subterm larger; otherwise, if one of the
+  subterms has less distinct variables, make this subterm larger.
+
+\smallskip
+
+  \item[$\vartriangleright_\text{def}$~] If exactly one of the subterms is of the form
+  $\cst{p}\,\tuplen{X}$ where $\tuplen{X}$ is a tuple of free variables, make
+  the other subterm larger; otherwise, if exactly one of the subterms is of the form $X \,
+  \tuplen{s}$, make the other subterm larger.
+\end{enumerate}
+
+In case of a tie, the subterm with the smaller syntactic weight is made larger,
+and if both subterms have the same weight, the term that occurs in a position further
+to the left (i.e., that has a lexicographically smaller position) is made larger.
+
+These orders follow the design principle enunciated by Hoder et
+al.~\cite{hrsv-16-selsel} that ground or deep terms and terms with repeated
+variables are ``less unifiable'' with the similar observation for higher-order
+logic that reasoning about interpreted symbols or applied variables is usually
+explosive.
+
+\begin{examplex}
+  Selecting the right Boolean subterm can help avoid elaborating
+  high\-er-order inferences. Consider the unsatisfiable clause set consisting of $\cst{p} \, (\lambda y.\, X
+  \, (\lambda x.\, x) \, \cst{a}) \iimplies\allowbreak \inot(\cst{p} \, (\lambda y. \allowbreak\, X
+  \, y \, \cst{a}))$, $\cst{p} \, (\lambda y.\, \cst{a})$, and
+  $\cst{p} \, (\lambda y. \, y^{100} \, \cst{b})$.
+  Note that $\cst{p} \, (\lambda y.\, X
+  \, (\lambda x.\, x) \, \cst{a})$ and $\cst{p} \,
+  (\lambda y.\, \cst{a})$ have infinitely many unifiers of the form $\{ X \mapsto \lambda fx.
+  \, f^i\, (x) \}, i \geq 0$, whereas $\cst{p} \, (\lambda y. \, X
+  \, y \, \cst{a})$ and $\cst{p} \, (\lambda y. y^{100} \, \cst{b})$ have only one unifier. 
+  If \texttt{Forward} context selection is enabled,
+  $\cst{p} \, (\lambda y.\, X \, (\lambda x.\, x) \, \cst{a})$ is made the target of superposition inference, 
+  forcing computation of at least 100 unifiers (under the assumption that
+  unifiers are returned in order of increasing $i$) before we get to refute
+  $\inot(\cst{p} \, (\lambda y. y^{100} \, \cst{b}))$.
+  In contrast, \texttt{Backward} context selection allows us to
+  superpose from $\cst{p} \, (\lambda y. \, y^{100} \, \cst{b})$ into $\cst{p} \, (\lambda y. \, X
+  \, y \, \cst{a})$, avoiding this explosion. 
+\end{examplex}
+
+\ourparagraph{Evaluation and Discussion}
+
+\begin{figure}
+\centering
+\def\arraystretch{1.1}%
+ \begin{tabular}{@{}l@{\hskip 1.5em}l@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+  &                                    & \texttt{Any} & \texttt{Pos} & \texttt{Neg}        & \texttt{Forward} & \texttt{Backward} & \texttt{Deep}     & \texttt{Shallow}  \\ \midrule
+  TPTP &
+    $\vartriangleright_\text{ground}$  & 1538         & 1550         & 1547                & 1534             & {\bf 1554}        & 1539              & 1538     \\
+  & $\vartriangleright_\text{depth}$   & 1542         & 1550         & 1528                & 1542             & 1550              & 1547              & 1535     \\
+  & $\vartriangleright_\text{def}$     & 1543         & 1551         & 1540                & 1540             & 1551              & 1545              & 1537  \\ \midrule
+
+%  \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{SH}}} &
+  SH &
+    $\vartriangleright_\text{ground}$  & \colalign386 & \colalign379  & \colalign386       & \colalign386     & \colalign379      & \colalign{\bf387} & \colalign{\bf387}     \\
+  & $\vartriangleright_\text{depth}$   & \colalign377 & \colalign376  & \colalign384       & \colalign378     & \colalign376      & \colalign379      & \colalign376      \\
+  & $\vartriangleright_\text{def}$     & \colalign379 & \colalign374  & \colalign{\bf387}  & \colalign379     & \colalign380      & \colalign377      & \colalign381  \\ \bottomrule
+ \end{tabular}
+ \caption{Impact of the Boolean selection function}
+ \label{fig:bool-sel}
+\end{figure}
+
+When the input problem is clausified using immediate clausification, almost
+all Boolean structure is lost. In this case, we expect Boolean selection to
+have a modest effect. To better assess this feature, in this evaluation we use
+\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:formulas} as the baseline
+configuration. To avoid interference of literal and Boolean selection, we
+additionally forbid the literal selection function from selecting a literal if
+it contains a selectable Boolean subterm.
+
+The results of evaluating 21 concrete selection functions obtained
+by instantiating the contextualized Boolean selection function are shown in
+Fig.~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
+while columns denote the function $\mathit{ctx}$.
+
+\looseness=-1
+On TPTP benchmarks, Boolean selection helps tame the explosion caused by
+dynamic clausification used as inference: \NumberOK{All but one} selection functions
+outperform the \relax{DCI}$-$\relax{LA} baseline of \NumberOK{1532} proved problems. Coming back to the problem
+\texttt{NUM636\^{}2} from Sect.~\ref{sec:formulas}, using Boolean selection
+can reduce the number of given clause loop iterations from
+\NumberOK{294} to \NumberOK{71}.
+
+The results suggest that selection of term context has more impact
+than the partial term order. % The number of proved problems fluctuates more when
+%changing the function $\mathit{ctx}$ than when changing the partial order.
+Also, the best results are obtained when a context more specific than \texttt{Any}
+is chosen. Remarkably, functions using \texttt{Pos} context
+perform better than the ones using \texttt{Neg} context
+on TPTP but the opposite is observed on SH.
+
+
+Using different Boolean selection functions yields vastly different sets of
+proved problems on TPTP benchmarks: In total, there are \NumberOK{103} problems
+proved by some configuration from Fig.~\ref{fig:bool-sel} but not by
+\relax{DCI}$-$\relax{LA}. However, there are only \NumberOK{16} such SH problems.
+It would seem that the advanced formula reasoning facilitated by the Boolean
+selection formulas is usually not required by Sledgehammer problems.
+
+% {\tt
+%   \begin{itemize}
+%      \item To evaluate bool selection functions we used DCI from above, but
+%            disabled literal selection function from selecting a literal if it
+%            has a selectable Boolean subterm.
+%      \item For TPTP it seems that selection is a good idea: all configurations
+%      are better than naked DCI (only 6 for SH).
+%      \item Overall, it seems that position has bigger influence that the
+%      selection function.
+%      \item On SH there are 14 problems provable by some of the Boolean
+%            selection functions but not naked CSI. Sel3\_deep proves 12 problems
+%            not proved by DCI. Interestingly, the best function Sel3\_neg proves
+%            only 7 problems not proved by DCI.
+%      \item On TPTP much better: 110 problems not proved by DCI but proved by
+%      some of the selection functions. sel3\_pos proves 74 problems not proved
+%      by DCI, sel1 backward 73.
+%      \item TODO: Add any context and maybe $\vartriangleright_4$ which uses weight only
+%      \item What we also observed is that it on TPTP problem it is reasonable to have any selection
+%            function and that already stops the explosion. On SH quality is more important.
+%      \item
+%   \end{itemize}
+% }
+
+\section{Enumerating Infinitely Branching Inferences}
+\label{sec:infinite-branching}
+
+\looseness=-1
+As an optimization and to simplify the code, Leo-III
+\cite{as-18-phd} and Vampire 4.4 \cite{br-19-restricted-unif} (which uses
+\confrep{}{\emph{restricted combinatory unification}, }a predecessor of combinatory
+superposition) compute only a finite subset of the possible conclusions for
+inferences that require enumerating a CSU. Not only is this a source of
+incompleteness, but choosing the cardinality of the computed subset is a
+difficult heuristic choice. Small sets can result in missing the unifier
+necessary for the proof, whereas large sets make the prover spend too long in
+the unification procedure, generate useless clauses, and possibly get sidetracked into the wrong parts of the search space.
+
+We propose a modification to the given clause procedure to seamlessly
+interleave unifier computation and proof state exploration. Given a complete
+unification procedure, which may yield infinite streams of unifiers, our
+modification fairly enumerates all conclusions of inferences relying on
+elements of a CSU. Under some reasonable assumptions, it behaves exactly like
+the standard given clause procedure on purely first-order problems.
+We also describe heuristics that help achieve a similar
+performance as when using incomplete, terminating unification procedures
+without sacrificing completeness.
+
+Given that we cannot decide whether there exists a next CSU
+element in a stream of unifiers, the request for the next conclusion might not
+terminate,
+effectively bringing the theorem prover to a halt. Our modified given clause procedure
+expects the unification procedure to return a lazily computed stream
+\cite[Sect.~4.2]{co-1999-funds}, where each element is either $\emptyset$ or
+a singleton set containing a unifier. To avoid getting stuck waiting for a unifier
+that may not exist, the unification procedure should return
+$\emptyset$ after it performs some number of operations without finding a unifier.
+
+The complete unification procedure by Vukmirović et al.\
+\cite{our-unif-paper} returns such a stream. Other procedures such
+as Huet's \cite{gh-75-unification} and Jensen and
+Pietrzykowski's \cite{jp-76-unif} can easily be adapted to meet this
+requirement. Based on the stream of unifiers interspersed with $\emptyset$, we
+can construct a stream of inferences similarly interspersed with $\emptyset$.
+Any finite prefixes of this stream can be computed in finite time.
+
+To support such streams in the given clause procedure, we extend it to
+represent the proof state not only by the active ($A$) and passive ($P$) clause
+sets, but also by a priority queue $Q$ containing the inference streams,
+similar to the ``to do'' set $T$ present in the abstract Zipperposition loop of 
+Waldmann et al.\  \cite[Sect.~4]{wtrb-20-sat-framework}.
+Each stream is associated with a weight, and $Q$ is sorted in order of
+increasing weight\confrep{}{, a low weight corresponding to a high priority}.
+When they introduced \lamsup, Bentkamp et al.\
+\cite{bbtvw-21-sup-lam} described an older version of this extension. Here
+we present a newer version in more detail, including heuristics to postpone
+unpromising streams. The pseudocode of the modified procedure is as follows:
+\vspace{2.5\jot}
+%
+\newcommand\ParamMode{\ensuremath{K_{\mathrm{fair}}}}
+\newcommand\ParamMaxStreams{\ensuremath{K_{\mathrm{best}}}}
+\newcommand\ParamRetry{\ensuremath{K_{\mathrm{retry}}}}
+\newcommand{\assign}[2]{\State \ensuremath{\mathit{#1} \gets #2}}
+\newcommand{\assignSameLine}[2]{\ensuremath{\mathit{#1} \gets #2}}
+\algrenewcommand\algorithmicindent{1em}
+\begin{algorithmic}[0]
+    \Function{ExtractClause}{$Q$, $\mathit{stream}$}
+      \assign{maybe\_clause}{\text{pop and compute the first element of } \mathit{stream} }
+      \If{$\mathit{stream}$ is not empty}
+        \State add $\mathit{stream}$ to $Q$ with an increased weight
+      \EndIf
+      \State \Return $\mathit{maybe\_clause}$
+    \EndFunction
+
+    \vspace{2\jot}
+
+    \Function{HeuristicProbe}{$Q$}
+      \assign{i}{0}
+      \assign{collected\_clauses}{\emptyset}
+      \While{$i < \ParamMaxStreams$ and $Q \not= \emptyset$}
+        \assign{j}{0}
+        \assign{maybe\_clause}{\emptyset}
+        \While{$j < \ParamRetry$ and $Q \not= \emptyset$ and $\mathit{maybe\_clause} = \emptyset$}
+          \assign{stream}{\text{pop the lowest-weight stream in } Q}
+          \assign{maybe\_clause}{\textsc{ExtractClause}(Q, \mathit{stream})}
+          \assign{j}{j+1}
+        \EndWhile
+        \assign{collected\_clauses}{\mathit{collected\_clauses} \mathrel\cup \mathit{maybe\_clause}}
+        \assign{i}{i+1}
+      \EndWhile
+      \State \Return $\mathit{collected\_clauses}$
+    \EndFunction
+
+    \vspace{2\jot}
+
+  \Function{FairProbe}{$Q$, $\mathit{num\_oldest}$}
+    \assign{collected\_clauses}{\emptyset}
+    \assign{oldest\_streams}{\text{pop } \mathit{num\_oldest} \text{ oldest streams from } Q}
+    \For{$\mathit{stream}$ in $\mathit{oldest\_streams}$}
+      \assign{collected\_clauses}{collected\_clauses \mathrel\cup \textsc{ExtractClause}(Q, \mathit{stream})}
+    \EndFor
+    \State \Return $\mathit{collected\_clauses}$
+  \EndFunction
+
+  \vspace{2\jot}
+
+  \Function{ForceProbe}{$Q$}
+    \assign{collected\_clauses}{\emptyset}
+    \While {$Q \not= \emptyset$ and $\mathit{collected\_clauses} = \emptyset$}
+      \assign{collected\_clauses}{\textsc{FairProbe}(Q, |Q|)}
+    \EndWhile
+
+    \If{$Q = \mathit{collected\_clauses} = \emptyset$}
+      \assign{status}{\textsf{Satisfiable}}
+      % \Return (\textsf{Satisfiable}, $\mathit{collected\_clauses}$)
+    \Else{}
+      \assign{status}{\textsf{Unknown}}
+      % \Return (\textsf{Unknown}, $\mathit{collected\_clauses}$)
+    \EndIf
+
+    \State \Return $(\mathit{status}, \mathit{collected\_clauses})$
+  \EndFunction
+
+  \vspace{2\jot}
+
+  \Function{GivenClause}{$P$, $A$, $Q$}
+
+  \assign{i}{0}
+  \assign{status}{\textsf{Unknown}}
+  \While{$\mathit{status} = \textsf{Unknown}$}
+    \If{$P = \emptyset$}
+      \assign{(status, \,forced\_clauses)}{\textsc{ForceProbe}(Q)}
+      \assign{P}{P \mathrel\cup \mathit{forced\_clauses}}
+    \Else
+      \assign{given}{\text{pop a chosen clause from }P \text{ and simplify it}}
+      \If{$\mathit{given}$ is the empty clause}
+        \assign{status}{\textsf{Unsatisfiable}}
+      \Else
+        \assign{A}{A \mathrel\cup \{\mathit{given}\}}
+        \For{$\mathit{stream}$ in streams of inferences between $\mathit{given}$ and $\mathit{other} \in A$}
+          \If{$\mathit{stream}$ is not empty} \assign{P}{P \mathrel\cup \textsc{ExtractClause}($Q$, \mathit{stream})}
+          \EndIf
+        \EndFor
+        \assign{i}{i+1}
+        \If{$i \; \mathrm{mod} \; \ParamMode = 0$} \assign{P}{P \mathrel\cup \textsc{FairProbe}(Q, i/\ParamMode )}
+        \Else{} \assign{P}{P \mathrel\cup \textsc{HeuristicProbe}(Q)}
+        \EndIf
+      \EndIf
+    \EndIf
+  \EndWhile
+
+  \State \Return $\mathit{status}$
+
+  \EndFunction
+\end{algorithmic}
+% \caption{Our modified given clause procedure}
+% \label{fig:gc-pseudocode}
+%
+% \end{figure}
+\vspace{2.5\jot}
+
+Initially, all input clauses are put into $P$, and $A$ and $Q$ are empty. Unlike
+in the standard given clause procedure, inference results are represented as clause
+streams. The first element is inserted into $P$, and the rest of the stream is
+stored in $Q$ with some positive integer weight computed from the inference rule.
+
+% The functions \textsc{Probe} and \textsc{ForceProbe} extract some conclusions
+% from the inference streams and store them in $P$. \textsc{Probe} heuristically
+% chooses some clauses, whereas \textsc{ForceProbe} is used when $P$ is empty to
+% find one clause if previous probes failed to produce any clauses, as a fallback.
+% By choosing clauses from several streams at the same time,
+% we give more freedom to the prover's existing clause selection heuristics,
+% which select a clause from $P$.
+
+% \looseness=-1
+% \textsc{Probe} has two modes of operation, controlled by a parameter \ParamMode~(by
+% default, $\ParamMode = 70$). In every $\ParamMode$th invocation, \textsc{Probe} extracts
+% conclusions from an increasing number of oldest streams. This amounts to
+% dovetailing, which achieves fairness, analogously to the
+% pick--given ratio \cite{ss-02-brainiac,mcw-1997-otter} in the
+% given clause procedure. For the other
+% invocations, \textsc{Probe} selects the $\ParamMaxStreams$ highest-priority streams (by
+% default, $\ParamMaxStreams = 10$) and extracts elements from, or \emph{probes}, each stream,
+% discarding $\emptyset$ values, until a clause is found or until
+% $\ParamRetry$ (by default, $\ParamRetry=20$) $\emptyset$ values have been discarded.
+% Setting $\ParamRetry>1$ ensures that promising streams are given a fair chance to
+% produce a clause, even if they rely on a complicated unifier. Each
+% probed stream~$S$ is put back in $Q$ with a new priority.%
+
+\looseness=-1
+To eventually consider inference conclusions from streams in $Q$ as given
+clauses, we extract elements from, or \emph{probe}, streams and move any obtained
+clauses to $P$. Analogously to the traditional pick--given ratio
+\cite{ss-02-brainiac,mcw-1997-otter}, we use a parameter
+\ParamMode{} (by default, $\ParamMode = 70$) to ensure fairness: Every \ParamMode{}th iteration,
+\textsc{FairProbe} probes an increasing number of oldest streams, which achieves
+dovetailing. In all other iterations, \textsc{HeuristicProbe} attempts to
+extract up to \ParamMaxStreams{}~clauses from the most promising streams (by default,
+$\ParamMaxStreams = 7$).
+In each attempt, the most promising stream in $Q$ is chosen. If its first
+element is $\emptyset$, the rest of the stream is inserted into $Q$ and a new stream is
+chosen. This is repeated until either \ParamRetry{} occurrences of $\emptyset$ have  been
+met (by default, $\ParamRetry = 20$) or the stream yields a singleton. Setting $\ParamRetry > 0$ increases
+the chance that \textsc{HeuristicProbe} will return $\ParamMaxStreams$ clauses, as desired. Finally, if $P$ becomes empty, \textsc{ForceProbe}
+searches relentlessly for a clause in $Q$, as a fallback.
+
+\looseness=-1
+The function \textsc{ExtractClause} extracts an element from a nonempty stream
+not in $Q$ and inserts the remaining
+stream into $Q$ with an increased weight, calculated as follows.
+Let $n$ be the number of times the stream was chosen for
+probing. If probing results in $\emptyset$, the stream's weight is increased by
+$\max\,\{2{,}\; n-16\}$. If probing results in a clause $C$ whose penalty is
+$p$, the stream's weight is increased by $p \cdot \max\,\{1{,}\; n-64\}$. The
+penalty of a clause is a number assigned by Zipperposition based on
+features such as the depth of its derivation and the rules used in it.
+The constants $16$ and $64$ increase the chance that newer clause-producing streams are picked,
+which is desirable because their first clauses are expected to be useful.
+
+\looseness=-1
+All three probing functions are invoked by
+\textsc{GivenClause}, which contains the saturation loop. It differs
+from the standard given clause procedure in three ways:
+First, the proof state includes $Q$ in addition to $P$ and $A$. Second,
+new inferences involving the given clause are added to $Q$ instead of being
+performed immediately. Third, inferences in $Q$ are periodically performed
+lazily to fill $P$.
+
+\newcommand\infstream[1]{[#1]}
+
+\begin{examplex} 
+  \begin{sloppypar}
+  Consider the unsatisfiable two-clause problem $\{ X \, (\cst{f} \,
+  \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}),\allowbreak
+  \neg \cst{p} \, (\cst{f}^{100} \, \cst{a})  \}$ and a selection function which
+  selects negative literals.
+  Let $P \mid A \mid Q$ denote
+  the state of the given clause loop (i.e., the contents of the passive and active set
+  and of the stream queue), and let $\infstream{ a_1, a_2, \ldots }$
+  denote an infinite stream of elements.
+  \end{sloppypar}
+
+  The given clause loop begins in the state $X \, (\cst{f} \, \cst{a}) \not\eq
+  \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}), \neg \cst{p} \,
+  (\cst{f}^{100} \, \cst{a}) \mid \emptyset \mid \emptyset$. If the clause $\neg
+  \cst{p} \, (\cst{f}^{100} \, \cst{a})$ is chosen for processing, since $Q$ is empty
+  and no inferences with the chosen clause are possible, the state becomes $X \,
+  (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \,
+  \cst{a}) \mid \neg \cst{p} \, (\cst{f}^{100} \, \cst{a}) \mid \emptyset$. When
+  the clause $X \, (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor
+  \cst{p} \, (X \, \cst{a})$ is chosen, a new stream which enumerates results of
+  equality resolution (on its first literal) is created. There are infinitely many
+  conclusions of this inference, since there are infinitely many unifiers for the
+  first literal of the form $\{ X \mapsto \lambda x. \, \cst{f}^i \, x \}$, for
+  $i \geq 0$. Thus, the stream is $\infstream{ \{\cst{p} \, \cst{a}\}, \{\cst{p} \, (\cst{f}\,\cst{a})\}, \ldots }$,
+  possibly with $\emptyset$s interspersed. With the standard given clause procedure,
+  there would have been no way to represent this infinitary result.
+  %The creation of the
+  %inference result stream is the most striking difference between our
+  %and standard given clause procedure.
+
+  When the stream is created, its first element is popped and put into $P$. Then, based on the
+  parameters that control inference stream probing, some number of clauses from
+  the stream are computed and moved to $P$. After two iterations, the state might be
+  $ \cst{p} \,
+  \cst{a}, \cst{p} \, (\cst{f} \, \cst{a}), \cst{p} \, (\cst{f} \, (\cst{f} \, \cst{a}))   \mid X \,
+  (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \,
+  \cst{a}), \neg \cst{p} \, (\cst{f}^{100} \, \cst{a}) \mid \infstream{ \{\cst{p} \, (\cst{f}^3\,\cst{a})\}, \ldots }$. 
+  
+  In the next iterations, some clause of the form $\cst{p} \, (\cst{f}^{i} \,
+  \cst{a})$, where $i < 100$, is chosen, but no inferences with it can be
+  performed. Then, the stream created in the second iteration is probed, and its
+  results fill the set $P$. Ultimately, the clause $\cst{p} \, (\cst{f}^{100} \,
+  \cst{a})$ is chosen, at which point $\bot$ is quickly derived.
+\end{examplex}
+
+\textsc{GivenClause} eagerly stores the first element of a new inference stream
+in $P$ to imitate the standard given clause procedure. If the underlying
+unification procedure behaves like the standard first-order unification
+algorithm on higher-order logic's first-order fragment, our given clause
+procedure coincides with the standard one. The unification procedure by
+Vukmirović et al.\ terminates on the first-order and other fragments
+\cite{tn-93-patterns}. To avoid computing
+complicated unifiers eagerly, it immediately returns $\emptyset$ for a problem that does not
+belong to one of the fragments that admit efficient unifier computation.
+
+
+The design of our given clause procedure was guided by folklore knowledge about
+higher-order theorem proving. First, in our experience most steps in
+long higher-order proofs involve first-order literals. The unification
+procedure and inference scheduling ensure that first-order inference
+conclusions are put in the proof state as early as possible. Second, some
+inference rules are expected to be largely useless. We initialize the stream
+penalty differently for each rule, allowing old streams of more useful
+inferences to be queried before newly added, but potentially less useful
+streams. Finally, if we use a unification procedure that has aggressive
+redundancy elimination, we will often find the necessary unifier within the
+first few unifiers returned. Similarly, if a stream keeps returning
+$\emptyset$, it is likely that it is blocked in a nonterminating computation
+and should be ignored. Our heuristics to increase the stream penalties take
+both observations into account.
+
+\ourparagraph{Evaluation and Discussion}
+
+When the unification procedure of Vukmirović et al.\ was implemented  in
+Zipperposition, it was observed that this is the only competing
+higher-order prover that proves all Church numeral problems from the TPTP,
+never spending more than 5~s on a problem \cite{our-unif-paper}. On these hard
+unification problems, the stream system allows the prover to explore the proof
+state lazily.
+
+Consider the TPTP problem \verb|NUM800^1|, which requires finding
+a function $F$ such that $F \, \cst{c_1} \, \cst{c_2}
+\ieq \cst{c_2} \iand F \, \cst{c_2} \, \cst{c_3} \ieq \cst{c_6}$, where
+$\cst{c}_n$ abbreviates the Church numeral for~$n$, $\lambda s\, z. \>
+s^n \, z$. To prove
+\confrep{it}{the problem}, it suffices to take $F$ to be the multiplication operator
+$\lambda x \, y \, s \, z. \> x \, (y \, s) \, z$.
+However, this unifier is only one out of many available for each occurrence of
+$F$.
+
+% TODO: If I add a new benchmark set, make sure this sentence is fixed
+In an independent evaluation setup on a set of 2606 TPTP version 7.2.0
+problems almost identical to the one we use, Vukmirović et al.\
+\cite[Sect.~7]{our-unif-paper}
+compared a complete, nonterminating variant of the unification procedure and a
+pragmatic, terminating variant. The
+pragmatic variant was used directly---all the inference conclusions were put
+immediately in $P$, bypassing $Q$. The complete variant, which relies on
+possibly infinite streams and is much more prolific, proved only 15  problems
+less than the most competitive pragmatic variant. Furthermore, it proved 19
+problems not proved by the pragmatic variant.
+%
+This shows that our given clause procedure, with its heuristics, allows the
+prover to defer exploring less promising branches of the unification and uses
+the full power of a complete higher-order unifier search to solve unification
+problems that cannot be proved by a restricted procedure.
+
+The parameters \ParamMode{}, \ParamRetry{}, and \ParamMaxStreams{} can greatly
+influence the behavior of the given clause procedure, even when the same
+unification procedure is used. Figure~\ref{fig:streams}
+presents the effects of these parameters on TPTP and SH.
+Selecting a low number of best clauses seems to
+perform well on both benchmark sets. However, on SH benchmarks, which require
+overwhelmingly first-order unifiers, visiting older streams should be delayed
+a lot.
+
+As with Boolean selection functions, changing these three parameters causes
+a substantial difference in the set of proved problems. For example, the
+configuration that performs the worst on TPTP benchmarks proves \NumberOK{12}
+problems that the configuration performing the best on TPTP cannot prove; moreover, there
+are \NumberOK{29} TPTP problems that are proved by some set of parameters
+other than $\ParamMode=\ParamMaxStreams=16, \ParamRetry=2$. On SH, these
+effects are much weaker; most reasonable combinations
+of parameters perform similarly.
+
+Among the competing higher-order provers, only Satallax uses infinitely
+branching calculus rules. It maintains a queue of ``commands'' that contain
+instructions on how to create a successor state in the tableau. One
+command describes infinite enumeration of all closed terms of a given function
+type. Each execution of this command makes progress in the enumeration. Unlike
+evaluation of streams representing elements of CSU, each command execution
+is guaranteed to make progress in enumerating the next closed functional
+term, so there is no need to ever return $\emptyset$.
+
+
+
+\begin{figure}
+\centering
+\begin{subfigure}[b]{1\textwidth}
+  \centering
+  \begin{tabular}{@{}l@{\kern.5em}l@{\qquad}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}}\toprule
+  &&&&&&& \ParamMode \\[.5\jot]
+  & & & 2 & & \hbox{\qquad} & & 16 & & \hbox{\qquad} & & 128 & \\[.25\jot]
+  \cline{3-5}\cline{7-9}\cline{11-13}
+  \\[-1.5\jot]
+  &&& \ParamRetry &&&& \ParamRetry &&&& \ParamRetry \\[.5\jot]
+  %                                     2                        16                     256
+  &                         & 2    & 16   & 128  & & 2         & 16   & 128  & & 2    & 16   & 128 \\\midrule
+  & $2$                     & 1643 & 1645 & 1645 & & 1661      & 1661 & 1658 & & 1669 & 1664 & 1664 \\[0.5\jot]
+  $\ParamMaxStreams$ & $16$ & 1647 & 1646 & 1609 & & {\bf1670} & 1654 & 1602 & & 1665 & 1659 & 1597 \\[0.5\jot]
+  & $128$                   & 1646 & 1644 & 1583 & & 1661      & 1656 & 1577 & & 1665 & 1658 & 1576 \\ \bottomrule
+  \end{tabular}
+  \caption{TPTP benchmarks}
+  \label{fig:streams-tptp}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}[b]{1\textwidth}
+  \centering
+  \begin{tabular}{@{}l@{\kern.5em}l@{\qquad}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}}\toprule
+  &&&&&&& \ParamMode \\[.5\jot]
+  & & & 2 & & \hbox{\qquad} & & 16 & & \hbox{\qquad} & & 128 & \\[.25\jot]
+  \cline{3-5}\cline{7-9}\cline{11-13}
+  \\[-1.5\jot]
+  &&& \ParamRetry &&&& \ParamRetry &&&& \ParamRetry \\[.5\jot]
+  %                                          2                                               16                                      128
+  &                         & 2            & 16            & 128          & & 2            & 16            & 128          & & 2                  & 16            & 128 \\\midrule
+  & $2$                     & \colalign460 & \colalign455  & \colalign454 & & \colalign465 & \colalign463  & \colalign458 & & \colalign466       & \colalign461  & \colalign461 \\[0.5\jot]
+  $\ParamMaxStreams$ & $16$ & \colalign458 & \colalign453  & \colalign445 & & \colalign464 & \colalign459  & \colalign441 & & \colalign{\bf468}  & \colalign459  & \colalign442 \\[0.5\jot]
+  & $128$                   & \colalign456 & \colalign452  & \colalign430 & & \colalign465 & \colalign458  & \colalign428 & & \colalign{\bf468}  & \colalign459  & \colalign425 \\ \bottomrule
+  \end{tabular}
+  \caption{SH benchmarks}
+  \label{fig:streams-sh}
+\end{subfigure}
+\caption{Impact of the stream enumeration parameter}
+\label{fig:streams}
+\end{figure}
+
+\section{Controlling Prolific Rules}
+\label{sec:explosiveness}
+
+To support higher-order features
+such as function extensionality and quantification over functions,
+many refutationally complete calculi employ highly prolific rules.
+For example, \lamsup{} includes a
+\infname{FluidSup} rule \cite{bbtvw-21-sup-lam} that very often applies to two
+clauses if one of them contains a term of the form $F \, \overline{s}_n$,
+where $n > 0$.
+We describe three mechanisms to keep rules like these under control.
+
+% \begin{enumerate}
+%   \item Penalize the streams of expensive inferences.
+%   \item Defer selecting the resulting clauses for processing.
+%   \item Restrict the applicability of the rules.
+% \end{enumerate}
+
+% Complete provers that implement \lamsup{} %, such as Zipperposition,
+% have two main heuristic choices: which inference stream to query for clauses
+% and which clauses  from the passive set to choose for processing. The first two mechanisms
+% control these two choice points. The third mechanism
+% sacrifices completeness by applying the inference rules only to a subset of chosen clauses.
+
+First, \emph{we limit applicability of the prolific rules}. In practice, it
+often suffices to apply prolific higher-order rules only to initial or shallow
+clauses---clauses with a shallow derivation depth. Thus, we added an option to
+forbid the application of a rule if the derivation depth of any premise exceeds a
+limit.
+
+\newcommand\ParamPenaltyIncrease{\ensuremath{K_\mathrm{incr}}}
+Second, \emph{we penalize the streams of expensive inferences}. The weight of
+each stream is given an initial value based on characteristics of the inference
+premises such as their derivation depth. For prolific rules such as
+\infname{FluidSup}, we increment this value by a parameter \ParamPenaltyIncrease. Weights for
+less prolific variants of this rule, such as \infname{DupSup} \cite{bbtvw-21-sup-lam}, are increased by a
+fraction of $\ParamPenaltyIncrease$ (e.g., $\lfloor \ParamPenaltyIncrease/3 \rfloor$).
+
+Third, \emph{we defer the selection of prolific clauses}. To select the given
+clause, most saturating provers evaluate clauses according to some criteria and
+choose the clause with the lowest evaluation. To make this choice efficient,
+passive clauses are organized into a priority queue ordered by their
+evaluations. Like E, Zipper\-position maintains multiple
+queues, ordered by different evaluations, that are visited in a round-robin
+fashion. It also uses E's two-layer evaluation functions, a variant of which
+has recently been implemented in Vampire \cite{gs-20-clausesel}.
+%
+The two layers are \emph{clause priority} and \emph{clause weight}. Clauses
+with higher priority are preferred, and the weight is used for tie-breaking.
+Intuitively, the first layer crudely separates clauses into priority classes,
+whereas the second one uses heuristic weights to prefer clauses within a
+priority class. To control the selection of prolific clauses, we introduce new
+clause priority functions that take into account features specific to
+higher-order clauses.
+
+The first new priority function, \verb|PreferHOSteps| (\verb|PHOS|), assigns a
+higher priority if rules specific to higher-order superposition calculi
+were used in the clause derivation. Since most of the other clause priority
+functions tend to defer higher-order clauses, having a clause queue that prefers
+them might be useful to find some proof more
+efficiently. A simpler function, which prefers clauses containing
+$\lambda$-abstractions, is \verb|PreferLambda| (\verb|PL|).
+
+\verb|PreferHOSteps| separates clauses created using first-
+and higher-order inference rules crudely. However, within higher-order
+inference rules there are the ones which make clauses simpler and are thus more
+preferable. An example of such a rule is
+%
+\[\namedinference{\infname{ArgCong}}{C \lor s \eq t}{C \lor s \, \tuplen{X}
+\eq t \, \tuplen{X}}\]
+%
+where $s$ is of the type $\alpha_1 \rightarrow \cdots \rightarrow \alpha_k
+\rightarrow \beta$, $\beta$ is a base type, $n \leq k$, free variables
+$\tuplen{X}$ are fresh, and literal $s \eq t$ is strictly eligible. When $n =
+k$, in most cases, the resulting clause has a first-order literal $s \, \tuplen{X}
+\eq t \, \tuplen{X}$ in place of the literal $s \eq t$ of functional type, which usually makes the clause more useful. To
+prefer clauses that are only mildly higher-order, we designed the function
+\verb|PreferEasyHO| (\verb|PEHO|). It prefers clauses that are the result of
+\infname{ArgCong}, have equations between terms of functional type or
+between higher-order patterns, or have literals containing logical symbols, in that
+order of priority.
+
+A higher-order inference that applies a complicated substitution to a clause is
+usually followed by a $\beta\eta$-normalization step. If
+$\beta\eta$-normalization greatly reduces the size of a clause, it is likely
+that this substitution simplifies the clause (e.g., by removing a variable's
+arguments). The new priority function \verb|ByNormalizationFactor| (\verb|BNF|)
+is designed to exploit this observation. It prefers clauses that were produced
+by $\beta\eta$-normalization, and among those it prefers the ones with larger
+size reductions.
+
+Another new priority function is \verb|PreferShallowAppVars| (\verb|PSAV|). This
+prefers clauses with lower depths of the deepest occurrence of an applied
+variable---that is, $C[X \, \cst{a}]$ is preferred over $C[\cst{f}\,(X \,
+\cst{a})]$. The intuition is that applying a substitution to an applied
+variable often reduces the variable to a term with a constant head,
+yielding a less explosive clause, and the gain is greater for variables closer
+to the top level.  Among the functions that rely
+on properties of applied variables, we implemented \verb|PreferDeepAppVars|
+(\verb|PDAV|), which returns the priority opposite of \verb|PSAV|, and
+\verb|ByAppVarNum| (\verb|BAVN|), which prefers clauses with fewer occurrences
+of applied variables.
+
+
+
+\ourparagraph{Evaluation and Discussion}
+
+\begin{figure}[t]
+  \centering
+  % \def\arraystretch{1.1}%
+  \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+            & \texttt{CP}                & \texttt{BAVN}  & \texttt{PL}  & \texttt{PSAV}       & \texttt{PHOS} & \texttt{PEHO}  & \texttt{BNF} & \texttt{PDAV}      \\ \midrule
+   TPTP     & {1635}$^\star$             & {\bf 1640}     & 1604         & {1635}              & 1609          & 1617           & 1575         & 1533 \\[0.5\jot]
+   SH       & {\bf \colalign452}$^\star$ & \colalign451   & \colalign417 & {\colalign450}      & \colalign439  & \colalign407   & \colalign411 & \colalign302 \\ \bottomrule
+  \end{tabular}}
+  \caption{Impact of the priority function}
+  \label{fig:priorities}
+\end{figure}
+\begin{figure}[t]
+  \centering
+  \def\arraystretch{1.1}%
+  \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+              & $\infty$                     & $16$          & $8$           & $4$             & $2$             & $1$      \\ \midrule
+   TPTP       & {\bf 1635}$^\star$           & 1625          & 1632          & 1629            & 1628            & 1618 \\[0.5\jot]
+   SH         & {\bf \colalign452}$^\star$   & \colalign438  & \colalign435  & \colalign439    & \colalign435    & \colalign440 \\ \bottomrule
+
+  \end{tabular}}
+  \caption{Impact of the \infname{FluidSup} weight increment \ParamPenaltyIncrease}
+  \label{fig:penalties}
+\end{figure}
+
+In the base configuration (\emph{base}), Zipperposition visits several clause
+queues. The configuration uses queues that prefer the clauses that stem from
+the conjecture, the ones that have at least one positive literal, the ones that
+have been moved from active to passive set, and so on. One of the queues uses the constant
+priority function \texttt{ConstPrio} (\texttt{CP}), meaning that it assigns the same
+priority to every clause. As this queue is the most often visited one in \emph{base},
+changing its priority function should affect the result noticeably.
+To evaluate the new priority functions, we replaced
+\texttt{CP} with one of the new functions in this queue,
+%the queue ordered by \texttt{CP} with the queue ordered by one of the new
+%functions,
+leaving the clause weight intact. The results are shown in Fig.~\ref{fig:priorities}.
+
+Even though constant priority function achieves remarkable performance, the new priority functions are
+useful additions to the prover's repertoire: \NumberOK{37} additional
+TPTP problems and \NumberOK{17} additional SH problems can be proved when some
+nonconstant priority is used. The generally average-performing \verb|PEHO|
+function can prove \NumberOK{9} problems not proved with any other priority function on TPTP
+(and \NumberOK{1} on SH). Globally, \NumberOK{24} TPTP problems and \NumberOK{6} SH problems
+can be proved exclusively using one particular priority function.
+
+
+% It
+% shows that the expensive priority functions \texttt{PHOS} and \texttt{BNF},
+% which require inspecting the proof of clauses, hardly help. Simple functions
+% such as \texttt{PL} are more effective: Compared with \textit{base}, \texttt{PL}
+% loses \NumberNOK{one} problem overall but proves \NumberNOK{22} new problems.
+
+% {\tt
+%  \begin{itemize}
+
+%   \item Another result which is hard to analyze without looking into differences.
+%   \item On TPTP 32 solutions by using different priorities. On SH 20. Interestingly,
+%   generally bad performing PEHO finds the largest number of solutions not found by CP : 15 (TPTP).
+%   On SH the largest number of unique solutions is by PHOS and PEHO.
+%   \item Another illustration of orthogonality: 25 problems can be proved by only one prio fun (TPTP), 9 on SH.
+
+%  \end{itemize}
+% }
+
+Although it is necessary for refutational completeness, the \infname{FluidSup}
+rule is disabled in \emph{base} because it is so explosive and so seldom useful.
+To test whether increasing inference stream weights makes a difference on the
+success rate, we tried enabling \infname{FluidSup} with different weight
+increments~$\ParamPenaltyIncrease$ for \infname{FluidSup} inference queues. The
+results are shown in Fig.~\ref{fig:penalties}. As expected, using a low
+increment with \infname{FluidSup} is detrimental on TPTP. On this
+benchmark set, \NumberOK{16} additional problems can be proved when
+\infname{FluidSup} is enabled. The penalty mostly affects only proving time: All
+but \NumberOK{2} of these problems were proved by using at least three different
+values of $\ParamPenaltyIncrease$. On SH problems, the best result is obtained
+when the rule is disabled as well. Unexpectedly, the next best result is obtained when
+$\ParamPenaltyIncrease=1$.
+% However, as the column for
+% $\ParamPenaltyIncrease=16$ shows, nor should we use too high an increment, since that
+% delays useful \infname{FluidSup} inferences. Interestingly, even
+% though the configuration with $\ParamPenaltyIncrease=1$ proves the least problems overall, it proves
+% \NumberNOK{7} problems not proved by \emph{base}, which is more than any other
+% configuration we tried.
+
+% {\tt
+% \begin{itemize}
+%   \item Not a single solution found using fluidsup on SH
+%   \item 11 solutions found on TPTP, almost all (9) with at least 3 configurations.
+%         Configurations usually only influence the time necessary to prove.
+%   \item Even though it proves the least problems p1 is necessary in portfolio: with p=1 it takes 0.13 s seconds to prove NUM636\^{}2
+%   and 5.95s with p16 (provable by all ps but not base).
+%   \end{itemize}
+% }
+
+%%% @PETAR: Too little, not informative. What's a "shallow clause"? Not defined yet. --JB
+%In informal experiments, we also tested limiting the applicability
+%of some rules to shallow clauses, but this had no clear impact.
+
+\section{Controlling the Use of Backends}
+\label{sec:backends}
+
+\newcommand{\ParamNumClauses}{\ensuremath{K_\mathrm{size}}}
+\newcommand{\ParamTime}{\ensuremath{K_\mathrm{time}}}
+
+Cooperation with efficient off-the-shelf first-order theorem provers is an
+essential feature of higher-order theorem provers such as Leo-III
+\cite[Sect.~4.4]{as-18-phd} and Satallax \cite{cb-2013-satallax}.
+% but also HOLyHammer \cite{ku-15-holyhammer} and Sledgehammer \cite{bn-10-sh}.
+Those provers invoke first-order backends repeatedly
+during a proof attempt and spend a substantial amount of time in backend
+collaboration. Since \lamsup{} generalizes a highly efficient
+first-order calculus, we expect that future efficient \lamsup{}
+implementations will not benefit much from backends.
+Nevertheless, experimental provers such
+as Zipperposition can still gain a lot. We present some
+techniques for controlling the use of backends.
+
+In his thesis \cite[Sect.~6.1]{as-18-phd}, Steen extensively studies
+the effects of using different first-order backends on the performance of
+Leo-III. His results suggest that adding only one backend already substantially
+improves the performance. To reduce the effort required for integrating multiple backends, we chose Ehoh \cite{ehoh-section} as our single
+backend. Ehoh is an extension of the highly optimized superposition prover E 2.5
+%%% PETAR: Check 2.5. Later we have 2.6 but that's for Ehoh++.
+with support for higher-order features such as partial
+application, applied variables, and interpreted Booleans.
+%formulas occurring as arguments of function symbols.
+On the one hand, Ehoh provides the efficiency of E while easing the translation from full
+higher-order logic---the only missing syntactic feature is
+$\lambda$-abstraction. On the other hand, Ehoh's higher-order reasoning
+capabilities are limited. Its unification algorithm is essentially first-order,
+and it cannot synthesize $\lambda$-abstractions.
+% or instantiate predicate variables.
+
+In a departure from Leo-III and other cooperative provers,
+\confrep{}{instead of regularly invoking the backend, }%
+we invoke \confrep{the backend}{it} at most once during a run of Zipperposition.
+This is because most competitive higher-order provers, including Zipperposition, use a portfolio
+mode in which many configurations are run for a short time, and we want to
+leave enough time for native higher-order reasoning. Moreover, multiple
+backend invocations tend to be wasteful, because currently each invocation
+starts with no knowledge of the previous ones.
+
+\looseness=-1
+Only a carefully chosen subset of the available clauses are translated and sent
+to Ehoh. Let $I$ be the set of \confrep{input clauses}{clauses representing the
+input problem}. Given a proof state, let \confrep{$M = P \cup A$}{$M$ denote the
+union of the current active and passive sets}, and let $M_\mathrm{ho}$ denote
+the subset of $M$ that contains only clauses that were derived using at least
+one \lamsup{} rule not present in regular superposition. We order the clauses in
+$M_\mathrm{ho}$ by increasing derivation depth, using syntactic weight to break
+ties. Then we choose all clauses in $I$ and the first \ParamNumClauses~clauses from
+$M_\mathrm{ho}$ for use with the backend reasoner.
+%We include all the clauses in $I$ since they constitute the backbone of the
+%initial problem. -- Tautology. --JB
+We leave out clauses in $M \setminus (I \cup M_\mathrm{ho})$ because Ehoh can rederive them.
+We also expect large clauses with deep derivations to be less useful.
+
+The remaining step is the translation of $\lambda$-abstractions. We implemented two
+translation methods:\ $\lambda$-lifting \cite{tj-1985-lambdalift} and
+$\cst{SKBCI}$ combinators \cite{da-1979-combtrans}. For
+$\cst{SKBCI}$, we omit the combinator definition axioms, because they are
+very explosive \cite{br-20-full-sup-w-combs}. A third mode simply omits clauses
+containing $\lambda$-abstractions.
+
+\ourparagraph{Evaluation and Discussion}
+  %
+  % \begin{enumerate}
+  %   \item Different points when E is called, for different time periods
+  %   \item Number of clauses from $M_\mathrm{ho}$ that is translated
+  %   \item Different kinds of liftings
+  % \end{enumerate}
+
+  % We evaluated the following parameters of backend collaboration: the moment of
+  % backend invocation, size of $M_\mathrm{ho}$, and $\lambda$-abstraction
+  % translation method.
+  In Zipperposition, we can adjust the CPU time allotted to Ehoh, Ehoh's own
+  parameters, the point when Ehoh is invoked, the number \ParamNumClauses~of selected clauses from
+  $M_\mathrm{ho}$, and the $\lambda$ translation method. We fix the time
+  limit to 3~s, use Ehoh in \emph{autoschedule} mode, and focus on the last three
+  parameters. In \emph{base}, collaboration with Ehoh is
+  disabled (labeled $-$Ehoh).
+  %Parameters are evaluated by enabling the collaboration with E and
+  %varying parameter values.  -- Uninformative. --JB
+
+  \begin{figure}[t]
+    \noindent\hbox{}\hfill
+    \begin{minipage}[t]{.46\linewidth}
+      \centering
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{@{}l@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{}} \toprule
+            & $-$Ehoh                   & $0.1$              & $0.25$          & $0.5$               & $0.75$      \\ \midrule
+      TPTP & 1635$^\star$               & {\bf 1981}         & 1980            & 1979                & 1972 \\[0.5\jot]
+      SH   & \colalign452$^\star$       & \colalign606       & {\bf \colalign608}    & \colalign600        & \colalign592 \\ \bottomrule
+      \end{tabular}}
+      \caption{Impact of the backend invocation point $\ParamTime$}
+      \label{fig:invocation}
+    \end{minipage}\hfill\hfill
+    \begin{minipage}[t]{.46\textwidth}
+      \centering
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{@{}l@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{\hskip 0.75em}c@{}} \toprule
+           & $-$Ehoh              & lifting              & \textsf{SKBCI}    & omitted \\ \midrule
+      TPTP & 1635$^\star$         & {\bf 1980}           & 1877              & 1866 \\[0.5\jot]
+      SH   & \colalign452$^\star$ & \colalign{\bf 608}   & \colalign577      & \colalign566 \\ \bottomrule
+      \end{tabular}}
+      \caption{Impact of the method used to translate $\lambda$-abstractions}
+      \label{fig:translation}
+    \end{minipage}%
+    \hfill\hbox{}
+  \end{figure}
+
+  \begin{figure}[t]
+    \centering
+    \def\arraystretch{1.1}%
+    \relax{\begin{tabular}{@{}l@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}}\toprule
+          & $-$Ehoh              & $16$               & $32$               & $64$           & $128$             & $256$         & $512$     \\ \midrule
+     TPTP & 1635$^\star$         & {\bf 1985}         & 1980               & 1978           & 1968              & 1968          & 1919 \\[0.5\jot]
+     SH   & \colalign452$^\star$ & \colalign606       & {\bf \colalign608} & \colalign600   & \colalign598      & \colalign596  & \colalign589 \\ \bottomrule
+    \end{tabular}}
+    \caption{Impact of the number of selected clauses~$\ParamNumClauses$}
+    \label{fig:m-ho-size}
+  \end{figure}
+
+  \looseness=-1
+  Ehoh is invoked after $ \ParamTime \cdot t $ CPU seconds, where $0 \le \ParamTime < 1$ and $t$
+  is the total CPU time allotted to Zipperposition. Figure~\ref{fig:invocation}
+  shows the effect of varying $\ParamTime$ when $\ParamNumClauses = 32$
+  and $\lambda$-lifting is used. The evaluation confirms that using a highly
+  optimized backend such as Ehoh greatly improves the performance of a
+  less optimized prover such as Zipperposition.
+  The figure indicates that it is preferable to invoke the backend early. We
+  have indeed observed that if the backend is invoked late, small clauses with
+  deep derivations tend to be present by then. These clauses might have been
+  used to delete important shallow clauses already. But due to their derivation
+  depth, they will not be translated. In such situations, it is better to
+  invoke the backend before the important clauses are deleted.
+
+  Figure~\ref{fig:translation} quantifies the effects of the three
+  $\lambda$-abstraction translation methods. We fixed $\ParamTime = 0.25$ and
+  $\ParamNumClauses=32$. The clear winner is $\lambda$-lifting.
+  $\cst{SKBCI}$ combinators perform slightly better than omitting clauses
+  containing $\lambda$-abstractions.
+
+  \looseness=-1
+  Figure~\ref{fig:m-ho-size} shows the effect of $\ParamNumClauses$ on
+  performance, with $\ParamTime = 0.25$ and $\lambda$-lifting. Including a
+  small number of higher-order clauses with the lowest weight performs better
+  than including a large number of such clauses.
+
+\section{Comparison with Other Provers}
+\label{sec:comparison}
+
+%The raw evaluation data for the previous experiments show that
+Different choices of
+parameters lead to noticeably different sets of proved problems. In an attempt
+to use Zipperposition~2 to its full potential, we have created a portfolio mode
+that runs up to 50 configurations in parallel during the allotted time. The portfolio
+was designed to solve as many problems as possible from the TPTP benchmark set. To
+provide some context, we compare Zipperposition~2 with the latest versions of
+all higher-order provers that competed at CASC-J10:\ CVC4 1.9
+\cite{cbetal-11-cvc4}, Leo-III 1.5.6 \cite{sb-21-leo3}, Satallax 3.5
+\cite{cb-2013-satallax}, and Vampire 4.5.1 \cite{br-20-full-sup-w-combs}.
+The provers were run using the same parameters as in CASC, but with updated
+executables.
+Note that
+Vampire's higher-order schedule is optimized for running on a single core.
+We also include E~2.7 (more precisely, Ehoh, its higher-order configuration), the first version of this prover to syntactically support
+full higher-order logic, including $\lambda$-abstractions.
+Semantically, E~2.7 is arguably the weakest among the listed provers:
+It simply performs $o$-RW rewriting described in Sect.~\ref{sec:preprocessing} followed by
+$\lambda$-lifting before it applies \relax{$\lambda$-free superposition} \cite{bbcw-21-lfho}
+(a precursor of all three higher-order superposition calculi) on the preprocessed problem.
+
+We use the same benchmark sets as elsewhere in this article. To imitate the
+CASC-J10 setup, we use a 120~s wall-clock limit and a 960~s CPU limit.
+We even carried out our evaluation on the 8-core CPU nodes that were used for
+CASC-J10. We also ran Zipperposition in uncooperative mode, in which its
+collaboration with a backend is disabled. Figure~\ref{fig:other-provers}
+summarizes the results.
+
+\begin{figure}[t]
+  \centering
+  \def\arraystretch{1.1}%
+  \relax{\begin{tabular}{@{}l@{\hskip 2.5em}c@{\hskip 2em}c@{}} \toprule
+                  & TPTP    & SH  \\ \midrule
+   CVC4           & 1816    & 587   \\
+   E              & 1980    & 676   \\
+   Leo-III        & 2122    & 616  \\
+   Satallax       & 2175    & 588  \\
+   Vampire        & 2072    & 660   \\
+   Zipperposition-uncoop & 2311 & 652 \\
+   Zipperposition & {\bf 2412}    & {\bf 715}  \\ \bottomrule
+  \end{tabular}}
+  \caption{Comparison of competing higher-order theorem provers}
+  \label{fig:other-provers}
+\end{figure}
+
+% Among the cooperative provers, Zipperposition is the one that depends the least
+% on its backend, and its \emph{uncooperative} mode is only \NumberNOK{one}~problem
+% behind Satallax's \emph{cooperative} mode. This confirms our hypothesis that
+% \olamsup{} is a suitable basis for automatic higher-order reasoning.
+% \confrep{This also}{The increase in performance due to the addition of an efficient backend}
+% suggests that the implementation of this calculus in a modern first-order
+% superposition prover such as E or Vampire would achieve markedly better results.
+% Moreover, we believe that there are still techniques inspired by tableaux, SAT
+% solving, and SMT solving that could be adapted and integrated in saturation
+% provers.
+
+The evaluation results corroborate the CASC results. They also
+show that Zipperposition outperforms all other provers on SH benchmarks. This
+confirms our hypothesis that \lamsup{} is a suitable basis for automatic
+higher-order reasoning. Further confirmation is provided by the success rate of
+Zipperposition's uncooperative version: Even without backend,
+Zipperposition is substantially better than all other provers on TPTP
+benchmarks, and it matches the performance of the top contenders on SH.
+On the other hand, the increase in performance due to the addition
+of an efficient backend suggests that the implementation of this calculus in a
+modern first-order superposition prover such as E or Vampire would achieve
+even better results.
+
+We believe that there are still techniques inspired by
+tableaux, SAT solving, and SMT solving that could be adapted and integrated in
+saturation provers. In particular, there are still \NumberOK{25} TPTP problems
+and \NumberOK{17} SH problems that can be proved by other provers but not by
+Zipperposition.
+
+\section{Discussion and Conclusion}
+\label{sec:discussion}
+
+%  In this paper, we proposed solutions to issues that arise when implementing a
+%  higher-order prover based on \lamsup. Some of these also apply
+%  to combinatory superposition. We also discussed many choices that can be made
+%  during proof search and evaluated some of those choices.
+
+\begin{sloppypar}
+Back in 1994, Kohlhase \cite[Sect.~1.3]{mk-94-hores} was optimistic about the
+future of higher-order automated reasoning:
+%
+\begin{quote}
+  %The author believes that
+  The obstacles to proof search intrinsic
+  to higher-order logic may well be compensated by the greater expressive power
+  of higher-order logic and by the existence of shorter proofs. Thus
+  higher-order automated theorem proving will be practically as feasible as
+  first-order theorem proving is now as soon as the technological backlog is made up.
+\end{quote}
+%
+For higher-order superposition, the backlog consisted of designing calculus
+extensions, heuristics, and algorithms that mitigate its weaknesses. In
+this article, we presented such enhancements, justified their design, and
+evaluated them. We explained how each weak point in the
+higher-order proving pipeline could be improved, from preprocessing to reasoning
+about formulas, to delaying unpromising or explosive inferences, to invoking a
+backend. Our evaluation indicates that higher-order superposition is now the
+state of the art in higher-order reasoning.
+\end{sloppypar}
+
+\looseness=-1
+Higher-order extensions of first-order superposition have been
+considered %from a theoretical perspective    -- The point is made later in the same para. --JB
+by Bentkamp et al.\
+\cite{bbtvw-21-sup-lam, bbcw-21-lfho} and Bhayat and Reger
+\cite{br-19-restricted-unif, br-20-full-sup-w-combs}. They introduced proof calculi,
+proved them refutationally complete, and suggested optional rules, but
+they hardly discussed the practical aspects of higher-order superposition. Extensions
+of SMT are discussed by Barbosa et al. \cite{brotb-19-ho-smt}.
+Bachmair and Ganzinger \cite{bg-1992-nonclausal}, Manna and Waldinger
+\cite{mw-1979-nonclausal}, and Murray \cite{nm-1982-nonclausal} have studied
+nonclausal resolution calculi.
+
+In contrast, there is a vast literature on practical aspects of first-order
+reasoning using superposition and related calculi.
+The literature evaluates various procedures and techniques
+\cite{hv-09-unifalgs,rsv-15-playing-with-avatar}, literal and term order selection
+functions \cite{hrsv-16-selsel}, and clause evaluation functions
+\cite{sm-2016-clausesel, gs-20-clausesel}, among others. Our work joins the
+select club of papers devoted to practical aspects of higher-order
+reasoning
+\cite{sb-15-beta,wskb-16-effective-norm,fb-2016-internal-guidance-satallax,benzmueller-et-al-05-can-ho-fo-coop}.
+
+%In contrast, higher-order calculi implemented in competitive provers are usually discussed from a theoretical viewpoint.
+
+%\section{Conclusion and Future Work}
+%\label{sec:conclusion}
+
+% We filled in this gap: we describe how
+% We described some ways in which the explosion incurred by
+% \lamsup{} can be kept under control. We showed how native
+% support for a Boolean type can dramatically improve a higher-order prover's
+% performance. For many choices that can be made during the higher-order proof
+% search, we described heuristics and evaluated them. We also designed a
+% saturation loop that enumerates infinite sets of higher-order inference
+% conclusions, while maintaining the same behavior as the standard given clause
+% procedure on first-order clauses.
+
+As a next step, we plan to implement the described techniques in E.
+%%% @PETAR: In E 2.6, basically. --JB
+% Ehoh \cite{ehoh-section}, the $\lambda$-free higher-order extension of E.
+We
+expect the resulting prover to be substantially more efficient than
+Zipperposition. Moreover, we want to investigate the proofs found by provers
+such as CVC4 and Satallax but missed by Zipperposition. Finding the reason
+behind why Zipperposition fails to prove specific problems will likely result in useful new techniques.
+
+
+\def\ackname{Acknowledgment} % American English
+\begin{acknowledgements}
+We are grateful to the maintainers of StarExec for letting us use their service.
+%Mathias Fleury helped us setup the ORCID icons.
+Ahmed Bhayat and Giles Reger guided us
+through details of Vampire 4.5. Ahmed Bhayat, Michael F\"arber,
+Mathias Fleury, Predrag Jani\v ci\'c,
+Mark Summerfield, and the anonymous reviewers suggested content, textual, and
+typesetting improvements. We thank them~all.
+
+Vukmirovi\'c, Bentkamp, and Blanchette's research has received funding from
+the European Research Council (ERC) under the European Union's Horizon 2020
+research and innovation program (grant agreement No.\ 713999, Matry\-osh\-ka).
+%
+Blanchette and Nummelin's research has
+received funding from the Netherlands Organization for Scientific Research (NWO)
+under the Vidi program (project No.\ 016.Vidi.189.037, Lean Forward).
+\end{acknowledgements}
+
+
+% Authors must disclose all relationships or interests that
+% could have direct or potential influence or impart bias on
+% the work:
+%
+% \section*{Conflict of interest}
+%
+% The authors declare that they have no conflict of interest.
+
+
+% BibTeX users please use one of
+\bibliographystyle{spmpsci}
+
+\bibliography{bib}
+
+\end{document}
+% end of file template.tex
