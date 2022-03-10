@@ -1411,26 +1411,25 @@ unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \lam{\overline{x}}{\cst{a}}
     
     \item Otherwise $\varrho_j a$ is not projective. 
     The head of $\varrho_j a$ must be $b$ because $b$ is rigid, and $\varrho_j$ unifies $u$ and $v$. 
-    Since $\varrho_j a$ is not projective, that means that $b$ is not a bound variable. 
-    Therefore, $b$ must be a constant.
+    As $\varrho_j a$ is not projective, that means that $b$ is not a bound variable. 
+    Thus, $b$ must be a constant.
     Then Lemma \ref{lem:jp-imitation} (imitation) applies.
     \end{enumerate}
     
-    We have now constructed a run 
-    $(E_{0},\sigma_{0})\longrightarrow(E_{1},\sigma_{1})\longrightarrow(E_{2},\sigma_{2})\longrightarrow\cdots$
-    of the procedure. 
-    This run cannot be infinite because the measure $\ord(E_j,\varrho_{j})$
-    strictly decreases as $j$ increases.
-    Hence, at some point we reach a $j$ such
-    that $E_{j}=\varnothing$ and $\varrho_{0} X = \varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$.
-    Therefore, 
-    $(E,\makeop{id})\longrightarrow^*(\varnothing,\sigma_{j})\longrightarrow\sigma_j$,
-    and $\varrho X = \tau^{-1}\,\varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$,
-    completing the proof. \qedhere
-    \end{description}
+  \end{description}
+We have now constructed a run 
+$(E_{0},\sigma_{0})\longrightarrow(E_{1},\sigma_{1})\longrightarrow(E_{2},\sigma_{2})\longrightarrow\cdots$
+of the procedure. 
+This run cannot be infinite because the measure $\ord(E_j,\varrho_{j})$
+strictly decreases as $j$ increases.
+Hence, at some point we reach a $j$ such
+that $E_{j}=\varnothing$ and $\varrho_{0} X = \varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$.
+Therefore, 
+$(E,\makeop{id})\longrightarrow^*(\varnothing,\sigma_{j})\longrightarrow\sigma_j$,
+and $\varrho X = \tau^{-1}\,\varrho_{j}\,\sigma_{j} X$ for all $X \not\in V$,
+completing the proof. \qedhere
     \end{proof}
 
-\pagebreak[2]    
 \section{A New Decidable Fragment}
 \label{sec:unif:solid-oracle}
 
@@ -1446,14 +1445,9 @@ flex-flex constraints, we say that PT produces a preunifier $\sigma =
 $E_n=\bot$. As in the previous section, we consider all terms to be
 $\alpha\beta\eta$-equivalence classes with the $\eta$-long $\beta$-reduced form
 as their canonical representative. Unlike previously, in this section we view
-unification constraints $s \unif t$ as ordered pairs.
-
-The following rules, however, are stated modulo orientation. This means that 
-if a rule applies to a constraint $s \unif t$, then it also applies to a constraint $t
-\unif s$. The PT transition rules, adapted for our presentation style, are as
+unification constraints $s \unif t$ as {\bf ordered} pairs. The PT transition rules, adapted for our presentation style, are as
 follows:
-
-\begin{description}[labelwidth=\widthof{\rm\unifrulename{\bf Decomposition}}]
+\begin{description}[labelwidth=\widthof{\rm\unifrulename{Decomposition}}]
     \item[\rm\textsf{Deletion}] 
       $\{\selected{s \unif s}\} \uplus E \ptarrowid E$
     \item[\rm\textsf{Decomposition}]
@@ -1466,32 +1460,51 @@ follows:
           \uplus \allowbreak
           E \ptarrowid \bot$
     \\ where $a$ and $b$ are different rigid heads
-    \item[\rm\textsf{Solution}] 
+    \item[\rm\textsf{SolutionL}] 
       $\{\selected{\lambda \overline{x}.\, F\,\overline{x} \unif \lambda \overline{x}.\,t} \} \uplus E \ptarrow{\varrho} \varrho E$
+      \\where $F$ does not occur in $t$, $t$ does not have a flex head, and $\varrho = \{ F \mapsto \lambda \overline{x}.\,t \}$
+      \item[\rm\textsf{SolutionR}] 
+      $\{\selected{\lambda \overline{x}.\,t \unif \lambda \overline{x}.\, F\,\overline{x}} \} \uplus E \ptarrow{\varrho} \varrho E$
       \\where $F$ does not occur in $t$, $t$ does not have a flex head, and $\varrho = \{ F \mapsto \lambda \overline{x}.\,t \}$ 
-    \item[\rm\textsf{Imitation}]
+    \item[\rm\textsf{ImitationL}]
       $\{\selected{\lambda \overline{x}. \, F \, \overline{s}_m \unif \lambda
       \overline{x}. \, \cst{f} \, \overline{t}_n }\} \uplus E \ptarrow{\varrho}
       \varrho(\{ G_1 \,
       \overline{s}_m  \unif  t_1, \ldots,  G_n \, \overline{s}_m \allowbreak \unif t_n\} \uplus E)$ \\
+      \looseness=-1 where $\varrho = \{ F \mapsto \lambda \overline{x}_m. \, \cst{f} \, (G_1
+      \, \overline{x}_m) \ldots (G_n \, \overline{x}_m) \}$,
+      $\overline{G}_n$ are correctly typed fresh variables
+    \item[\rm\textsf{ImitationR}]
+      $\{\selected{\lambda
+      \overline{x}. \, \cst{f} \, \overline{t}_n \unif \lambda \overline{x}. \, F \, \overline{s}_m  }\} \uplus E \ptarrow{\varrho}
+      \varrho(\{  t_1 \unif  G_1 \,
+      \overline{s}_m, \ldots,  t_n \allowbreak \unif G_n \, \overline{s}_m\} \uplus E)$ \\
       where $\varrho = \{ F \mapsto \lambda \overline{x}_m. \, \cst{f} \, (G_1
       \, \overline{x}_m) \ldots (G_n \, \overline{x}_m) \}$,
-      $\overline{G}_n$ are fresh variables of appropriate types
-    \item[\rm\textsf{Projection}]
+      $\overline{G}_n$ are correctly typed fresh variables
+    \item[\rm\textsf{ProjectionL}]
       $\{\selected{\lambda \overline{x}. \, F \, \overline{s}_m \unif \lambda
       \overline{x}. \, a \, \overline{t} }\} \uplus E \ptarrow{\varrho} 
       \varrho(\{ s_i \, (G_1 \,
       \overline{s}_m) \ldots (G_j \, \overline{s}_m) \unif a \, \overline{t}\} \uplus E)$ \\
       where $\varrho =\{F \mapsto \lambda \overline{x}_m. \, x_i \, (G_1 \,
       \overline{x}_m) \ldots (G_j \, \overline{x}_m)\}$, $\overline{G}_j$ are
-      fresh variables of appropriate types
+      correctly typed fresh variables
+    \item[\rm\textsf{ProjectionR}]
+      $\{\selected{\lambda \overline{x}. \, a \, \overline{t} \unif \lambda \overline{x}. \, F \, \overline{s}_m }\} \uplus E \ptarrow{\varrho} 
+      \varrho(\{ a \, \overline{t} \unif s_i \, (G_1 \,
+      \overline{s}_m) \ldots (G_j \, \overline{s}_m)\} \uplus E)$ \\
+      where $\varrho =\{F \mapsto \lambda \overline{x}_m. \, x_i \, (G_1 \,
+      \overline{x}_m) \ldots (G_j \, \overline{x}_m)\}$, $\overline{G}_j$ are
+      correctly typed fresh variables
 \end{description}
+\pagebreak[2]
 \looseness=-1
 The \selected{\text{grayed}} constraints are required to be selected by a given
 selection function $S$. We call $S$ \emph{admissible} if it selects only flex-rigid constraints, and prioritizes
 selection of constraints applicable for \textsf{Failure} and \textsf{Decomposition} 
 and of descendant constraints of
-\textsf{Projection} transitions with $j=0$ (i.e., for $x_i$ of base type), in that order of priority. In the
+\textsf{ProjectionL} and \textsf{ProjectionR} transitions with $j=0$ (i.e., for $x_i$ of base type), in that order of priority. In the
 remainder of this section we consider only admissible selection functions,
 an assumption that Prehofer also makes implicitly in his thesis. Additionally,
 whenever we compare multisets, we use the multiset ordering defined by
@@ -1528,7 +1541,7 @@ The following lemma states that PT is \emph{complete for preunification}:
     \item[B] multiset of the sizes of constraints in $E_0$
   \end{description}
 Here, the \emph{abstraction-free size} is inductively defined by
-$\text{afsize}(F) = 1$; $\text{afsize}(x) = 1$; $\text{afsize}(\cst{f}) = 1$;
+$\text{afsize}(F) = 1$; $\text{afsize}(x) = 1$; $\text{afsize}(\cst{f})\allowbreak= 1$;
 $\text{afsize}(s\,t) = \text{afsize}(s) + \text{afsize}(t)$;
 $\text{afsize}(\lambda x.\, s) = \text{afsize}(s)$.
 
@@ -1540,38 +1553,38 @@ $\text{afsize}(\lambda x.\, s) = \text{afsize}(s)$.
 
   Let $E_0 = \{\selected{s \unif t}\} \uplus E'_0$. Since $s \unif t$ is selected, at least
   one of $s$ and $t$ must have a rigid head. We distinguish several cases based on the
-  form of $s \unif t$ (modulo constraint orientation):
+  form of $s \unif t$:
   
   \begin{itemize}
     \item $s \unif s$: in this case, \textsf{Deletion} applies. This transition does not
     alter $\varrho$, but removes an equation obtaining $E_1$ which is smaller
     than $E_0$ and still unifiable by $\varrho$. By the induction hypothesis, the preunifier is reachable.
-    \item 
-    \looseness=-1
-    $\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda
+    \item $\lambda \overline{x}. \, a \, \overline{s}_m \unif \lambda
     \overline{x}. \, b \, \overline{t}_n$, where $a$ and $b$ are rigid: since
     $\varrho$ is a unifier, then $a=b$, $n=m$, and \textsf{Decomposition}
     applies. Similarly to the above case, we conclude that the preunifier is reachable.
     \item $\lambda \overline{x}.\, F\,\overline{x} \unif \lambda \overline{x}.\,t$ where $t$
-    has a rigid head and $F$ does not occur in $t$: \textsf{Solution} applies. Huet showed \cite[proof of L5.1]{gh-75-unification}
+    has a rigid head and $F$ does not occur in $t$: \textsf{SolutionL} applies. Huet showed \cite[proof of L5.1]{gh-75-unification}
     that in this case $\varrho = \varrho\sigma_1$, where $\sigma_1 = \{ F \mapsto \lambda\overline{x}.\,t \}$.
     Let $\varrho_1 = \varrho\setminus\{F \mapsto \varrho F\}$.
     Then $\varrho = \varrho_1 \sigma_1$.
-    \looseness=-1
     Since $\varrho$ unifies $E'_0$, $\varrho_1$ unifies $E_1 = \sigma_1 E'_0$. Clearly, $\varrho_1$ is smaller
     than $\varrho$. Now we can apply the induction hypothesis on $\varrho_1$ and $E_1$, from which 
     we obtain a sequence $E_1 \ptarrow{\sigma_2} \cdots \ptarrow{\sigma_n} E_n$, $\theta$ which
     unifies $E_n$ and $\sigma' = \sigma_n \ldots \sigma_2$, such that $\varrho_1 X = \theta\sigma' X$ for all $X \not\in V$.
     Finally, it is clear that the sequence $E_0 \ptarrow{\sigma_1} E_1 \ptarrow{\sigma_2} \cdots \ptarrow{\sigma_n} E_n$,
     $\theta$, and $\sigma = \sigma' \sigma_1$ are as wanted in the lemma statement.
-    \item \looseness=-1 
-    $\lambda
+
+    \item $\lambda \overline{x}.\,t \unif \lambda \overline{x}.\, F\,\overline{x}$ where $t$
+    has a rigid head and $F$ does not occur in $t$: \textsf{SolutionR} applies, and the case is analogous to the previous one.
+    
+    \item $\lambda
     \overline{x}.\,F\,\overline{s}_m~\unif~\lambda \overline{x}.\,a \,
     \overline{t}$ where $a$ is rigid: depending on the value of $\varrho$, we can
-    either take an \textsf{Imitation} or \textsf{Projection} step. In either case, we show that
+    either take an \textsf{ImitationL} or \textsf{ProjectionL} step. In either case, we show that
     the measure reduces. Let $\varrho F = \lambda \overline{x}_m. \, b \, \overline{u}_n$ where $b$
     is either a constant or a bound variable. If $b$ is a constant, we choose
-    the \textsf{Imitation} step; otherwise we choose the \textsf{Projection} step. In either case,
+    the \textsf{ImitationL} step; otherwise we choose the \textsf{ProjectionL} step. In either case,
     $\sigma_1 = \{ F \mapsto \lambda \overline{x}_m. \, b \, (G_1 \, \overline{x}_m) \ldots
     (G_n \, \overline{x}_m) \}$. Then it is easy to check that $\varrho_1 = \varrho
     \setminus \{F \mapsto \lambda \overline{x}_m. \, b \, \overline{u}_n\} \cup \{ G_1~\mapsto~\lambda\overline{x}_m.\, u_1, \allowbreak
@@ -1587,8 +1600,11 @@ $\text{afsize}(\lambda x.\, s) = \text{afsize}(s)$.
     For $X = F$, since $\varrho_1$ and $\theta \sigma'$ agree on $G_1, \ldots, G_n$, we
     conclude that $\varrho F = \theta \sigma' \sigma_1 F$.
     Therefore, by taking $\sigma = \sigma'\sigma_1$, and prepending $E_0$ to the
-    sequence from the induction hypothesis, we can conclude that the preunifier is reachable. 
-    \qedhere
+    sequence from the induction hypothesis, we can conclude that the preunifier is reachable.
+
+    \item $\lambda \overline{x}.\,a \, \overline{t} \unif \lambda
+    \overline{x}.\,F\,\overline{s}_m$ where $a$ is rigid:  either \textsf{ImitationR} or \textsf{ProjectionR} applies
+    and the case is analogous to the previous one. \qedhere
   \end{itemize}
 \end{proof}
 
@@ -1640,8 +1656,8 @@ arbitrary type) or ground (arbitrary-order) terms of base type.
 
 
 \looseness=-1 
-In other words, we extend the above preunification decidability result
-for linear strictly solid terms along two axes: we create an oracle
+Put differently, we extend the preunification decidability result
+for linear strictly solid terms along two axes: We create an oracle
 for the full unification problem and we lift the
 order restrictions.
 %
@@ -1660,7 +1676,8 @@ procedure terminates on the above described class of problems (Lemma
 \ref{unif:lemma:solid-termination-preunif}). Moreover, we must show how to compute MGUs for
 the remaining flex-flex pairs (Lemma \ref{unif:lemma:solid-var-same-mgu} and
 \ref{unif:lemma:solid-vars-diff-mgu}). Our results are combined together in Theorem
-\ref{unif:thm:oracle}.
+\ref{unif:thm:oracle}. Note that we use names \textsf{Solution}, \textsf{Imitation}, and
+\textsf{Projection} when only one orientation of the corresponding rule is applicable.
 
 
 
@@ -1788,9 +1805,9 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
   \looseness=-1
   First, similar to the proof of previous lemma we conclude each transition
   maintains the condition that the terms remain solid. Second, we have to show
-  that variables on left-hand sides remain isolated. For \textsf{Imitation} and
-  \textsf{Projection} rules, the preservation of this invariant is obvious.
-  Later, we also show that \textsf{Solution} preserves it. Third, since $s$ and
+  that variables on left-hand sides remain isolated. For \textsf{ImitationL(R)} and
+  \textsf{ProjectionL(R)} rules, the preservation of this invariant is obvious.
+  Later, we also show that \textsf{SolutionL(R)} preserves it. Third, since $s$ and
   $t$ share no variables, and $s$ is linear, no rule can introduce a variable
   from the right-hand side to the left-hand side.
   
@@ -1809,43 +1826,37 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
     \item[Deletion] A does not increase and at least one of A or B reduces.
     \item[Decomposition] A reduces.
     \item[Failure] Trivial. 
-    \item[Solution] This rule applies in two cases:
-
-    \begin{itemize}
-      \item $F \unif t$: since $F$ is isolated, A is unchanged, B is not
-      increased, and C reduces. All variables on left-hand sides remain isolated
-      since they are unaffected by this substitution.
-      \item $t \unif F $: since $F$ does not occur on any left-hand side and the
-      head of $t$ must be a constant or bound variable (otherwise the rule would
-      not be applicable), $A$ reduces. Even though $t$ might contain some free
-      variables and $F$ can have multiple occurrences on right-hand sides, all
-      free variables on left-hand sides remain isolated. Namely, all free variables
-      in $t$ occur exactly once in the multiset, and since $t \unif F$ is
-      removed, all of them either disappear or end up on right-hand sides.
-    \end{itemize}
-    \item[Imitation] We distinguish the following two forms of the selected constraint:
-    \begin{itemize}
-      \item $\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda \overline{x}. \,
+    \item[SolutionL]
+    $F \unif t$: since $F$ is isolated, A is unchanged, B is not
+    increased, and C reduces. All variables on left-hand sides remain isolated
+    since they are unaffected by this substitution.
+    \item[SolutionR] $t \unif F $: since $F$ does not occur on any left-hand side and the
+    head of $t$ must be a constant or bound variable (otherwise the rule would
+    not be applicable), A reduces. Even though $t$ might contain some free
+    variables and $F$ can have multiple occurrences on right-hand sides, all
+    free variables on left-hand sides remain isolated. Namely, all free variables
+    in $t$ occur exactly once in the multiset, and since $t \unif F$ is
+    removed, all of them either disappear or end up on right-hand sides.
+    We distinguish the following two forms of the selected constraint:
+      \item[ImitationL] $\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda \overline{x}. \,
       \cst{f} \, \overline{u}_m$: 
       We replace this constraint by 
       $\{H_i \, \overline{v}_n \unif u_i \mid 1\le i\le m\}$
-      and apply the \textsf{Imitation} binding
+      and apply the \textsf{ImitationL} binding
       $F \mapsto \lambda \overline{x}_n.\, \cst{f} \, (H_1 \, \overline{x}_n) \allowbreak
       \ldots (H_m \, \overline{x}_n)$.
       As $F$ is isolated, A and B do not increase.
       Since $F$ is isolated, it does not occur on any right-hand side, and hence C decreases.
-      \item $\lambda \overline{x}. \, \cst{f} \, \overline{u}_m \unif \lambda \overline{x}. \, F \, \overline{v}_n $:
-      applying the \textsf{Imitation} transition 
+      \item[ImitationR] $\lambda \overline{x}. \, \cst{f} \, \overline{u}_m \unif \lambda \overline{x}. \, F \, \overline{v}_n $:
+      applying the \textsf{ImitationR} transition 
       as above will reduce A since $F$ cannot appear on any
       left-hand side.
-    \end{itemize}
-    \item[Projection] Similar to the previous transition rule, we have two cases:
-      \begin{itemize}
-        \item$\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda
+    \item[ProjectionL]
+        $\lambda \overline{x}. \, F \, \overline{v}_n \unif \lambda
         \overline{x}. \, a \, \overline{u}_m$: if $a$ is a bound variable,
         then for \textsf{Failure} not to be applicable afterward, we have to
         project $F$ onto argument $v_i$ equal to $a$. Then we proceed like for
-        \textsf{Imitation}. If $a$ is not a bound variable, then we have to
+        \textsf{ImitationL}. If $a$ is not a bound variable, then we have to
         project to some base-type term $v_j$ (otherwise \textsf{Failure} would
         be applicable afterward). This reduces the problem to $\lambda
         \overline{x}. \, v_j \unif \lambda \overline{x}. \, a \,
@@ -1871,13 +1882,12 @@ by $\sigma$, $\sigma F$ is ground (Sect.~\ref{sec:pre:fol}).
         matcher, which will either remove all the free variables in the right-hand
         side of the constraint, not increasing A and reducing B,
         or, if no free variables occur in the right-hand side, reduce C while not increasing A and B.
-        \item $\lambda \overline{x}. \, a \, \overline{v}_n \unif \lambda
+    \item[ProjectionR] $\lambda \overline{x}. \, a \, \overline{v}_n \unif \lambda
         \overline{x}. \, F \, \overline{u}_m$: 
         if $a$ is a bound variable, projecting $F$ onto argument $u_i$ will either enable
         application of \textsf{Decomposition} as the next step, reducing A, or it will result in \textsf{Failure},
         trivially terminating. If $a$ is a constant, then projecting $F$ onto some $u_j$
         will either yield  \textsf{Failure} or enable \textsf{Decomposition}, reducing A. \qedhere
-      \end{itemize} 
     \end{description}
 \end{proof}
 
@@ -1929,6 +1939,7 @@ the following two lemmas show that solid pairs admit an MGU:
   $\lambda \overline{x}_m. \, {s'}_i^j = \lambda \overline{x}_m. \, \tilde\sigma_i^j(\tilde H_i) \, \overline{x}_m$.
   Let $Z$ be a fresh free variable.
   An MGU $\sigma$ for the given problem is
+  \pagebreak[2]
     \begin{align*} 
       F &\mapsto \lambda \overline{x}_m.\, Z
           \, \underbrace{x_1 \, \ldots \, x_1}_{k_1 \text{ times}} \, \ldots \,
