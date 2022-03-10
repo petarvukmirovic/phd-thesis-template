@@ -468,3 +468,28 @@ The provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
 The provers we discuss in this thesis, E and Zipperposition, are both DISCOUNT-loop provers.
+
+\subsection{Higher-Order Superposition Calculi}
+\label{sec:pre:ho-sup-calculi}
+
+\looseness=-1
+In Chapter \ref{ch:intro} we mention that we identified three steps on the road
+to extending efficient superposition provers to higher-order logic. Together with
+our colleagues we did the necessary theoretical work by extending the superposition
+calculus using the same roadmap:
+
+\begin{enumerate}
+    \item Bentkamp, Blanchette, Cruanes, and Waldmann designed a complete
+    superposition calculus for higher-order logic devoid of
+    $\lambda$-abstraction and first-class Booleans \cite{bbcw-21-lfho}. We call
+    this calculus \lfsup{}.
+    \item Alexander Bentkamp, Blanchette, Tourret,  Vukmirović, and Waldmann
+    extended this calculus to support $\lambda$-abstraction
+    \cite{bbtvw-21-sup-lam}. We call it \lsup{}.
+    \item Bentkamp, Blanchette, Tourret, and Vukmirovi\'c extended \lsup{} with
+    support for first-class Booleans \cite{bbtv-21-full-ho-sup}. This amounts to
+    designing the complete calculus for full higher-order logic. We call this
+    calculus \osup{}.
+\end{enumerate}
+
+

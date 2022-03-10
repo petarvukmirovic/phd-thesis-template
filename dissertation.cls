@@ -99,7 +99,9 @@
     \RequirePackage{unicode-math}
 
     \setmainfont[Path = fonts/libertinus/, ItalicFont=libertinusserif-italic.otf, BoldFont=libertinusserif-bold.otf, BoldItalicFont=libertinusserif-bolditalic.otf]{libertinusserif-regular.otf}
+    % \setmainfont[Path = fonts/Neuton/, ItalicFont=Neuton-Italic.ttf, BoldFont=Neuton-Bold.ttf]{Neuton-Regular.ttf}
     % \setsansfont[Path = fonts/libertinus/, BoldFont=libertinussans-bold.otf, ItalicFont=libertinussans-italic.otf]{libertinussans-regular.otf}
+
      \setsansfont[Scale=0.82, Path = fonts/Inter/static/, BoldFont=Inter-Bold.ttf]{Inter-Regular.ttf}
     \setmathfont[Path = fonts/libertinus/]{libertinusmath-regular.otf}
     \setmonofont[Scale=MatchLowercase, Path=fonts/inconsolata/]{Inconsolata-Regular.ttf}
