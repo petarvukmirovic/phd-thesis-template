@@ -85,7 +85,7 @@ level, delay clausification of nonatomic literals, reason about formulas under
 $\lambda$-binders, and many others. Even though the rules we use are inspired by
 the ones of refutationally complete higher-order provers, we do not guarantee
 completeness of our extension of \lsup{}. Using the insights that we gained with
-this incomplete extension of \lsup{} to full higher-order logic, Bentkamp
+this incomplete extension of \lsup{} to full higher-order logic, Bentkamp et al.
 designed a complete calculus for full higher-order logic---\osup{}
 \cite{bbtv-21-full-ho-sup}.
 
@@ -125,7 +125,8 @@ two-element domain. This amounts to extending the logic to full higher-order
 logic. Taking a different perspective, this logic is an extension of the one
 presented in Chapter \ref{ch:ehoh} with $\lambda$-abstraction, polymorphic
 types, and native logical connectives. For reference, we provide a
-definition of this polymorphic logic.
+description of this polymorphic logic. For the notions that are not defined here,
+we assume the definitions introduced in Sect.~\ref{ch:pre}.
 
 \looseness=-1
 A {\em signature} is a quadruple $(\Sigmaty, \Vty, \Sigma, \VV)$ where $\Sigmaty$ is a
@@ -182,8 +183,12 @@ formula $f = \cst{h} \, \cst{a} \ieq \cst{g} \, (\cst{p} \iimplies \cst{q}) \ior
 \inot\cst{p}$, $f|_1$ and $f|_2$ are top-level Booleans, while $f|_{1.2.1}$ is a
 nested Boolean, as well as its subterms. First-order logic allows only top-level
 Booleans, whereas nested Booleans are characteristic for higher-order logic. 
-Note that while our calculus works with clausal representation of the problem,
-its higher-order nature allows representing formula $f$ as a singleton clause
+
+% Note that while our calculus works with clausal representation of the problem,
+% its higher-order nature allows representing formula $f$ as a singleton clause
+% containing only literal $f$.
+Our calculus works with the clausal structure described in Sect.~\ref{sec:pre:clauses}.
+However, its higher-order nature allows representing formula $f$ as a singleton clause
 containing only literal $f$.
 
 \section{The Native Approach} 
@@ -406,7 +411,7 @@ x.\, p \, x) \iimplies p \, (\varepsilon \, p)$, where $\varepsilon :
 operator} \cite{pa-01-classical-ty-thy}. After clausification, this axiom becomes $P \, X \noteq \itrue \llor P
 \, (\varepsilon \, P) \eq \itrue$. Since the term $P \, X$ matches any Boolean
 term in the proof state, this axiom is very explosive. Therefore, Leo-III
-\cite{sb-21-leo3} recognizes definitions of all symbols that correspond to choice and deals with
+\cite{sb-21-leo3} heuristically recognizes symbols that correspond to choice and deals with
 them on the calculus level. Namely, whenever a clause $C = P \, X \noteq \itrue \llor P \, (\cst{f} \,
 P) \eq \itrue$ is chosen for processing, $C$ is removed from the proof state and $\cst{f}$ is
 added to set of choice functions $\mathit{CF}$ (which initially contains just
@@ -433,7 +438,7 @@ Most provers natively support both functional and Boolean extensionality reasoni
 first-order unification to return unification constraints consisting of pairs of
 terms of functional type, whereas Steen relies on the unification rules of
 Leo-III's calculus \cite[Section 4.3.3]{as-18-phd} to deal with extensionality.
-As a pragmatic extension of the lambda-superposition calculus, Bentkamp et al. \cite{bbtvw-21-sup-lam} propose to alter core generating inference rules of \lsup{}
+As a pragmatic extension of the \lsup{} calculus, Bentkamp et al. \cite{bbtvw-21-sup-lam} propose to alter core generating inference rules of \lsup{}
 to support functional extensionality. Instead of requiring that terms
 involved in the inference are unifiable, it is required that they can be
 decomposed into \emph{disagreement pairs} such that at least one of the
@@ -494,11 +499,13 @@ clause. On the other hand, \infname{AbsER} will generate~$C = \inot\cst{p} \ior 
   subterm. This index will be empty for first-order problems, incurring no
   overhead if extensionality reasoning is not needed. One more restriction we implemented is that we do not apply the \infname{Abs} rules if all
   disagreement pairs have at least one side whose head is a variable; those will
-  be dealt with more efficiently using the core
-  rules of the superposition calculus. To simplify the resulting clauses of \infname{Abs} rules,
-  we also eagerly remove literals $s_i \not\eq s'_i$ by applying the first
-  unifier returned by terminating, pragmatic variant of unification algorithm described in 
-  Sect.~\ref{sec:unif:the-unification-procedure}.
+  be dealt with more efficiently using the core rules of the superposition
+  calculus. To simplify the resulting clauses of \infname{Abs} rules, we also
+  eagerly remove literals $s_i \not\eq s'_i$ using a simplifying version of
+  \infname{ER} (Sect.~\ref{sec:pre:rules}). In particular, we apply the first
+  unifier returned by the terminating, pragmatic variant of unification
+  algorithm described in Sect.~\ref{sec:unif:the-unification-procedure}, and
+  remove the premise after conclusion of \infname{ER} is computed.
 \end{sloppypar}
 
 Expressiveness of higher-order logic allows users to define equality using a single axiom,
@@ -642,7 +649,7 @@ $s'$. Intuitively, these rules bring Boolean (dis)equations in the appropriate
 form for application of the corresponding base rules. In particular,
 for \infname{BoolER} we interpret the equation $s \eq s'$ as $s \not\eq \inot s'$ which
 allows us to simulate \infname{ER} inference from Sect.~\ref{sec:pre:rules}. 
-For \infname{BoolEF} family of rules, we convert disequations into equations
+For the \infname{BoolEF} family of rules, we convert disequations into equations
 using the trick of negating one side to simulate \infname{EF}.
 % It suffices to consider 
 % literals of the form $s \eq s'$ for \infname{BoolER} as Zipperposition rewrites
@@ -661,27 +668,27 @@ delayed clausification (\infname{DC}) rules:
 \vspace{2\jot}
 \begin{tabular}{ccc}
   $\namedsimp{DC$_{\iand}$}
-  { (f \iand g) \eq \itrue \llor C}
-  { f \eq \itrue \llor C \quad g \eq \itrue \llor C }$ &
+  { (g \iand h) \eq \itrue \llor C}
+  { g \eq \itrue \llor C \quad h \eq \itrue \llor C }$ &
   $\namedsimp{DC$_{\ior}$}
-  { (f \ior g) \eq \itrue \llor C}
-  { f \eq \itrue \llor g \eq \itrue  \llor C }$ &
+  { (g \ior h) \eq \itrue \llor C}
+  { g \eq \itrue \llor h \eq \itrue  \llor C }$ &
   $\namedsimp{DC$_{\iimplies}$}
-  { (f \iimplies g) \eq \itrue \llor C}
-  { f \not\eq \itrue \llor g \eq \itrue  \llor C } $ \\[2\jot]
+  { (g\iimplies h) \eq \itrue \llor C}
+  { g\not\eq \itrue \llor h \eq \itrue  \llor C } $ \\[2\jot]
   $\namedsimp{DC$_{\inot}$}
-  { (\inot f) \eq \itrue \llor C}
-  { f \not\eq \itrue \llor C}$ &
+  { (\inot g) \eq \itrue \llor C}
+  { g\not\eq \itrue \llor C}$ &
   $\namedsimp{DC$_{\iforall}$}
-  { (\iforall x. \, f) \eq \itrue \llor C}
-  { \{x \mapsto Y\}(f) \llor C }$ &
+  { (\iforall x. \, g) \eq \itrue \llor C}
+  { \{x \mapsto Y\}(g) \llor C }$ &
   $\namedsimp{DC$_{\iexists}$}
-  { (\iexists x.\, f) \eq \itrue \llor C}
-  { \{x \mapsto \cst{sk}\typeargs{\tuple{\alpha}{}} \, \tuplen{Y} \}(f) \llor C }$ 
+  { (\iexists x.\, g) \eq \itrue \llor C}
+  { \{x \mapsto \cst{sk}\typeargs{\tuple{\alpha}{}} \, \tuplen{Y} \}(g) \llor C }$ 
   \\[2\jot]
   \multicolumn{3}{c}{$\namedsimp{DC$_\eq$}
-  { f \eq g \llor C}
-  { f \not\eq \itrue \lor g\eq\itrue \llor C \quad f \eq \itrue \lor g\not\eq\itrue \llor C}$}
+  { g\eq h \llor C}
+  { g\not\eq \itrue \lor h\eq\itrue \llor C \quad g \eq \itrue \lor h\not\eq\itrue \llor C}$}
 \end{tabular}
 \vspace{2\jot}
 
@@ -1106,7 +1113,7 @@ first-order provers to finish the proof attempt. Leo-III uses CVC4, E and
 iProver \cite{kk-08-iprover} as backends, and Satallax uses Ehoh
 % \cite{EHOH CHAPTER}
  as backend. Zipperposition can use Ehoh as backend as well. To test how successful each calculus is, we run
-the cooperative provers in two versions: \emph{pure}, which disables backends,
+the cooperative provers in two versions: \emph{uncoop}, which disables backends,
 and \emph{coop} which uses all supported backends.
 
 
@@ -1118,7 +1125,7 @@ and \emph{coop} which uses all supported backends.
     \relax{\begin{tabular}{@{}l@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c@{\hskip 2em}c}
       & CVC4             & Leo-III & Satallax              & Vampire & Zipperposition
       \MIDLINE
-      pure    & 1806 (5) &  1627 (0) & 2067 (0)            & 1924 (7) & 1980 (\phantom{0}0)                \\
+      uncoop    & 1806 (5) &  1627 (0) & 2067 (0)            & 1924 (7) & 1980 (\phantom{0}0)                \\
       coop    & --       &  2085 (3) & \textbf{2214 (9)}   & --       & 2190 (17)
     \end{tabular}}
     \caption{Comparison with other higher-order provers}
@@ -1126,13 +1133,13 @@ and \emph{coop} which uses all supported backends.
 \end{figure}
 
 \looseness=-1
-In both pure and cooperative mode, Satallax is the winner. Zipperposition comes
+In both uncooperative and cooperative mode, Satallax is the winner. Zipperposition comes
 in close second, showing that our approach is a promising basis for further
 extensions. Indeed, as we show in Chapter \ref{ch:ho-techniques}, with
 fine-tuning of the heuristics and further extensions to the calculus, this
 approach can outperform all other competitive provers with a large margin.
 
-\subsection{Discussion}
+\section{Discussion}
 \label{sect:bool:discussion}
 
 Our work is primarily motivated by the goal of closing the gap between
