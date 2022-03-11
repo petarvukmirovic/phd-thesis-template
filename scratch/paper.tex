@@ -204,10 +204,10 @@ Zipperposition won the higher-order division of the CASC-J10 competition.
 % Simplification rule
 \newcommand{\namedsimp}[3]{\prftree[d][r]{\relax{\infname{#1}}}{\strut#2}{\strut#3}}
 \newcommand{\simp}[2]{\namedinference{}{\strut#1}{\strut#2}}
-\newcommand{\lamsupraw}{$\lambda$-super\-po\-si\-tion}
-\newcommand{\lamsup}{{\color{black}\lamsupraw}}
-\newcommand{\ofreelamsup}{{\color{black}Boolean-free \lamsupraw}}
-\newcommand{\olamsup}{{\color{black}Boolean \lamsupraw}}
+\newcommand{\lsupraw}{$\lambda$-super\-po\-si\-tion}
+\newcommand{\lsup}{{\color{black}\lsupraw}}
+\newcommand{\lsup}{{\color{black}Boolean-free \lsupraw}}
+\newcommand{\osup}{{\color{black}Boolean \lsupraw}}
 
 \newcommand\NumberOK[1]{#1}
 \newcommand\NumberNOK[1]{\colorbox{red}{#1}}
@@ -219,7 +219,7 @@ Zipperposition won the higher-order division of the CASC-J10 competition.
 \newcommand{\confrep}[2]{#2}
 
 \section{Introduction}
-\label{sec:intro}
+\label{sec:ho-tech:intro}
 
 %In recent decades,
 Superposition-based first-order automatic theorem provers
@@ -233,7 +233,7 @@ higher-order theorem provers \cite{sb-21-leo3}, and software verifiers
 The superposition calculus has only recently been extended
 to higher-order logic (more precisely, extensional simple type theory
 \cite{henkin-1950-completeness}), resulting in
-\emph{\ofreelamsup} \cite{bbtvw-21-sup-lam}, which we developed
+\emph{\lsup} \cite{bbtvw-21-sup-lam}, which we developed
 together with Waldmann, as well as \emph{combinatory superposition}
 \cite{br-20-full-sup-w-combs} by Bhayat and Reger. Although these two
 calculi do not support an interpreted Boolean type,
@@ -245,7 +245,7 @@ extend first-order reasoning. As most steps in higher-order
 proofs tend to be essentially first-order, extending the most successful first-order
 calculus to higher-order logic seemed worth trying.
 Our first attempt at testing this idea was in 2019:
-Zipperposition~1.5, based on \ofreelamsup, finished third
+Zipperposition~1.5, based on \lsup, finished third
 in the higher-order theorem division of CASC-27 \cite{gs-19-casc27},
 12~percentage points behind the winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
 
@@ -261,52 +261,52 @@ In this article, we describe the main techniques that explain this reversal
 of fortunes. They cover most parts of a modern higher-order theorem prover, from
 preprocessing to additional calculus rules to heuristics to backend
 integration. We use a newer version of Zipperposition, based on a newer
-calculus:\ Instead of \ofreelamsup{} augmented with ad hoc Boolean rules,
-we work with \emph{\olamsup} \cite{bbtv-21-full-ho-sup}, a principled extension of superposition to full
+calculus:\ Instead of \lsup{} augmented with ad hoc Boolean rules,
+we work with \emph{\osup} \cite{bbtv-21-full-ho-sup}, a principled extension of superposition to full
 higher-order logic, including an interpreted Boolean type.
 
 Many higher-order problems extensively use symbol definitions to simplify
 their representation. We describe several ways to exploit the definitions,
 %of which the most successful is
-such as turning them into rewrite rules (Sect.~\ref{sec:preprocessing}).
+such as turning them into rewrite rules (Sect.~\ref{sec:ho-tech:preprocessing}).
 %Interesting patterns can be observed in various higher-order problem encodings.
-%We show how we can exploit these to simplify problems (Sect.~\ref{sec:preprocessing}).
+%We show how we can exploit these to simplify problems (Sect.~\ref{sec:ho-tech:preprocessing}).
 %
 By working on formulas rather than clauses, tableau techniques take a more
 holistic view of a higher-order problem.
 Through its support for delayed clausification and, more generally,
-calculus-level formula manipulation, \olamsup{} enables us to
+calculus-level formula manipulation, \osup{} enables us to
 simulate most successful tableau techniques in a saturating prover
-(Sect.~\ref{sec:formulas}). This calculus also supports \emph{Boolean selection
+(Sect.~\ref{sec:ho-tech:formulas}). This calculus also supports \emph{Boolean selection
 functions}, a mechanism that allows us to choose on which Boolean subterms
 to perform inferences first.
 We implemented some Boolean selection functions and
-evaluated them (Sect.~\ref{sec:bool-select}).
+evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
 
-The main drawback of both \lamsup{} variants compared with combinatory
+The main drawback of both \lsup{} variants compared with combinatory
 superposition is that they rely on rules that enumerate possibly infinite sets
 of unifiers. We describe a mechanism that interleaves infinitely
 branching inferences with the standard saturation process
-(Sect.~\ref{sec:infinite-branching}). The prover
+(Sect.~\ref{sec:ho-tech:infinite-branching}). The prover
 retains the same behavior as
 before on first-order problems, smoothly scaling with
 increasing numbers of higher-order clauses.
 %
 We also propose some heuristics to curb the explosion induced by highly
-prolific calculus rules (Sect.~\ref{sec:explosiveness}).
+prolific calculus rules (Sect.~\ref{sec:ho-tech:explosiveness}).
 
 Using first-order backends to finish the proof is common practice in
-higher-order reasoning. Since \lamsup{} coincides with standard
+higher-order reasoning. Since \lsup{} coincides with standard
 superposition on first-order clauses, invoking backends may
 seem redundant; yet Zipperposition is nowhere as efficient as E
 \cite{scv-19-e23} or Vampire \cite{lkav-13-vampire}, so invoking a more
 efficient backend does make sense. We describe how to achieve a balance
 between allowing native higher-order reasoning and
-delegating reasoning to a backend (Sect.~\ref{sec:backends}).
+delegating reasoning to a backend (Sect.~\ref{sec:ho-tech:backends}).
 %
 Finally, we compare Zipperposition~2 with other provers on all monomorphic
 higher-order TPTP benchmarks \cite{gs-17-tptp} to perform a more extensive
-evaluation than at CASC (Sect.~\ref{sec:comparison}). Our evaluation
+evaluation than at CASC (Sect.~\ref{sec:ho-tech:comparison}). Our evaluation
 corroborates the competition results.
 
 This article is an extended version of a paper accepted at CADE-28
@@ -317,7 +317,7 @@ more techniques,
 introduces new benchmark sets, and presents more examples.
 
 \section{Background and Setting}
-\label{sec:background}
+\label{sec:ho-tech:background}
 
 We focus on monomorphic higher-order logic, without the axiom of infinity 
 or the axiom of at least two individuals. However, the techniques can easily be
@@ -351,13 +351,13 @@ formulas are expressed using (a type-indexed
 family of) constants $\iforall$ and $\iexists$ as $\iforall \,
 (\lambda x. \, t)$ and $\iexists \, (\lambda x. \, t)$, usually abbreviated to
 $\iforall x.\,t$ and $\iexists x.\,t$. Following %the convention of
-\olamsup{}, predicate literals are encoded as equations with $\itrue$ or
+\osup{}, predicate literals are encoded as equations with $\itrue$ or
 $\ifalse$: for example, $\cst{even}(x)$ becomes $\poslit{\cst{even}(x)}$, and
 $\neg\,\cst{even}(x)$ becomes $\neglit{\cst{even}(x)}$.
 
 \ourparagraph{Higher-Order Calculi}
 \looseness=-1
-The \olamsup{} calculus \cite{bbtv-21-full-ho-sup} is a refutationally
+The \osup{} calculus \cite{bbtv-21-full-ho-sup} is a refutationally
 complete inference system and redundancy criterion for higher-order logic with
 rank-1 polymorphism, Hilbert choice, and functional and Boolean extensionality.
 The calculus relies on
@@ -370,7 +370,7 @@ for all variables $X \in V$. The set $V$ is used to distinguish
 important variables from auxiliary variables (which may arise in intermediary
 states of the unification procedure). We usually omit it.
 
-Unlike \ofreelamsup, this calculus 
+Unlike \lsup, this calculus 
 does not require axioms defining the logical symbols to cope with formulas.
 Instead, it includes Boolean inference rules that mimic
 superposition from such axioms into Boolean subterms,
@@ -383,7 +383,7 @@ A new feature of the calculus that we explore in detail is
 the ability to select Boolean subterms
 to restrict Boolean and superposition inferences.
 
-In contrast to both \lamsup{} variants, combinatory superposition can
+In contrast to both \lsup{} variants, combinatory superposition can
 avoid enumerating CSUs by
 using a form of first-order unification.
 Essentially, it enumerates higher-order terms
@@ -408,7 +408,7 @@ Other competing higher-order calculi include SMT (implemented in CVC4
 
 \ourparagraph{Zipperposition}
 Zipperposition \cite{sc-15-simon-phd,bbtvw-21-sup-lam} is a higher-order
-theorem prover that implements both \lamsup{} variants, combinatory
+theorem prover that implements both \lsup{} variants, combinatory
 superposition, and other superposition-like calculi.
 The prover was conceived as a testbed for rapidly
 experimenting with extensions of first-order superposition, but over time it
@@ -435,7 +435,7 @@ uniformly used monomorphic benchmarks.
 
 We fixed a \emph{base} configuration
 of Zipperposition parameters as a baseline for all comparisons. This is an
-incomplete, pragmatic configuration of \olamsup{} using heuristics expected to perform
+incomplete, pragmatic configuration of \osup{} using heuristics expected to perform
 well on a wide range of problems.
 %Note that
 %we use a different baseline configuration than in our earlier paper \cite{making-ho-work}.
@@ -450,7 +450,7 @@ CASC portfolio mode. The raw evaluation results are available online.%
 
 
 \section{Preprocessing Higher-Order Problems}
-\label{sec:preprocessing}
+\label{sec:ho-tech:preprocessing}
 
 The TPTP library contains thousands of higher-order problems. Despite their
 diversity, they have a markedly different flavor from the TPTP first-order
@@ -642,7 +642,7 @@ pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
 by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
 
 \section{Reasoning about Formulas}
-\label{sec:formulas}
+\label{sec:ho-tech:formulas}
 
 Higher-order logic identifies formulas with terms of Boolean type. To prove a problem, we often
 need to instantiate a variable with the right predicate.
@@ -665,14 +665,14 @@ competitions until CASC-J10.
 % Instead of clausifying the input, we represent the input formula $\varphi$
 % as a higher-order clause $\poslit{\varphi}$. Then we use Vukmirović and Nummelin's
 % \emph{lazy clausification} rules \cite[Sect.~3.4]{our-bool-paper},
-% which extend \ofreelamsup{}. These incrementally clausify top-level
+% which extend \lsup{}. These incrementally clausify top-level
 % logical symbols; for example, a clause $C' \llor \neglit{(\cst{p} \iand \cst{q})}$ yields a
 % new clause $C' \llor \neglit{\cst p} \llor \neglit{\cst q}$.
 % Lazy clausification rules admit advanced
 % forms of formula renaming and Skolem symbol reusing that are not available in
 % standard clausification algorithms.
 % \looseness=-1
-The \olamsup{} calculus supports \emph{delayed clausification rules}
+The \osup{} calculus supports \emph{delayed clausification rules}
 that insert problems into the proof state in their original,
 nonclausified form, and clausify them gradually. 
 Delayed clausification
@@ -681,7 +681,7 @@ whereas the more traditional approach of \emph{immediate clausification}
 applies a standard clausification algorithm \cite{nw-01-small-cnf}
 both as a preprocessing step and whenever predicate variables are instantiated.
 
-An earlier evaluation of the \olamsup{} calculus \cite{bbtv-21-full-ho-sup} showed
+An earlier evaluation of the \osup{} calculus \cite{bbtv-21-full-ho-sup} showed
 that the \emph{outer} variant of delayed clausification substantially increases this calculus's performance.
 The outer variant clausifies
 top-level logical symbols, proceeding from the outside inwards;
@@ -878,7 +878,7 @@ not include lemmas whose name contains the substring \texttt{.induct} and that
 contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
 
 \section{Exploring Boolean Selection Functions}
-\label{sec:bool-select}
+\label{sec:ho-tech:bool-select}
 
 Superposition calculi are parameterized by a literal selection function and a
 term order that help prune considerable swaths of the search space without
@@ -886,7 +886,7 @@ jeopardizing completeness. The core inferences apply only to a clause's
 \emph{eligible} literals, defined as either the clause's selected
 literals or, if none are selected, the clause's literals that are maximal with
 respect to the term order. To further restrict which terms can be targeted by
-an inference, the \olamsup{} calculus introduces \emph{Boolean selection
+an inference, the \osup{} calculus introduces \emph{Boolean selection
 functions}. 
 
 A Boolean selection function chooses \emph{green subterms} of Boolean type
@@ -917,7 +917,7 @@ variables, quantifiers, or $\lambda$-abstractions.
 Green positions are lifted to clauses as follows: If $p$ is the green position
 of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
 t\}$ of $C$, the green position of the same subterm in the clause is denoted by $l.s.p$.
-\olamsup{} mandates additional restrictions on the Boolean selection function:
+\osup{} mandates additional restrictions on the Boolean selection function:
 $\itrue$, $\ifalse$ and variable-headed terms cannot be selected; for literals
 $s \eq t$, neither $s$ not $t$ cannot be selected; if a term $s$ contains a
 variable $X$ as a green subterm, and $X\> \tuplen{u}$, with $n \ge 1$, is a
@@ -1106,7 +1106,7 @@ explosive.
 When the input problem is clausified using immediate clausification, almost
 all Boolean structure is lost. In this case, we expect Boolean selection to
 have a modest effect. To better assess this feature, in this evaluation we use
-\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:formulas} as the baseline
+\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:ho-tech:formulas} as the baseline
 configuration. To avoid interference of literal and Boolean selection, we
 additionally forbid the literal selection function from selecting a literal if
 it contains a selectable Boolean subterm.
@@ -1120,7 +1120,7 @@ while columns denote the function $\mathit{ctx}$.
 On TPTP benchmarks, Boolean selection helps tame the explosion caused by
 dynamic clausification used as inference: \NumberOK{All but one} selection functions
 outperform the \relax{DCI}$-$\relax{LA} baseline of \NumberOK{1532} proved problems. Coming back to the problem
-\texttt{NUM636\^{}2} from Sect.~\ref{sec:formulas}, using Boolean selection
+\texttt{NUM636\^{}2} from Sect.~\ref{sec:ho-tech:formulas}, using Boolean selection
 can reduce the number of given clause loop iterations from
 \NumberOK{294} to \NumberOK{71}.
 
@@ -1164,7 +1164,7 @@ selection formulas is usually not required by Sledgehammer problems.
 % }
 
 \section{Enumerating Infinitely Branching Inferences}
-\label{sec:infinite-branching}
+\label{sec:ho-tech:infinite-branching}
 
 \looseness=-1
 As an optimization and to simplify the code, Leo-III
@@ -1212,7 +1212,7 @@ similar to the ``to do'' set $T$ present in the abstract Zipperposition loop of
 Waldmann et al.\  \cite[Sect.~4]{wtrb-20-sat-framework}.
 Each stream is associated with a weight, and $Q$ is sorted in order of
 increasing weight\confrep{}{, a low weight corresponding to a high priority}.
-When they introduced \lamsup, Bentkamp et al.\
+When they introduced \lsup, Bentkamp et al.\
 \cite{bbtvw-21-sup-lam} described an older version of this extension. Here
 we present a newer version in more detail, including heuristics to postpone
 unpromising streams. The pseudocode of the modified procedure is as follows:
@@ -1568,12 +1568,12 @@ term, so there is no need to ever return $\emptyset$.
 \end{figure}
 
 \section{Controlling Prolific Rules}
-\label{sec:explosiveness}
+\label{sec:ho-tech:explosiveness}
 
 To support higher-order features
 such as function extensionality and quantification over functions,
 many refutationally complete calculi employ highly prolific rules.
-For example, \lamsup{} includes a
+For example, \lsup{} includes a
 \infname{FluidSup} rule \cite{bbtvw-21-sup-lam} that very often applies to two
 clauses if one of them contains a term of the form $F \, \overline{s}_n$,
 where $n > 0$.
@@ -1585,7 +1585,7 @@ We describe three mechanisms to keep rules like these under control.
 %   \item Restrict the applicability of the rules.
 % \end{enumerate}
 
-% Complete provers that implement \lamsup{} %, such as Zipperposition,
+% Complete provers that implement \lsup{} %, such as Zipperposition,
 % have two main heuristic choices: which inference stream to query for clauses
 % and which clauses  from the passive set to choose for processing. The first two mechanisms
 % control these two choice points. The third mechanism
@@ -1773,7 +1773,7 @@ $\ParamPenaltyIncrease=1$.
 %of some rules to shallow clauses, but this had no clear impact.
 
 \section{Controlling the Use of Backends}
-\label{sec:backends}
+\label{sec:ho-tech:backends}
 
 \newcommand{\ParamNumClauses}{\ensuremath{K_\mathrm{size}}}
 \newcommand{\ParamTime}{\ensuremath{K_\mathrm{time}}}
@@ -1784,8 +1784,8 @@ essential feature of higher-order theorem provers such as Leo-III
 % but also HOLyHammer \cite{ku-15-holyhammer} and Sledgehammer \cite{bn-10-sh}.
 Those provers invoke first-order backends repeatedly
 during a proof attempt and spend a substantial amount of time in backend
-collaboration. Since \lamsup{} generalizes a highly efficient
-first-order calculus, we expect that future efficient \lamsup{}
+collaboration. Since \lsup{} generalizes a highly efficient
+first-order calculus, we expect that future efficient \lsup{}
 implementations will not benefit much from backends.
 Nevertheless, experimental provers such
 as Zipperposition can still gain a lot. We present some
@@ -1822,7 +1822,7 @@ to Ehoh. Let $I$ be the set of \confrep{input clauses}{clauses representing the
 input problem}. Given a proof state, let \confrep{$M = P \cup A$}{$M$ denote the
 union of the current active and passive sets}, and let $M_\mathrm{ho}$ denote
 the subset of $M$ that contains only clauses that were derived using at least
-one \lamsup{} rule not present in regular superposition. We order the clauses in
+one \lsup{} rule not present in regular superposition. We order the clauses in
 $M_\mathrm{ho}$ by increasing derivation depth, using syntactic weight to break
 ties. Then we choose all clauses in $I$ and the first \ParamNumClauses~clauses from
 $M_\mathrm{ho}$ for use with the backend reasoner.
@@ -1924,7 +1924,7 @@ containing $\lambda$-abstractions.
   than including a large number of such clauses.
 
 \section{Comparison with Other Provers}
-\label{sec:comparison}
+\label{sec:ho-tech:comparison}
 
 %The raw evaluation data for the previous experiments show that
 Different choices of
@@ -1943,7 +1943,7 @@ Vampire's higher-order schedule is optimized for running on a single core.
 We also include E~2.7 (more precisely, Ehoh, its higher-order configuration), the first version of this prover to syntactically support
 full higher-order logic, including $\lambda$-abstractions.
 Semantically, E~2.7 is arguably the weakest among the listed provers:
-It simply performs $o$-RW rewriting described in Sect.~\ref{sec:preprocessing} followed by
+It simply performs $o$-RW rewriting described in Sect.~\ref{sec:ho-tech:preprocessing} followed by
 $\lambda$-lifting before it applies \relax{$\lambda$-free superposition} \cite{bbcw-21-lfho}
 (a precursor of all three higher-order superposition calculi) on the preprocessed problem.
 
@@ -1974,7 +1974,7 @@ summarizes the results.
 % Among the cooperative provers, Zipperposition is the one that depends the least
 % on its backend, and its \emph{uncooperative} mode is only \NumberNOK{one}~problem
 % behind Satallax's \emph{cooperative} mode. This confirms our hypothesis that
-% \olamsup{} is a suitable basis for automatic higher-order reasoning.
+% \osup{} is a suitable basis for automatic higher-order reasoning.
 % \confrep{This also}{The increase in performance due to the addition of an efficient backend}
 % suggests that the implementation of this calculus in a modern first-order
 % superposition prover such as E or Vampire would achieve markedly better results.
@@ -1984,7 +1984,7 @@ summarizes the results.
 
 The evaluation results corroborate the CASC results. They also
 show that Zipperposition outperforms all other provers on SH benchmarks. This
-confirms our hypothesis that \lamsup{} is a suitable basis for automatic
+confirms our hypothesis that \lsup{} is a suitable basis for automatic
 higher-order reasoning. Further confirmation is provided by the success rate of
 Zipperposition's uncooperative version: Even without backend,
 Zipperposition is substantially better than all other provers on TPTP
@@ -2001,10 +2001,10 @@ and \NumberOK{17} SH problems that can be proved by other provers but not by
 Zipperposition.
 
 \section{Discussion and Conclusion}
-\label{sec:discussion}
+\label{sec:ho-tech:discussion}
 
 %  In this paper, we proposed solutions to issues that arise when implementing a
-%  higher-order prover based on \lamsup. Some of these also apply
+%  higher-order prover based on \lsup. Some of these also apply
 %  to combinatory superposition. We also discussed many choices that can be made
 %  during proof search and evaluated some of those choices.
 
@@ -2057,11 +2057,11 @@ reasoning
 %In contrast, higher-order calculi implemented in competitive provers are usually discussed from a theoretical viewpoint.
 
 %\section{Conclusion and Future Work}
-%\label{sec:conclusion}
+%\label{sec:ho-tech:conclusion}
 
 % We filled in this gap: we describe how
 % We described some ways in which the explosion incurred by
-% \lamsup{} can be kept under control. We showed how native
+% \lsup{} can be kept under control. We showed how native
 % support for a Boolean type can dramatically improve a higher-order prover's
 % performance. For many choices that can be made during the higher-order proof
 % search, we described heuristics and evaluated them. We also designed a

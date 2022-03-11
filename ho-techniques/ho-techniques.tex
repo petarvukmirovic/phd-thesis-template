@@ -1,3 +1,137 @@
 \chapter{Making Higher-Order Superposition Work}
 \setheader{Making Higher-Order Superposition Work}
 \label{ch:ho-techniques}
+
+\authors{
+    Joint work with\\
+    Alexander Bentkamp,
+    Jasmin Blanchette,
+    Simon Cruanes,
+    Visa Nummelin, and Sophie Tourret
+}
+
+\blfootnote{In this work I was the main designer of all presented techniques,
+with the exception of inference streams which were designed by Sophie Tourret
+and Alexander Bentkamp. Alexander Bentkamp and Jasmin Blanchette also discussed many
+of the techniques with me and suggested important updates. Visa Nummelin worked on
+implementation of FOOL preprocessing. Simon Cruanes is the original developer
+of Zipperposition and provided us with invaluable knowledge.
+}
+
+
+\begin{abstract}
+    Superposition is among the most successful calculi for first-order logic. Its
+    extension to higher-order logic introduces new challenges such as infinitely
+    branching inference rules, new possibilities such as reasoning about
+    Booleans, and the need to curb the explosion of specific higher-order rules. We
+    describe techniques that address these issues and extensively evaluate their
+    implementation in the Zipperposition theorem prover. Largely thanks to their use,
+    Zipperposition won the higher-order division of the CASC competition in 2020.  
+  \end{abstract}
+\newpage
+
+\section{Introduction}
+\label{sec:ho-tech:intro}
+
+% %In recent decades,
+% Superposition-based first-order automatic theorem provers
+% have emerged as useful reasoning tools. They dominate at the annual CASC
+% \cite{gs-2016-casc} theorem prover competition, having always won the
+% first-order theorem division. They are also used as backends to proof assistants
+% \cite{ck-18-coqhammer,ku-15-holyhammer,pb-12-sh}, automatic
+% higher-order theorem provers \cite{sb-21-leo3}, and software verifiers
+% \cite{fp-13-why3}.
+
+% The superposition calculus has only recently been extended
+% to higher-order logic (more precisely, extensional simple type theory
+% \cite{henkin-1950-completeness}), resulting in
+% \emph{\lsup} \cite{bbtvw-21-sup-lam}, which we developed
+% together with Waldmann, as well as \emph{combinatory superposition}
+% \cite{br-20-full-sup-w-combs} by Bhayat and Reger. Although these two
+% calculi do not support an interpreted Boolean type,
+% they can be extended by ad hoc rules \cite{our-bool-paper} that support
+% most of the Boolean reasoning necessary in practice.
+
+% Both higher-order superposition calculi were designed to gracefully
+% extend first-order reasoning. As most steps in higher-order
+% proofs tend to be essentially first-order, extending the most successful first-order
+% calculus to higher-order logic seemed worth trying.
+% Our first attempt at testing this idea was in 2019:
+% Zipperposition~1.5, based on \lsup, finished third
+% in the higher-order theorem division of CASC-27 \cite{gs-19-casc27},
+% 12~percentage points behind the winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
+
+The landscape of higher-order proving techniques based on extension of efficient
+first-order ones has tremendously expanded in the late 2010s and early 2020s. As
+mentioned is Sect.~\ref{sec:pre:ho-sup-calculi} we have implemented three
+higher-order calculi---\lfsup{}, \lsup{}, and \osup{}---which extend first-order superposition in a graceful way.
+Bhayat and Reger also gracefully extended superposition to higher-order logic using
+\textsf{SKBCI} combinators \cite{br-20-full-sup-w-combs}. Significant progress has been
+made on SMT front as well \cite{brotb-19-ho-smt}.
+
+In 2019 we tested if the idea of gracefully extending first-order provers to
+higher-order logic really improves state of the art for the first time. We implemented \lsup{} \cite{bbtvw-21-sup-lam} in
+Zipperposition~1.5 with basic heuristics and rudimentary extensions of the
+calculus to deal with Booleans. It finished third at that year's higher-order
+division of CASC competition \cite{gs-19-casc27}, 12~percentage points behind the
+winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
+
+Studying the competition results, we found that higher-order tableaux have some
+advantages over higher-order superposition. To bridge the gap, we developed
+techniques and heuristics that simulate tableaux in the context of saturation.
+We implemented them in Zipperposition~2, which took part at the higher-order
+division of CASC \cite{gs-21-cascj10} in 2020. This time, our prover won the
+division, proving 84\% of the problems, a whole 20~percentage points ahead of
+the runner-up, Satallax 3.4.
+
+In this chapter, we describe the main techniques that explain this reversal of
+fortunes. They cover most parts of a modern higher-order theorem prover, from
+preprocessing to additional calculus rules to heuristics to backend integration.
+Compared to the previous chapter, in which we discussed rules used to treat
+Boolean terms, in this chapter we use a newer version of Zipperposition, based
+on a newer calculus. Instead of \lsup{} augmented with ad hoc Boolean rules, we
+work with {\osup} \cite{bbtv-21-full-ho-sup}, a principled extension of
+superposition to full higher-order logic, including an interpreted Boolean type.
+
+Many higher-order problems extensively use symbol definitions to simplify
+their representation. We describe several ways to exploit the definitions,
+%of which the most successful is
+such as turning them into rewrite rules (Sect.~\ref{sec:ho-tech:preprocessing}).
+%Interesting patterns can be observed in various higher-order problem encodings.
+%We show how we can exploit these to simplify problems (Sect.~\ref{sec:ho-tech:preprocessing}).
+%
+By working on formulas rather than clauses, tableau techniques take a more
+holistic view of a higher-order problem.
+Through its support for delayed clausification and, more generally,
+calculus-level formula manipulation, \osup{} enables us to
+simulate most successful tableau techniques in a saturating prover
+(Sect.~\ref{sec:ho-tech:formulas}). This calculus also supports \emph{Boolean selection
+functions}, a mechanism that allows us to choose on which Boolean subterms
+to perform inferences first.
+We implemented some Boolean selection functions and
+evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
+
+The main drawback of both $\lambda$-superposition variants compared with
+combinatory superposition is that they rely on rules that enumerate possibly
+infinite sets of unifiers. We describe a mechanism that interleaves infinitely
+branching inferences with the standard saturation process
+(Sect.~\ref{sec:ho-tech:infinite-branching}). The prover retains the same
+behavior as before on first-order problems, smoothly scaling with increasing
+numbers of higher-order clauses.
+%
+We also propose some heuristics to curb the explosion induced by highly
+prolific calculus rules (Sect.~\ref{sec:ho-tech:explosiveness}).
+
+Using first-order backends to finish the proof is common practice in
+higher-order reasoning. Since \osup{} coincides with standard
+superposition on first-order clauses, invoking backends may
+seem redundant; yet Zipperposition is nowhere as efficient as E
+\cite{scv-19-e23} or Vampire \cite{lkav-13-vampire}, so invoking a more
+efficient backend does make sense. We describe how to achieve a balance
+between allowing native higher-order reasoning and
+delegating reasoning to a backend (Sect.~\ref{sec:ho-tech:backends}).
+%
+Finally, we compare Zipperposition~2 with other provers on all monomorphic
+higher-order TPTP benchmarks \cite{gs-17-tptp} to perform a more extensive
+evaluation than at CASC (Sect.~\ref{sec:ho-tech:comparison}). Our evaluation
+corroborates the competition results.

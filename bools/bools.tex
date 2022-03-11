@@ -99,8 +99,8 @@ require introduction of Boolean axioms.
 We discuss some examples, coming from TPTP \cite{gs-17-tptp}, that
 illustrate advantages and disadvantages of our approach (Sect.~\ref{sect:bool:examples}).
 
-Our approach is implemented in the Zipperposition theorem prover
-\cite{sc-15-simon-phd,sc-supind-17}. This prover was used by Bentkamp et al.\
+Our approach is implemented in Zipperposition
+\cite{sc-15-simon-phd,sc-supind-17}. This theorem prover was used by Bentkamp et al.\
 to implement \lsup{}. We further extend
 their implementation.
 
@@ -207,11 +207,11 @@ As mentioned in Chapter~\ref{ch:unif}, Zipperposition is an open source prover
 written in OCaml. From its inception, it was designed as a prover that supports
 easy extension of its base superposition calculus to various theories, including
 arithmetic, induction and limited support for higher-order logic
-\cite{sc-15-simon-phd}.
+\cite{sc-15-simon-phd,sc-supind-17}.
 
 In Zipperposition, applications are represented in flattened, spine notation (Sect.~\ref{sec:ehoh:types-and-terms}).
-This means that higher-order term $(\cst{f} \, \cst{a}) \, cst{b}$ is
-represented the same as first-order term $\cst{f}(\cst{a}, \cst{b})$. In
+This means that the higher-order term $(\cst{f} \, \cst{a}) \, \cst{b}$ is
+represented the same as the first-order term $\cst{f}(\cst{a}, \cst{b})$. In
 addition, Zipperposition uses associativity of $\iand$ and $\ior$ to flatten out
 the nested applications of these symbols. For example, terms $\cst{p} \iand
 (\cst{q} \iand \cst{r})$ and $(\cst{p} \iand \cst{q}) \iand \cst{r}$ are
@@ -225,7 +225,7 @@ predicate symbols.
 The version of Zipperposition preceding our modifications distinguished between non\-equational
 and equational literals. Following E \cite{scv-19-e23}, we
 modified Zipperposition to represent all literals equationally: a nonequational
-literal $f$ is stored as $f \eq \itrue$, whereas $\neg f$ is stored as $f
+literal $f$ is stored as $f \eq \itrue$, whereas $\inot f$ is stored as $f
 \noteq \itrue$. Equations of the form $f \eq \ifalse $ and $f \noteq \ifalse$ are
 transformed into $f \noteq \itrue$ and $f \eq \itrue$, respectively.
 
@@ -384,8 +384,8 @@ $\star$ is an element of a set of logical constants $S = \{ \iand, \ior,
 \mathop{\ieq}\typeargs{\alpha}, \inot, \iforall, \iexists \}$. Mode \emph{Full}
 generates imitations (for $P$) of all elements of $S$. Mode $\emph{Pragmatic}$
 generates imitations of $\inot$, $\itrue$ and $\ifalse$; if there exist indices $i,j$
-such that $i\ineq j$ and  $\tau_i = \tau_j$, it generates $\lam{\tuplen{x}}{x_i
-\ieq x_j}$; if there exist indices $i,j$ such that $i \ineq j$, and $\tau_i =
+such that $i\not= j$ and  $\tau_i = \tau_j$, it generates $\lam{\tuplen{x}}{x_i
+\ieq x_j}$; if there exist indices $i,j$ such that $i \not= j$, and $\tau_i =
 \tau_j = o$, then it generates $\lam{\tuplen{x}}{x_i \iand x_j}$ and
 $\lam{\tuplen{x}}{x_i \ior x_j}$; if for some $i$, $\tau_i = o$, then it
 generates $\lam{\tuplen{x}}{x_i}$. Mode $\mathit{Imit}_\star$ generates
@@ -430,26 +430,28 @@ the variable $X$ can later be replaced by imitations of logical symbols to creat
 complex instantiations of the choice axiom. To generate useful instances early, we create two instances: $\substcl{\{X
 \mapsto \lam{z}{z}\}}{D}$ and $\substcl{\{X \mapsto \lam{z}{\inot\, z}\}}{D}$. Then, depending on
 Zipperposition options, $D$ will either be deleted or kept. Note that $D$
-will not subsume its instances, since the matching algorithm Zipperposition uses is
-too weak for this \cite[Sect.~6]{bbtvw-21-sup-lam}
+will not subsume its instances, since the matching algorithm Zipperposition uses favors performance over completeness and is
+thus too weak for this \cite[Sect.~6]{bbtvw-21-sup-lam}
 \looseness=-1
 
-Most provers natively support both functional and Boolean extensionality reasoning: Bhayat et al. \cite{br-20-full-sup-w-combs} modify
-first-order unification to return unification constraints consisting of pairs of
-terms of functional type, whereas Steen relies on the unification rules of
-Leo-III's calculus \cite[Section 4.3.3]{as-18-phd} to deal with extensionality.
-As a pragmatic extension of the \lsup{} calculus, Bentkamp et al. \cite{bbtvw-21-sup-lam} propose to alter core generating inference rules of \lsup{}
-to support functional extensionality. Instead of requiring that terms
-involved in the inference are unifiable, it is required that they can be
-decomposed into \emph{disagreement pairs} such that at least one of the
-disagreement pairs is of functional type. Disagreement pairs of terms $s$ and
-$t$ of the same type are defined inductively using function $\textsf{dp}$:
-$\textsf{dp}(s,t) = \emptyset$ if $s$ and $t$ are equal; $\textsf{dp}(a \,
-\tuplen{s}, b \, \tuple{t}{m}) = \{(a \,
-\tuplen{s}, b \, \tuple{t}{m})\}$ if $a$ and $b$ are different heads;
-$\textsf{dp}(\lam{x}{s}, \lam{y}{t}) = \{ (\lam{x}{s}, \lam{y}{t}) \}$;
-$\textsf{dp}(a \, \tuplen{s}, a \, \tuplen{t}) = \bigcup_{i=1}^{n}
-\textsf{dp}(s_i, t_i)$. Then the extensionality rules are stated as follows:
+Most provers natively support both functional and Boolean extensionality
+reasoning: Bhayat et al. \cite{br-20-full-sup-w-combs} modify first-order
+unification to return unification constraints consisting of pairs of terms of
+functional type, whereas Steen relies on the unification rules of Leo-III's
+calculus \cite[Section 4.3.3]{as-18-phd} to deal with extensionality. As a
+pragmatic extension of the \lsup{} calculus, Bentkamp et al.
+\cite{bbtvw-21-sup-lam} propose to alter the core generating inference rules of
+superposition (Sect.~\ref{sec:pre:rules}) to support functional extensionality.
+Instead of requiring that terms involved in the inference are unifiable, it is
+required that they can be decomposed into \emph{disagreement pairs} such that at
+least one of the disagreement pairs is of functional type. Disagreement pairs of
+terms $s$ and $t$ of the same type are defined inductively using function
+$\textsf{dp}$: $\textsf{dp}(s,t) = \emptyset$ if $s$ and $t$ are equal;
+$\textsf{dp}(a \, \tuplen{s}, b \, \tuple{t}{m}) = \{(a \, \tuplen{s}, b \,
+\tuple{t}{m})\}$ if $a$ and $b$ are different heads; $\textsf{dp}(\lam{x}{s},
+\lam{y}{t}) = \{ (\lam{x}{s}, \lam{y}{t}) \}$; $\textsf{dp}(a \, \tuplen{s}, a
+\, \tuplen{t}) = \bigcup_{i=1}^{n} \textsf{dp}(s_i, t_i)$. Then the
+extensionality rules are stated as follows:
 \pagebreak[2]
 \begin{align*}
   & \namedinference{AbsSup}
@@ -462,25 +464,27 @@ $\textsf{dp}(a \, \tuplen{s}, a \, \tuplen{t}) = \bigcup_{i=1}^{n}
 \noindent\looseness=-1
 In each of the rules, $\sigma$ is a most general unifier of the types of $s$ and
 $s'$, and $\textsf{dp}(\sigmaterm{s} ,\sigmaterm{s'}) = \{ (s_1, s'_1), \ldots,
-(s_n, s'_n)\}$. All side conditions for extensional rules are the same as for
+(s_n, s'_n)\}$. Rules \infname{AbsSup}, \infname{AbsER}, and \infname{AbsEF} are
+extensional versions of superposition, equality resolution and equality
+factoring (Sect.~\ref{sec:pre:rules}). All side conditions for extensional rules are the same as for
 the standard rules, except that condition that $s$ and $s'$ are unifiable is
 replaced by the condition that at least one $s_i$ is of functional type and that
-$n>0$. Rules \infname{AbsSup}, \infname{AbsER}, and \infname{AbsEF} are
-extensional versions of superposition, equality resolution and equality
-factoring (Sect.~\ref{sec:pre:rules}). By \infname{Abs} we denote the union of
-these three rules. We extend this rule to support Boolean extensionality by
+$n>0$. By \infname{Abs} we denote the union of
+these three rules. We extend \infname{Abs} to support Boolean extensionality by
 requiring that at least one $s_i$ is of functional or type $o$, and adding the
 condition ``$\textsf{dp}(f, g) = \{(f,g)\}$ if $f$ and $g$ are different
 formulas'' to the definition of $\textsf{dp}$. If another condition of \textsf{dp}'s 
-definition is also applicable, the newly added one is preferred.
+definition is also applicable, the newly added one is preferred. In the rest of the
+text with \infname{Abs} we assume the version that supports Boolean extensionality.
 
+\looseness=-1
 Consider the clause $\cst{f} \, (\inot\cst{p} \ior \inot\cst{q}) \noteq \cst{f} \,
-(\inot (\cst{p} \iand \cst{q}))$. This problem is obviously unsatisfiable, since
+(\inot (\cst{p} \iand \cst{q}))$. This problem is unsatisfiable, as
 the arguments of $\cst{f}$ on the different sides of the disequation are Boolean-extensionally
-equal. Without the \infname{Abs} rules Zipperposition will rely on
+equal. Without the \infname{Abs} rules Zipperposition relies on
 \infname{Cases}(\infname{Simp}) and \infname{IC} rules to derive the empty
-clause. On the other hand, \infname{AbsER} will generate~$C = \inot\cst{p} \ior \inot\cst{q} \noteq
-\inot (\cst{p} \iand \cst{q})$. Then, $C$ will get clausified using
+clause. On the other hand, \infname{AbsER} generates~$C = \inot\cst{p} \ior \inot\cst{q} \noteq
+\inot (\cst{p} \iand \cst{q})$. Then, $C$ gets clausified using
 \infname{IC}, effectively reducing the problem to $\inot (\inot\cst{p} \ior
 \inot\cst{q} \iequiv \inot (\cst{p} \iand \cst{q}))$, which is first-order.
 
@@ -658,7 +662,7 @@ using the trick of negating one side to simulate \infname{EF}.
 The rule \infname{BoolER} only considers literals of the form $s \eq t$. 
 Equivalences $s \iequiv t = \itrue$ and disequivalences $(s \iequiv t) \not\eq \itrue$ are automatically simplified to $s \eq t$ or $s \not\eq t$.
 The example  \verb|SET557^1| in Sect.~\ref{sect:bool:examples} illustrates how 
-\infname{Bool} family of rules helps solve the problems that get obfuscated by clausification.
+the \infname{Bool} family of rules helps solve the problems that get obfuscated by clausification.
 
 Another approach to mitigate harmful effects of immediate clausification
 is to delay it as long as possible. Following the approach by 
@@ -693,17 +697,17 @@ delayed clausification (\infname{DC}) rules:
 \vspace{2\jot}
 
 \looseness=-1
-In \infname{DC}$_\eq$ we require both $f$ and $g$ to be formulas and at least one of
+In \infname{DC}$_\eq$ we require both $g$ and $h$ to be formulas and at least one of
 them not to be $\itrue$. In \infname{DC}$_{\iforall}$, $Y$ is a fresh variable, and in
 \infname{DC}$_{\iexists}$, $\cst{sk}$ is a fresh symbol and $\tuple{\alpha}{}$ and $\tuplen{Y}$ are all the type and term variables occurring
-freely in $\iexists x.\, f$. The rules described above are as given by Ganzinger and Stuber (adapted to
+freely in $\iexists x.\, g$. The rules described above are as given by Ganzinger and Stuber (adapted to
 our setting), with the omission of rules for negative literals (of the form $ f \not\eq
 \itrue$), which are easy to derive and which can be found in their work \cite{gs-05-boolsup}.
 
 \looseness=-1
 Naive application of the \infname{DC} rules can result in exponential blowup in
 problem size. To avoid this, we rename formulas $f$ that have repeated
-occurrences by introducing predicates $\cst{p} \, \tuple{X}{n}$ for them, where
+occurrences by introducing predicates $\cst{p} \, \tuple{X}{n}$ replacing them, where
 $\tuplen{X}$ are all free variables of $f$. We keep the count of all nonatomic
 formulas occurring as either side of a literal. Before applying the \infname{DC}
 rules on a clause $f \mathrel{\dot{\eq}} \itrue \llor C $, we check whether the
@@ -721,12 +725,12 @@ fast, incomplete matching algorithm, used for simplification and subsumption) if
 formula $g$, for which definition was already introduced, such that
 $\sigmaterm{g} = f$, for some substitution $\sigma$. This check can have three
 outcomes. First, if the definition $\textsf{q} \, \overline{X}_n$ is already
-introduced for $g$ with the polarity matching that of $f \, \dot{\eq} \,
+introduced for $g$ with the same polarity as $f \, \dot{\eq} \,
 \itrue$, then $f$ is replaced by $\sigmaterm{\cst{q} \, \tuplen{X}}$. Second, if
 the definition was introduced, but with different polarity, we create the clause
 defining $g$ with the missing polarity, and replace $f$ with $\sigmaterm{\cst{q}
-\, \tuplen{X}}$. Last, if the there is no renamed formula $g$ generalizing $f$,
-then we check if the number of occurrences of $f$ exceeds the threshold.
+\, \tuplen{X}}$. Last, if there is no renamed formula $g$ generalizing $f$,
+we check if the number of occurrences of $f$ exceeds the threshold $k$.
 
 \looseness=-1
 In addition to reusing names for formula definitions, we reuse the Skolem
@@ -785,7 +789,7 @@ Rules \infname{Cases} and \infname{CasesSimp} deal with Boolean terms,
 but we need to rely on extensionality reasoning to deal with $\lambda$-abstractions
 whose body has type $o$. Using the observation that the formula $\iforall \tuplen{x}. \, f$ 
 implies that $\lam{\tuplen{x}}{f}$ is functional-extensionally equal to $\lam{\tuplen{x}}{\itrue}$ (and similarly, if
-$\iforall \tuplen{x}. \, \inot f$, then $\lam{\tuplen{x}}{f} \eq \lam{\tuplen{x}}{\ifalse})$, we
+$\iforall \tuplen{x}. \, \inot f$, then $\lam{\tuplen{x}}{f} \ieq \lam{\tuplen{x}}{\ifalse})$, we
 designed the following rule (where $\tuplen{x}$ consists of all loosely bound variables of $f$ ):
 %\pagebreak[2]
 %
@@ -872,9 +876,9 @@ in which the nested Boolean appears. Similar preprocessing techniques are used i
 \section{Examples}
 \label{sect:bool:examples}
 
-The TPTP library contains thousands of higher-order benchmarks, many of them hand-crafted
+The TPTP library \cite{gs-17-tptp} contains thousands of higher-order benchmarks, many of them hand-crafted
 to point out subtle interferences of functional and Boolean properties of higher-order logic. In this section
-we discuss some problems from the TPTP library \cite{gs-17-tptp} that illustrate the advantages and disadvantages
+we discuss some problems from the TPTP library that illustrate the advantages and disadvantages
 of our approach.
 
 During most of 2010s, the core calculus of the best performing
@@ -922,7 +926,7 @@ $ with $ \iforall \, Y$ (which is the $\eta$-short form of $\iforall z. \, Y
 Then, Zipperposition finds the proof only if an appropriate instantiation mode of
 \infname{PI} is used, and if both clauses resulting from clausifying the negated
 conjecture are appropriately instantiated. In contrast, dynamic clausification will
-derive the clause $ X \, (\cst{sk} \, X) \not\eq \forall \, \cst{sk} $
+derive the clause $ X \, (\cst{sk} \, X) \not\eq \forall \, (\cst{sk} \, X) $
 from the negated conjecture in three steps. Then, equality resolution results in
 an empty clause, swiftly finishing the proof without any explosive inferences.
 This effect is even more pronounced on problems \verb|SYO287^5| and
@@ -938,7 +942,7 @@ $$ \cst{f}_0 \, ( \cst{f}_1 \, ( \cst{f}_1 \, ( \cst{f}_1 \, ( \cst{f}_2 \, ( \c
     \eq \cst{f}_0 \, ( \cst{f}_0 \, ( \cst{f}_0 \, ( \cst{f}_1 \, ( \cst{f}_2 \, ( \cst{f}_2 \, ( \cst{f}_2 \, ( \cst{f}_3 \, ( \cst{f}_4 \, ( \cst{f}_4 \, ( \cst{f}_4 \, \cst{a} ) ) ) ) ) ) ) ) ) ) )$$
 In this problem, all functions $\cst{f}_i$ are of type $o \rightarrow o$, and constant $\cst{a}$ is of type $o$.
 FOOL unfolding of nested Boolean terms will result in exponential blowup in the problem size. However,
-superposition-based theorem provers are well equipped for this issue: Their CNF algorithms use smart simplifications and
+superposition-based theorem provers are well equipped for this issue: Their clausification algorithms use smart simplifications and
 formula renaming to mitigate these effects. Moreover, when the problem is preprocessed, the prover is aware of the problem
 size before the proving process starts and can adjust its heuristics properly. E, Zipperposition, and Vampire, instructed to perform FOOL unfolding,
 solve the problem swiftly, using their default modes. However, if the problem is not preprocessed, Zipperposition struggles to prove it using
@@ -957,16 +961,16 @@ does our approach compare with state-of-the-art higher-order provers?
 \ourpara{Evaluation of the Rules}
 \looseness=-1
 For this part of the evaluation, we fixed a single well-perform\-ing Zipperposition configuration
-called \emph{base} (\emph{b}). Since we are testing a single configuration, we
+called \emph{base} (b). Since we are testing a single configuration, we
 used the CPU time limit of \NumberOK{15} s---roughly the time a single configuration is
-given in a portfolio mode when participating in CASC. Configuration \emph{b} uses the pragmatic variant
+given in a portfolio mode when participating in CASC. Configuration {b} uses the pragmatic variant
 pv$_{1121}^{2}$ (Sect.~\ref{sec:unif:evaluation}) of the unification algorithm described in Chapter~\ref{ch:unif}. 
 It enables the \infname{BoolSimp} rule,
 the \infname{EC} rule, the \infname{PI} rule in \emph{Pragmatic} mode with $k=2$,
 rules \infname{ElimLeibniz} and \infname{ElimPredVar}, the \infname{BoolER} rule, and the \infname{BoolEF} rules. 
 To evaluate the usefulness of
 all rules we described above, we enable, disable, or change the
-parameters of a single rule, while keeping all other parameters of $b$ intact. 
+parameters of a single rule, while keeping all other parameters of b intact. 
 In figures that contain sufficiently different configurations, cells are of the form $n (m)$ where $n$ is the total
 number of proved problems by a particular configuration and $m$ is the number of
 unique problems that a given configuration solved, compared to the other
@@ -978,10 +982,10 @@ is written in \textbf{bold}.
 First, we tested different parameters of \infname{Cases} and \infname{CasesSimp}
 rules. In Figure \ref{fig:cases} we report the results. The columns correspond to
 three possible options to choose subterm on which the inference is performed:
-\textbf{a} stands for any eligible subterm, \textbf{lo} and \textbf{li} stands
+{a} stands for any eligible subterm, {lo} and {li} stands
 for leftmost outermost and leftmost innermost subterms, respectively. The rows
 correspond to two different rules: 
-\textbf{b} is the base configuration, which uses \infname{CasesSimp}, and \textbf{b$_\text{c}$}
+{b} is the base configuration, which uses \infname{CasesSimp}, and {b$_\text{c}$}
 swaps this rule for \infname{Cases}. Although the margin is slim, the results show it is usually preferable to select the leftmost-outermost
 subterm.
 
@@ -1080,12 +1084,12 @@ superposition rules.
 \looseness=-1
 Combining these two rules with dynamic clausification is more useful: When rule
 \infname{IC} is replaced by rule \infname{DC}, the success rate increases
-to 1660 problems, compared to 1646 problems solved by $b$. We also discovered
+to 1660 problems, compared to 1646 problems solved by b. We also discovered
 that reasoning with choice is useful: When rule \infname{Choice} is enabled, the
 success rate increases to 1653. We determined that including or excluding the
 conclusion $D$ of \infname{Choice}, after it is simplified, makes no difference.
 Counterintuitively, disabling \infname{BoolSimp} rule results in 1640 problems,
-which is only 6 problems short of configuration $b$. Disabling \infname{Abs} and
+which is only 6 problems short of configuration b. Disabling \infname{Abs} and
 \infname{Interpret$\lambda$} rules results in solving 25 and 31 problems less,
 respectively. The raw data show that in total, using configurations from Figure
 \ref{fig:cases} to Figure \ref{fig:bool-rules}, 1682 problems can be solved.
@@ -1093,7 +1097,7 @@ respectively. The raw data show that in total, using configurations from Figure
 Last, we compare our approach to alternatives. Axiomatizing Booleans brings
 Zipperposition down to a grinding halt: only 1106 problems can be solved using
 this mode. On the other hand, preprocessing is fairly competitive: it solves
-only 8 problems less than the $b$ configuration.
+only 8 problems less than the b configuration.
 
 
 \ourpara{Comparison with Other Higher-Order Provers} 

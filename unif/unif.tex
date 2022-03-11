@@ -146,8 +146,8 @@ To more efficiently find terms (in a large term set) that are unifiable with a g
 we developed a higher-order extension of fingerprint indexing \cite{ss-12-fp-indexing}
 (Sect.~\ref{sec:unif:indexing}).
 We implemented our procedure, several oracles,
-and the fingerprint index in
-the Zipperposition prover (Sect.~\ref{sec:unif:implementation}). Since a
+and the fingerprint index (Sect.~\ref{sec:unif:implementation}) in
+the Zipperposition prover \cite{sc-supind-17,sc-15-simon-phd}. Since a
 straightforward implementation of the JP procedure already existed in
 Zipperposition, we used it as a baseline to evaluate the performance of our
 procedure (Sect.~\ref{sec:unif:evaluation}). The results show substantial
@@ -2414,7 +2414,7 @@ as the only optimization. Our evaluations were performed on StarExec Miami
 Contrary to first-order unification, there is no widely available benchmark set 
 designed solely for evaluating performance of higher-order
 unification algorithms. Thus, we used all 2606 monomorphic higher-order theorems
-from the TPTP library \cite{gs-17-tptp} and 832 monomorphic higher-order
+from the TPTP 7.2.0 library \cite{gs-17-tptp} and 832 monomorphic higher-order
 Sledgehammer (SH) generated problems \cite{ns-13-leo2sh} as our benchmarks.\footnote{An archive with raw
 results, all used problems, and scripts for running each configuration is
 available at \url{http://doi.org/10.5281/zenodo.4269591}}
@@ -2425,16 +2425,16 @@ solved with first-order unifiers.
 \looseness=-1
 We used the naive implementation of the JP procedure (\textbf{jp}) as a baseline
 to evaluate the performance of our procedure. We compare it with the complete
-variant of our procedure (\textbf{cv}) and pragmatic variants
-(\textbf{pv}) with several different configurations of limits for
-applied bindings. All other Zipperposition parameters have been fixed to the values of
-a variant of a well-performing configuration we used for the CASC-27 theorem proving competition \cite{gs-19-casc27}.
-The cv configuration and all of the pv
-configurations use only pattern unification as an underlying oracle. To test
-the effect of oracle choice, we evaluated the complete variant
-in eight combinations: with no oracles
-(\textbf{n}), with only fixpoint (\textbf{f}), pattern (\textbf{p}), or solid (\textbf{s}) oracle,
-and with their combinations: \textbf{fp}, \textbf{fs}, \textbf{ps}, \textbf{fps}.
+variant of our procedure (\textbf{cv}) and pragmatic variants (\textbf{pv}) with
+several different configurations of limits for applied bindings. All other
+Zipperposition parameters have been fixed to the values of a variant of a
+well-performing configuration we used for the 2019 installment of the higher-order
+division of CASC theorem proving competition \cite{gs-19-casc27}. The cv
+configuration and all of the pv configurations use only pattern unification as
+an underlying oracle. To test the effect of oracle choice, we evaluated the
+complete variant in eight combinations: with no oracles (\textbf{n}), with only
+fixpoint (\textbf{f}), pattern (\textbf{p}), or solid (\textbf{s}) oracle, and
+with their combinations: \textbf{fp}, \textbf{fs}, \textbf{ps}, \textbf{fps}.
 
 \looseness=-1
 Figure~\ref{fig:new-old} compares different variants of the procedure with the

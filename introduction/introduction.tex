@@ -181,7 +181,7 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   a complete superposition calculus for the second phase described above
   \cite{bbtvw-21-sup-lam}. Due to the complexity of the calculus and many design
   decisions that had to be evaluated in a short amount of time we decided to
-  implement the calculus in Zipperposition. This prover is less efficient than
+  implement the calculus in Zipperposition \cite{sc-15-simon-phd,sc-supind-17}. This prover is less efficient than
   E, but it is implemented in OCaml and it was designed to make prototyping
   ideas and experimenting with calculi much easier. In 2019 we entered the
   higher-order division of CASC theorem proving competition with Zipperposition
@@ -353,7 +353,7 @@ Various researchers also experimented with the idea of extending a first-order
 prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order
 unification and added $\lambda$-terms to one of the best superposition
 provers at the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
-\cite{sc-15-simon-phd} with arithmetic, induction, and rudimentary support for
+\cite{sc-15-simon-phd,sc-supind-17} with arithmetic, induction, and rudimentary support for
 higher-order logic. Bhayat and Reger implemented a complete superposition
 calculus  for higher-order logic, based on combinators  in Vampire
 \cite{br-20-full-sup-w-combs}. Authors of SMT (satisfiability modulo theories) solvers followed a similar path:
