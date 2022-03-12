@@ -92,7 +92,7 @@
      {\normalsize\bfseries\boldmath}}
 
 \spnewtheorem{definitionx}[theorem]{Definition}{\bfseries}{\rmfamily}
-\spnewtheorem{examplex}[theorem]{Example}{\bfseries}{\rmfamily}
+\spnewtheorem{exa}[theorem]{Example}{\bfseries}{\rmfamily}
 
 
 \begin{document}
@@ -480,7 +480,7 @@ it amenable to first-order methods. However, this can inflate the problem
 beyond recognition and compromise the refutational completeness of
 superposition.
 
-\begin{examplex} 
+\begin{exa} 
   Removing higher-order features of a problem can have adverse effects.
   Consider the TPTP problem \texttt{NUM636\^{}3}, which defines the predicate $\cst{m}$
   as $\lambda x.\, \cst{s} \, x \ineq x$ and states its conjecture as $\iforall
@@ -493,7 +493,7 @@ superposition.
   unfolded and the problem is $\beta$-reduced, both $\cst{m}$ and the
   corresponding $\lambda$-abstraction disappear, forcing the prover to guess the
   correct instantiation for the induction axiom.
-\end{examplex}
+\end{exa}
 
 We describe two techniques to mitigate these issues. The first one is based on the observation that in practice,
 the explosion associated with definition unfolding mostly
@@ -524,7 +524,7 @@ right.
 
 
 
-\begin{examplex} 
+\begin{exa} 
   Many of the problems in the TPTP library's \verb|LCL| category encode modal logic
   in higher-order logic. More complex modal operators (such as
   implication and equivalence) are defined in terms of basic connectives (such as negation
@@ -538,7 +538,7 @@ right.
   $\mathcal{W}(\cst{mor}) = 17$. Then, we use these values to set
   $\mathcal{W}(\cst{mimplies}) = 37$. Clearly, these weights
   enable us to orient all definitions from left to right.
-\end{examplex}
+\end{exa}
 
 
 % Many higher-order problems, especially those generated from proof assistants,
@@ -768,7 +768,7 @@ datatypes. As the conjecture is negated\confrep{}{ in refutational theorem provi
 the equation's polarity is inverted in the
 abstraction. 
 
-\begin{examplex}
+\begin{exa}
 \label{ex:dat056-2}
 The clausified conjecture of the problem \texttt{DAT056\^{}2}
 \cite{ns-13-leo2sh} from the TPTP library is $\cst{ap} \, \cst{xs}
@@ -788,7 +788,7 @@ using the $\cst{ap}$ definition, we can prove
 $\iforall \mathit{xs}. \, \cst{ap} \, \mathit{xs} \, (\cst{ap} \, \cst{ys} \, \cst{zs})
 \ieq \cst{ap} \, (\cst{ap} \, \mathit{xs} \, \cst{ys}) \, \cst{zs}$,
 from which we easily derive a contradiction.
-\end{examplex}
+\end{exa}
 
 
 \ourpara{Evaluation and Discussion}
@@ -909,10 +909,10 @@ variables, quantifiers, or $\lambda$-abstractions.
   assuming $i \leq n$.
 \end{definitionx}
 
-\begin{examplex} The green subterms of the term $F \, \cst{a} \, \iand \, \cst{p} \,
+\begin{exa} The green subterms of the term $F \, \cst{a} \, \iand \, \cst{p} \,
 (\iforall \, (\lambda x. \, \cst{q} \, x)) \, \cst{b}$ are the term itself, $F \, \cst{a}$, $\cst{p} \, (\iforall \, (\lambda x. \, \cst{q} \, x))
 \, \cst{b}$, $\iforall \, (\lambda x. \, \cst{q} \, x)$, and $\cst{b}$.
-\end{examplex} 
+\end{exa} 
 %
 Green positions are lifted to clauses as follows: If $p$ is the green position
 of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
@@ -1060,7 +1060,7 @@ variables are ``less unifiable'' with the similar observation for higher-order
 logic that reasoning about interpreted symbols or applied variables is usually
 explosive.
 
-\begin{examplex}
+\begin{exa}
   Selecting the right Boolean subterm can help avoid elaborating
   high\-er-order inferences. Consider the unsatisfiable clause set consisting of $\cst{p} \, (\lambda y.\, X
   \, (\lambda x.\, x) \, \cst{a}) \iimplies\allowbreak \inot(\cst{p} \, (\lambda y. \allowbreak\, X
@@ -1079,7 +1079,7 @@ explosive.
   In contrast, \texttt{Backward} context selection allows us to
   superpose from $\cst{p} \, (\lambda y. \, y^{100} \, \cst{b})$ into $\cst{p} \, (\lambda y. \, X
   \, y \, \cst{a})$, avoiding this explosion. 
-\end{examplex}
+\end{exa}
 
 \ourpara{Evaluation and Discussion}
 
@@ -1389,7 +1389,7 @@ lazily to fill $P$.
 
 \newcommand\infstream[1]{[#1]}
 
-\begin{examplex} 
+\begin{exa} 
   \begin{sloppypar}
   Consider the unsatisfiable two-clause problem $\{ X \, (\cst{f} \,
   \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}),\allowbreak
@@ -1433,7 +1433,7 @@ lazily to fill $P$.
   performed. Then, the stream created in the second iteration is probed, and its
   results fill the set $P$. Ultimately, the clause $\cst{p} \, (\cst{f}^{100} \,
   \cst{a})$ is chosen, at which point $\bot$ is quickly derived.
-\end{examplex}
+\end{exa}
 
 \textsc{GivenClause} eagerly stores the first element of a new inference stream
 in $P$ to imitate the standard given clause procedure. If the underlying

@@ -234,3 +234,238 @@ CPU time limit of 15~s, roughly the time each configuration is given in the
 CASC portfolio mode. The raw evaluation results are available online.%
 \footnote{\url{http://doi.org/10.5281/zenodo.5007440}}
 
+\section{Preprocessing Higher-Order Problems}
+\label{sec:ho-tech:preprocessing}
+
+The TPTP library contains thousands of higher-order problems. Despite their
+diversity, they have a markedly different flavor from the TPTP first-order
+problems. Notably, they extensively use the \verb|definition| role to identify
+universally quantified equations (and equivalences) that define symbols.
+%
+Definitions $s \eq t$ (or $(s \iequiv t) \eq \itrue$) can be replaced by rewrite
+rules $s \longrightarrow t$,
+using the orientation given in the input problem. If there are multiple
+definitions for the same symbol, only the first one is replaced by a rewrite rule.
+Then, whenever a clause is picked in the given clause procedure, it will be rewritten
+using the collected rules.
+Alternatively, we can rewrite
+the input formulas as a preprocessing step. This ensures that the input
+clauses will be fully simplified when the proving process starts and no
+defined symbols will occur in clauses, which usually helps the heuristics.
+
+Since the TPTP format enforces no constraints on
+definitions, rewriting might diverge. To ensure
+termination, we limit the number of applied rewrite steps. In
+practice, most TPTP problems are well behaved: Only one
+definition is given for each symbol, and the definitions are acyclic.
+
+Turning the defining equations into rewrite rules, unfolding the definitions, and
+$\beta$-reduc\-ing the result can eliminate all of a problem's higher-order features, making
+it susceptible to first-order methods. However, this can inflate the problem
+beyond recognition and compromise the refutational completeness of
+superposition.
+
+\begin{exa} 
+  Removing higher-order features of a problem can have adverse effects.
+  Consider the TPTP problem \texttt{NUM636\^{}3}, which defines the predicate $\cst{m}$
+  as $\lambda x.\, \cst{s} \, x \ineq x$ and states its conjecture as $\iforall
+  x.\, \cst{m} \, x $, where $\cst{s}$ is the standard Peano-style natural number
+  successor constructor. When this definition is kept as is, the
+  prover can superpose from either $\cst{m}$ or its definition into the
+  (clausified) induction axiom, which is also given in the problem, and quickly prove
+  the conjecture, without using any advanced inductive reasoning. In contrast,
+  when the definition is
+  unfolded and the problem is $\beta$-reduced, both $\cst{m}$ and the
+  corresponding $\lambda$-abstraction disappear, forcing the prover to guess the
+  correct instantiation for the induction axiom.
+\end{exa}
+
+We describe two techniques to mitigate these issues. The first one is based on the observation that in practice,
+the explosion associated with definition unfolding mostly
+manifests itself on definitions of nonpredicate symbols. In some cases, it is
+preferable to rely on superposition's term order and powerful simplification
+engine to rewrite the proof state rather than to blindly rewrite definitions. On
+the other hand, superposition's reasoning with equivalences is often inadequate
+\cite{bbtv-21-full-ho-sup, gs-05-boolsup}. Thus, it makes sense to treat only
+predicate definitions as rewrite rules.
+
+The second technique aims at preserving completeness: We can try to force the term order that
+parameterizes superposition to orient as many definitions as possible and rely on
+demodulation to simplify the proof state. Usually, the Knuth--Bendix order (KBO)
+\cite{db-1970-kbo} is used. It compares terms by first comparing their weights,
+which is the sum of all the weights assigned to the symbols it contains. Given a
+symbol weight assignment $\mathcal{W}$, we can update it so that it orients
+acyclic definitions from left to right assuming that they are of the form $
+\cst{f} \, \overline{X}_m \eq \lambda \overline{Y}_n. \, t$, where the only free
+variables in $t$ are $\overline{X}_m$, no free variable is repeated or appears
+applied in $t$, and $\cst{f}$ does not occur in $t$. Then we traverse the
+symbols $\cst{f}$ that are defined by such equations following the dependency
+relation, starting with a symbol $\cst{f}$ that does not depend on any other
+defined symbol. For each $\cst{f}$, we set $\mathcal{W}(\cst{f})$ to $w + 1$,
+where $w$ is the maximum weight of the right-hand sides of $\cst{f}$'s
+definitions, computed using $\mathcal{W}$. By construction, for each equation
+the left-hand side is heavier. Thus, the equations are orientable from left to
+right.
+
+
+
+\begin{exa} 
+  Many of the problems in the TPTP library's \verb|LCL| category encode modal logic
+  in higher-order logic. More complex modal operators (such as
+  implication and equivalence) are defined in terms of basic connectives (such as negation
+  and disjunction). Some of the definitions present in the problems are
+  $\cst{mnot} := \lambda p\, x. \, \inot \, p \, x$, $\cst{mor} := \lambda p\, q\, x.
+  \, p \, x \ior q \, x$,  and $\cst{mimplies} = \lambda p\, q. \allowbreak\, \cst{mor} \,
+  (\cst{mnot} \, p) \, q$. Assuming that the weight of $\lambda$, bound
+  variables, and basic connectives is 2, we can orient equations using
+  the above described approach as follows. Starting from symbols that do not
+  depend on the other ones, we set $\mathcal{W}(\cst{mnot}) = 11$ and
+  $\mathcal{W}(\cst{mor}) = 17$. Then, we use these values to set
+  $\mathcal{W}(\cst{mimplies}) = 37$. Clearly, these weights
+  enable us to orient all definitions from left to right.
+\end{exa}
+
+
+% Many higher-order problems, especially those generated from proof assistants,
+% contain hundreds of needless axioms.
+% To filter out axioms that are unlikely to be useful in a proof attempt, many
+% theorem provers rely on the SInE algorithm \cite{hv-2011-sine}. SInE starts with
+% the set of symbols occurring in the conjecture and tries to find axioms that
+% define the properties of these symbols. Then it looks for the definitions of
+% newly found symbols until it reaches a fixpoint. Axioms annotated with
+% \verb|definition| ease this search because they explicitly record the
+% dependency between a symbol and its characterization. To exploit
+% this information, we modified SInE to optionally include the definitions of
+% symbols in the conjecture, regardless of whether they are filtered out or not.
+% Similarly, we implemented mode of SInE which selects only conjecture and axioms
+% annotated with \verb|definition|.
+
+\ourpara{Evaluation and Discussion}
+
+% The \textit{base} configuration treats all axioms annotated with
+% \texttt{definition} as rewrite rules applied as preprocessing.
+% In addition, we tested
+We designed and evaluated the following strategies for handling
+\texttt{definition} axioms:
+
+\begin{description}[labelwidth=\widthof{\rm no-RW$+$KBO~}]
+  \item[\rm pre-RW~] rewrite all definitions as a preprocessing step;
+  \item[\rm in-RW~] rewrite all definitions during the saturation, as an inprocessing step;
+  \item[\rm $o$-RW~] rewrite only predicate definitions, during preprocessing;
+  \item[\rm $o$-RW$+$KBO~] like $o$-RW but with adjusted KBO weights for the remaining
+    definitions;
+  \item[\rm no-RW~] no special treatment of definitions;
+  \item[\rm no-RW$+$KBO~] like $no$-RW but adjusting KBO weights for all definitions.
+\end{description}
+
+The results are given in Fig.~\ref{fig:rewrite}. In all the figures, each
+cell gives the number of proved problems, and cells marked with $\star$
+correspond to the base configuration. The highest number in a category is typeset in
+\relax{bold}. SH benchmarks are not
+included because they do not contain the \texttt{definition} role.
+
+\newcommand{\unknownres}{\ensuremath{{\varnothing}}}
+\newcommand{\colalign}{\phantom{0}}
+
+\begin{figure}[t]
+  \centering
+  \def\arraystretch{1.1}%
+  \relax{\begin{tabular}{@{}l@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+                & pre-RW                 & in-RW        & $o$-RW               & $o$-RW$+$KBO    & no-RW        & no-RW$ + $KBO  \\ \midrule
+           TPTP & {\bf 1635}$^\star$     & 1619         & 1620                 & 1621            & 1298         & 1296
+           \\ \bottomrule
+         \end{tabular}}
+       \captionof{figure}{Impact of the definition rewriting method}
+       \label{fig:rewrite}
+     \end{figure}
+
+
+
+The four configurations in which definitions are treated as rewrite rules
+perform much better than the other two. In contrast, adjusting KBO weights gives
+no substantial improvement: Looking at raw data, we found only
+\NumberOK{2}~problems proved by $o$-RW$+$KBO but not by $o$-RW in which the
+feature was used in the proof. For no-RW and no-RW$+$KBO, the
+\NumberOK{2}-problem difference may be just noise. Even though it proves fewer
+problems, the configuration $o$-RW has some advantages over pre-RW: It proves
+\NumberOK{16} problems that pre-RW does not, \NumberOK{3} of which have a TPTP
+difficulty rating (the ratio of eligible %TPTP
+provers that cannot prove the problem) of~1.
+
+% \looseness=-1
+Rewriting after clausification avoids getting stuck rewriting parts of the
+proof state that might not contribute to the proof. In practice, we noticed that
+rewriting can be so expensive that the prover can spend all
+allotted CPU time in the preprocessing phase. The evaluation results confirm this
+observation: There are \NumberOK{64} problems proved by in-RW but not by
+pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
+by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
+
+
+\section{Reasoning about Formulas}
+\label{sec:ho-tech:formulas}
+
+Higher-order logic identifies formulas with terms of Boolean type. To prove a problem, we often
+need to instantiate a variable with the right predicate.
+Finding this predicate can be easier if the problem is not clausified.
+Consider the conjecture $\iexists f. \, f \, \cst{p} \, \cst{q} \iequiv \cst{p}
+\iand \cst{q}$. Expressed in this form, the formula is easy to prove by taking
+$f := \lambda x \, y. \> x  \iand y$. By contrast, guessing the right
+instantiation for the negated, clausified form $ \neglit{F \, \cst{p} \,
+\cst{q}} \llor \neglit{\cst{p}} \llor \neglit{\cst{q}},
+\poslit{F \, \cst{p} \, \cst{q}} \llor \poslit{\cst{p}}$, $\poslit{F \, \cst{p}
+\, \cst{q}} \llor \poslit{\cst{q}}$ is more challenging.
+One of the strengths of higher-order tableau provers is that they do not clausify the input
+problem. This might partly explain Satallax's dominance in the THF division of CASC
+competitions until the 2020 edition of CASC.
+
+The \osup{} calculus supports \emph{delayed clausification rules} that insert
+problems into the proof state in their original, nonclausified form, and
+clausify them gradually. Delayed clausification allows the prover to analyze the
+syntactic structure of formulas during saturation, whereas the more traditional
+approach of \emph{immediate clausification} applies a standard clausification
+algorithm \cite{nw-01-small-cnf} both as a preprocessing step and whenever
+predicate variables are instantiated.
+
+An earlier evaluation of the \osup{} calculus \cite{bbtv-21-full-ho-sup} showed
+that the \emph{outer} variant of delayed clausification substantially increases
+this calculus's performance. The outer variant clausifies top-level logical
+symbols, proceeding from the outside inwards; this method corresponds to the one
+described in the previous chapter. For example, a clause $C \llor
+\neglit{(\cst{p} \iand \cst{q})}$ is transformed into $C \llor \neglit{\cst p}
+\llor \neglit{\cst q}$. The calculus also supports \emph{inner} delayed
+clausification, which uses only the core calculus rules to clausify problems.
+Even though this is the laziest approach to clausification, the earlier
+evaluation by Bentkamp et al. \cite{bbtv-21-full-ho-sup} showed that this
+approach is inefficient. Thus, we focus only on the outer rules.
+
+\looseness=-1
+Delayed clausification rules can be used as inference rules (which add conclusions
+to the passive set) or as simplification rules (which delete premises and add
+conclusions to the passive set).
+%
+Inferences are more flexible, as all
+intermediate clausification states will be stored in the proof state, at the
+cost of producing many clauses. Simplifications produce fewer clauses,
+but risk destroying informative syntactic structure.
+Since clausifying equivalences can destroy a lot of syntactic structure
+\cite{gs-05-boolsup}, we never apply simplifying rules
+on them.
+
+Delayed clausification can interfere with clause splitting techniques.
+Zipperposition supports a lightweight variant of AVATAR \cite{av-2014-avatar},
+an architecture that partitions the search space by
+splitting clauses into variable-disjoint subclauses. This lightweight AVATAR is described
+by Ebner et al.\ \cite[Sect.~7]{2021-ebt-unifying-splitting}. Combining it
+with delayed clausification makes it possible to split a %higher-order
+clause $(\varphi_1 \ior \cdots \ior \varphi_n) \eq \itrue$, where
+the $\varphi_i$'s are arbitrarily complex formulas that share no free
+variables with each other, into clauses $\varphi_i \eq \itrue$.
+%
+To finish the proof, it suffices to derive the empty clause under each assumption
+$\varphi_i \eq \itrue$. Since the split is performed at the formula level, this
+technique resembles tableaux, but it exploits the strengths of superposition,
+such as its powerful redundancy criterion and simplification machinery, to
+close the branches.
+
+
