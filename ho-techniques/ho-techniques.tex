@@ -70,7 +70,7 @@ Bhayat and Reger also gracefully extended superposition to higher-order logic us
 made on SMT front as well \cite{brotb-19-ho-smt}.
 
 In 2019 we tested if the idea of gracefully extending first-order provers to
-higher-order logic really improves state of the art for the first time. We implemented \lsup{} \cite{bbtvw-21-sup-lam} in
+higher-order logic really improves the state of the art for the first time. We implemented \lsup{} \cite{bbtvw-21-sup-lam} in
 Zipperposition~1.5 with basic heuristics and rudimentary extensions of the
 calculus to deal with Booleans. It finished third at that year's higher-order
 division of CASC competition \cite{gs-19-casc27}, 12~percentage points behind the
@@ -111,6 +111,7 @@ to perform inferences first.
 We implemented some Boolean selection functions and
 evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
 
+\looseness=-1
 The main drawback of both $\lambda$-superposition variants compared with
 combinatory superposition is that they rely on rules that enumerate possibly
 infinite sets of unifiers. We describe a mechanism that interleaves infinitely
@@ -119,7 +120,7 @@ branching inferences with the standard saturation process
 behavior as before on first-order problems, smoothly scaling with increasing
 numbers of higher-order clauses.
 %
-We also propose some heuristics to curb the explosion induced by highly
+We also propose heuristics to curb the explosion induced by highly
 prolific calculus rules (Sect.~\ref{sec:ho-tech:explosiveness}).
 
 Using first-order backends to finish the proof is common practice in
@@ -135,3 +136,101 @@ Finally, we compare Zipperposition~2 with other provers on all monomorphic
 higher-order TPTP benchmarks \cite{gs-17-tptp} to perform a more extensive
 evaluation than at CASC (Sect.~\ref{sec:ho-tech:comparison}). Our evaluation
 corroborates the competition results.
+
+\section{Background and Setting}
+\label{sec:ho-tech:background}
+
+We focus on monomorphic higher-order logic, without the axiom of infinity or the
+axiom of at least two individuals \cite{bm-14-automation-ho}. However, the
+techniques can easily be extended with polymorphism. Indeed, Zipperposition
+already supports some of them polymorphically. Further, we use exactly the same
+notation for this logic as introduced in Chapter \ref{ch:pre}. Since we are
+working with extensions of superposition, we assume the clausal structure
+(Sect.~\ref{sec:pre:clauses}). Like in the previous chapter, literals
+of clauses can contain arbitrary higher-order terms, including formulas.  
+
+
+\ourpara{Higher-Order Calculi}
+\looseness=-1
+We briefly introduced the \osup{} calculus \cite{bbtv-21-full-ho-sup} in
+Sect.~\ref{sec:pre:ho-sup-calculi}. It is a refutationally complete inference
+system and redundancy criterion for higher-order logic with rank-1 polymorphism,
+Hilbert choice, and functional and Boolean extensionality.
+% The calculus relies on
+% \emph{complete sets of unifiers}
+% (\emph{CSUs}). The CSU for $s$ and $t$ with respect to a finite set of variables
+% $V$, denoted by $\mathrm{CSU}_V(s,t)$, is a set of unifiers of $s$~and~$t$ such
+% that for any unifier $\varrho$ of $s$~and~$t$, there exist substitutions $\sigma
+% \in \mathrm{CSU}_V(s,t)$ and $\theta$ such that $\varrho(X) = \sigma(\theta(X))$
+% for all variables $X \in V$. The set $V$ is used to distinguish
+% important variables from auxiliary variables (which may arise in intermediary
+% states of the unification procedure). We usually omit it.
+Unlike \lsup{}, this calculus 
+does not require axioms defining the logical symbols to cope with formulas.
+Instead, it includes Boolean inference rules that mimic
+superposition from such axioms into Boolean subterms,
+while avoiding the explosion incurred by adding these axioms to the proof state. It
+also includes rules that simulate Boolean inferences below applied variables.
+Both sets of rules are disabled or replaced with incomplete, ad hoc rules
+described in the previus chapter in most configurations
+of the CASC portfolio.
+A new feature of the calculus that we explore in detail is
+the ability to select Boolean subterms
+to restrict Boolean and superposition inferences.
+
+In contrast to both $\lambda$-superposition variants, combinatory superposition
+does not require enumerating elements of CSU to compute results of inferences.
+Instead, it avoids computing CSUs by using a form of first-order unification.
+Essentially, it enumerates higher-order terms using rules that instantiate
+applied variables with partially applied combinators from the complete
+combinator set $\{\cst{S}, \cst{K}, \cst{B}, \cst{C}, \cst{I}\}$. This calculus
+is the basis of Vampire~4.5 \cite{br-20-full-sup-w-combs}, which finished
+closely behind Satallax 3.4 %~and~3.5
+at higher-order division of CASC in 2020.
+
+\looseness=-1
+A different, very successful calculus is Satallax's SAT-guided tableaux
+\cite{backes-brown-2011}. Satallax was the leading higher-order prover of the
+2010s. Its simple and elegant tableaux avoid deep superposition-style rewriting
+inferences.
+Nevertheless, our working hypothesis for the past years has been
+that superposition would likely provide a stronger basis for higher-order
+reasoning.
+Other competing higher-order calculi include SMT (implemented in CVC4
+\cite{brotb-19-ho-smt, cbetal-11-cvc4}) and extensional paramodulation (implemented in Leo-III \cite{sb-21-leo3}).
+
+
+\ourpara{Zipperposition}
+Zipperposition \cite{sc-15-simon-phd,bbtvw-21-sup-lam} is a higher-order
+theorem prover that implements both $\lambda$-superposition variants, combinatory
+superposition, and other superposition-like calculi.
+The prover was conceived as a testbed for rapidly
+experimenting with extensions of first-order superposition, but over time it
+has assimilated many of E's techniques and heuristics and become quite powerful.
+Several of our techniques extend the \emph{given clause procedure}, the standard
+saturation procedure described in Sect.~\ref{sec:pre:saturation}.
+
+\ourpara{Experimental Setup}
+To assess our techniques, we carried out experiments with Zipperposition~2. We
+used two sets of benchmarks:\ all 2851~monomorphic higher-order problems from the
+TPTP library \cite{gs-17-tptp} version~7.4.0 (labeled \emph{TPTP})
+and 1253 Sledgehammer-generated
+monomorphic higher-order problems (labeled \emph{SH}).
+Although some techniques support polymorphism, we
+uniformly used monomorphic benchmarks.
+
+We fixed a \emph{base} configuration
+of Zipperposition parameters as a baseline for all comparisons. This is an
+incomplete, pragmatic configuration of \osup{} using heuristics expected to perform
+well on a wide range of problems.
+%Note that
+%we use a different baseline configuration than in our earlier paper \cite{making-ho-work}.
+%%% That goes without saying. We use a different calculus! Now clarified in intro. --JB
+In each experiment, we varied
+the parameters associated with a specific technique to evaluate it. The
+experiments were run on StarExec Miami \cite{sst-14-starexec} servers, equipped with
+Intel Xeon E5-2620 v4 CPUs clocked at 2.10 GHz. Unless otherwise stated, we used a
+CPU time limit of 15~s, roughly the time each configuration is given in the
+CASC portfolio mode. The raw evaluation results are available online.%
+\footnote{\url{http://doi.org/10.5281/zenodo.5007440}}
+

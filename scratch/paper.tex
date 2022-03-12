@@ -211,7 +211,7 @@ Zipperposition won the higher-order division of the CASC-J10 competition.
 
 \newcommand\NumberOK[1]{#1}
 \newcommand\NumberNOK[1]{\colorbox{red}{#1}}
-\newcommand{\ourparagraph}[1]{\paragraph{\upshape\bfseries#1}}
+\newcommand{\ourpara}[1]{\paragraph{\upshape\bfseries#1}}
 
 \hyphenation{su-per-po-si-tion Zip-per-posi-tion tab-leau tab-leaux Bent-kamp ab-strac-tion
   Bool-ean}
@@ -324,7 +324,7 @@ or the axiom of at least two individuals. However, the techniques can easily be
 extended with polymorphism. Indeed, Zipperposition already supports some
 of them polymorphically.
 
-\ourparagraph{Higher-Order Logic}
+\ourpara{Higher-Order Logic}
 We define terms $s, t, u, v$ inductively as free variables $F, X$, bound
 variables $x, y, z, \dotsc$, constants $\cst{f}, \cst{g},\allowbreak
 \cst{a},\allowbreak \cst{b}, \dotsc$, term applications $s \, t$, and
@@ -355,7 +355,7 @@ $\iforall x.\,t$ and $\iexists x.\,t$. Following %the convention of
 $\ifalse$: for example, $\cst{even}(x)$ becomes $\poslit{\cst{even}(x)}$, and
 $\neg\,\cst{even}(x)$ becomes $\neglit{\cst{even}(x)}$.
 
-\ourparagraph{Higher-Order Calculi}
+\ourpara{Higher-Order Calculi}
 \looseness=-1
 The \osup{} calculus \cite{bbtv-21-full-ho-sup} is a refutationally
 complete inference system and redundancy criterion for higher-order logic with
@@ -406,7 +406,7 @@ Other competing higher-order calculi include SMT (implemented in CVC4
 \cite{brotb-19-ho-smt, cbetal-11-cvc4}) and extensional paramodulation (implemented in Leo-III \cite{sb-21-leo3}).
 
 
-\ourparagraph{Zipperposition}
+\ourpara{Zipperposition}
 Zipperposition \cite{sc-15-simon-phd,bbtvw-21-sup-lam} is a higher-order
 theorem prover that implements both \lsup{} variants, combinatory
 superposition, and other superposition-like calculi.
@@ -424,7 +424,7 @@ and the conclusions are added to $P$. Because Zipperposition fully simplifies
 clauses only when they are activated, it implements a DISCOUNT-style loop
 \cite{adf-1995-discount}.
 
-\ourparagraph{Experimental Setup}
+\ourpara{Experimental Setup}
 To assess our techniques, we carried out experiments with Zipperposition~2. We
 used two sets of benchmarks:\ all 2851~monomorphic higher-order problems from the
 TPTP library \cite{gs-17-tptp} version~7.4.0 (labeled \emph{TPTP})
@@ -555,7 +555,7 @@ right.
 % Similarly, we implemented mode of SInE which selects only conjecture and axioms
 % annotated with \verb|definition|.
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
 
 % The \textit{base} configuration treats all axioms annotated with
 % \texttt{definition} as rewrite rules applied as preprocessing.
@@ -791,7 +791,7 @@ from which we easily derive a contradiction.
 \end{examplex}
 
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
 
 \begin{figure}
 \centering
@@ -1081,7 +1081,7 @@ explosive.
   \, y \, \cst{a})$, avoiding this explosion. 
 \end{examplex}
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
 
 \begin{figure}
 \centering
@@ -1461,7 +1461,7 @@ $\emptyset$, it is likely that it is blocked in a nonterminating computation
 and should be ignored. Our heuristics to increase the stream penalties take
 both observations into account.
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
 
 When the unification procedure of Vukmirović et al.\ was implemented  in
 Zipperposition, it was observed that this is the only competing
@@ -1672,7 +1672,7 @@ of applied variables.
 
 
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
 
 \begin{figure}[t]
   \centering
@@ -1838,7 +1838,7 @@ $\cst{SKBCI}$, we omit the combinator definition axioms, because they are
 very explosive \cite{br-20-full-sup-w-combs}. A third mode simply omits clauses
 containing $\lambda$-abstractions.
 
-\ourparagraph{Evaluation and Discussion}
+\ourpara{Evaluation and Discussion}
   %
   % \begin{enumerate}
   %   \item Different points when E is called, for different time periods
