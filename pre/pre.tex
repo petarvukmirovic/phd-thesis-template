@@ -464,7 +464,7 @@ inference rules using the \emph{given clause procedure}
 passive set $\mathcal{P}$ and an active set $\mathcal{A}$. All clauses start in
 $\mathcal{P}$. At each iteration of the procedure's main loop, the prover
 chooses a clause $C$ from $\mathcal{P}$, simplifies it, and moves it to
-$\mathcal{A}$. Then all inferences between $C$ and active clauses are performed.
+$\mathcal{A}$ (i.e., it \emph{activates} it). Then all inferences between $C$ and active clauses are performed.
 The resulting clauses are again simplified and put in $\mathcal{P}$.
 The provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas

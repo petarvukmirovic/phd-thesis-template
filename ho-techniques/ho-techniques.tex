@@ -265,7 +265,8 @@ it susceptible to first-order methods. However, this can inflate the problem
 beyond recognition and compromise the refutational completeness of
 superposition.
 
-\begin{exa} 
+\begin{exa}
+  \label{hot:exa:num636}
   Removing higher-order features of a problem can have adverse effects.
   Consider the TPTP problem \texttt{NUM636\^{}3}, which defines the predicate $\cst{m}$
   as $\lambda x.\, \cst{s} \, x \ineq x$ and states its conjecture as $\iforall
@@ -468,4 +469,148 @@ technique resembles tableaux, but it exploits the strengths of superposition,
 such as its powerful redundancy criterion and simplification machinery, to
 close the branches.
 
+Beyond splitting, interleaving clausification and saturation allows us to
+simulate another tableau-inspired technique. Whenever dynamic clausification
+substitutes a fresh variable $X$ for a predicate variable $x$ in a clause of the
+form $(\iforall x.\, \varphi) \eq \itrue \llor C$, yielding $\substterm{\{x
+\mapsto\nobreak X\}}{\varphi} \eq \itrue \llor C$, we can create additional
+clauses in which $x$ is replaced with $t \in \instset$, where $\instset$ is a
+set of heuristically chosen terms. This set contains $\lambda$-abstractions
+whose bodies are formulas and that occur in activated clauses; it also containts
+\emph{primitive instantiations}---that is, imitations (in the sense of
+higher-order unification) of logical symbols that approximate the shape of a
+predicate that can instantiate a predicate variable. Primitive instantiations
+are described in Sect.~\ref{sect:bool:native}.
 
+Since a new term $t$ can be added to $\mathit{Inst}$ after a clause with a
+quantified variable of $t$'s type has been activated, we remember the clauses
+$\sigmaterm{\{x \mapsto X\}}{\varphi} \eq \itrue\allowbreak \llor C$ and instantiate them when
+$\mathit{Inst}$ is extended. Conveniently, these instantiated clauses are not
+recognized as subsumed by Zipperposition, which uses an optimized, incomplete
+higher-order subsumption algorithm.
+
+\looseness=-1
+Given a disequation $\cst{f}\,\tuple{s}{n} \not\eq \cst{f}\,\tuple{t}{n}$, the
+\emph{abstraction} of $s_i$ is $\lambda x.\, u \ieq v$, where $u$ is obtained by
+replacing all occurrences of $s_i$ in $\cst{f}\,\tuple{s}{n}$ with $x$ and $v$ is
+obtained by replacing all occurrences of $s_i$ in
+$\cst{f}\,\tuple{t}{n}$ with $x$. For \confrep{}{an equation }$\cst{f}\,\tuple{s}{n} \eq
+\cst{f}\,\tuple{t}{n}$, the analogous abstraction is $\lambda x.\, \inot (u \ieq
+v)$.
+%
+%
+Adding abstractions of the literals occurring in the conjecture to $\mathit{Inst}$
+provides useful instantiations for formulas such as induction principles of
+datatypes. As the conjecture is negated\confrep{}{ in refutational theorem proving},
+the equation's polarity is inverted in the
+abstraction. 
+
+\begin{exa}
+\label{ex:dat056-2}
+The clausified conjecture of the problem \texttt{DAT056\^{}2}
+\cite{ns-13-leo2sh} from the TPTP library is $\cst{ap} \, \cst{xs}
+\, (\cst{ap} \, \cst{ys} \, \cst{zs}) \not\eq \cst{ap} \, (\cst{ap} \, \cst{xs} \,
+\cst{ys}) \, \cst{zs}$, where $\cst{ap}$ is the \confrep{}{list }append operator defined
+recursively on its first argument and $\cst{xs}$, $\cst{ys}$, and $\cst{zs}$ are
+of list type. Abstracting $\cst{xs}$ from the disequation yields $t = \lambda \mathit{xs}.\, \cst{ap} \, \mathit{xs} \, (\cst{ap} \, \cst{ys} \, \cst{zs})
+\allowbreak\ieq\allowbreak \cst{ap} \, (\cst{ap} \, \mathit{xs} \, \cst{ys}) \, \cst{zs}$, which is added
+to $\mathit{Inst}$.
+Included in the problem is the induction axiom
+for the list datatype: $\iforall p. \, p \, \cst{nil} \iand (\iforall x \,
+\mathit{xs}. \, p \, \mathit{xs} \iimplies\allowbreak p \, (\cst{cons} \, x \,
+\mathit{xs})) \iimplies\allowbreak \iforall \mathit{xs}. \, p \, \mathit{xs}$, where
+$\cst{nil}$ and $\cst{cons}$ have the usual meanings.
+Instantiating $p$ with $t$ and
+using the $\cst{ap}$ definition, we can prove
+$\iforall \mathit{xs}. \, \cst{ap} \, \mathit{xs} \, (\cst{ap} \, \cst{ys} \, \cst{zs})
+\ieq \cst{ap} \, (\cst{ap} \, \mathit{xs} \, \cst{ys}) \, \cst{zs}$,
+from which we easily derive a contradiction.
+\end{exa}
+
+
+
+\ourpara{Evaluation and Discussion}
+
+\begin{figure}
+\centering
+  \def\arraystretch{1.1}%
+  \begin{tabular}{@{}l@{\hskip 1.5em}l@{\hskip 0.5em}@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+    & & $+$\relax{LA} & $-$\relax{LA} \\ \midrule
+    TPTP &
+%    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{TPTP}}}&
+      \relax{IC}  & 1616  & 1635$^\star$    \\
+    & \relax{DCI} & 1507  & 1532\phantom{$^\star$}    \\
+    & \relax{DCS} & 1668  & {\bf 1703}\phantom{$^\star$} \\ \midrule
+    SH &
+%    \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{SH}}} &
+      \relax{IC}  & \colalign425 & \colalign452$^\star$    \\
+    & \relax{DCI} & \colalign362 & \colalign385\phantom{$^\star$}    \\
+    & \relax{DCS} & \colalign441 & \colalign\textbf{457}\phantom{$^\star$} \\ \bottomrule
+  \end{tabular}
+  \caption{Impact of clausification and~lightweight AVATAR}
+  \label{fig:avatar-clause}
+\end{figure}
+
+The base configuration (\emph{base}) uses immediate clausification (\relax{IC}) and 
+disables lightweight AVATAR ($-$\relax{LA}). To test
+the merits of delayed clausification, we vary \emph{base}'s parameters along two axes: We
+choose immediate clausification (\relax{IC}), delayed clausification as inference
+(\relax{DCI}), or delayed clausification as simplification (\relax{DCS}), and we
+either enable ($+$\relax{LA}) or disable ($-$\relax{LA}) lightweight AVATAR.
+Neither of the configurations uses instantiation with terms from $\instset$.
+
+Figure~\ref{fig:avatar-clause} shows that using delayed clausification as
+simplification greatly increases the success rate, regardless of whether
+lightweight AVATAR is used. Using delayed clausification as inference has the
+opposite effect on both problem sets, presumably due to the large number of
+clauses it creates. By manually inspecting the  proofs found by the \relax{DCS}
+configuration, we noticed that a main reason for its success is that it does
+not simplify away equivalences.
+%
+Overall, the lightweight AVATAR harms performance, but the sets of
+problems proved with and without it are vastly different. For example,
+the \relax{IC}$+$\relax{LA} configuration proves \NumberOK{38} problems not
+proved by \relax{IC}$-$\relax{LA} (i.e., \emph{base}) on TPTP benchmarks and
+\NumberOK{14} such problems on SH benchmarks.
+
+\looseness=-1
+The Boolean instantiation technique presented above requires delayed
+clausification.
+We assessed it in the best configuration from
+%To assess it, we enabled it in the best configuration from
+Fig.~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
+Zipperposition proves \NumberOK{1700} TPTP problems and \NumberOK{456} SH
+problems.
+On TPTP, even though $+$\relax{BI} solves \NumberOK{3} problems less
+than \relax{DCS}$-$LA, it is very useful: \NumberOK{41}
+problems can be proved with $+$\relax{BI} but not with \relax{DCS}$-$\relax{LA}. 
+Conversely, \NumberOK{44} problems are solved with \relax{DCS}$-$\relax{LA},
+but not with $+$\relax{BI}, which suggests that Boolean instantiation can be 
+explosive.
+%
+One of the problems Boolean instantiation helps solve is \texttt{NUM636\^{}2} (a
+re-encoding of \texttt{NUM636\^{}3}, which is disucssed in Example \ref{hot:exa:num636}).
+It conjectures that $\iforall x.\, \cst{s} \, x \ineq x$, where $x$ ranges over
+Peano-style numbers specified by $\cst{z}$ and $\cst{s}$. The given axioms are
+the induction principle $\forall p.\, p \, \cst{z} \,\iand\, \forall x. \, (p \,
+x \iimplies p \, (\cst{s} \, x)) \iimplies \forall x. \, p\, x$, injectivity
+$\forall x y. \, \cst{s}\,x \ieq \cst{s}\,y \iimplies x \ieq y$, and
+distinctness $\forall x. \, \cst{s}\,x \ineq \cst{z}$. The conjecture is easily
+proved if Boolean instantiation is enabled: Even though the conjecture literal
+cannot be abstracted, instantiating $p$ with the term $\lambda x.\, \cst{s}
+\, x \ineq x$ used in the encoding of the (nonclausified) conjecture leads to a proof in just
+\NumberOK{22} given clause loop iterations. Zipperposition also finds a
+proof using the \relax{DCI}$-$\relax{LA} configuration, but this requires
+\NumberOK{294} iterations.
+
+%Raw data reveals that Boolean instantiation
+The $+$\relax{BI} configuration proves \NumberOK{18} TPTP problems no other
+configuration from Fig.~\ref{fig:avatar-clause} can prove. Among these is
+\texttt{DAT056\^{}2} (Example~\ref{ex:dat056-2}). In contrast, on SH benchmarks, only
+\NumberOK{6} problems are proved using $+$\relax{BI} and not
+\relax{DCS}$-$\relax{LA}. For all these problems, Boolean instantiation does not
+appear in the proof, suggesting that this result is due to the randomness in the
+evaluation environment. The fact that \relax{BI} has no effect on SH benchmarks
+is to be expected because Sledgehammer does
+not include lemmas whose name contains the substring \texttt{.induct} and that
+contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
