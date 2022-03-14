@@ -338,16 +338,20 @@ similar to the approach taken by hammers. Huet~\cite{gh-73-hol} and
 Andrews~\cite{pa-71-type-theory} designed calculi that are directly applied to
 higher-order formulas.
 
+\looseness=-1
 These attempts resulted in early higher-order theorem provers. Andrews and
-colleagues developed TPS~\cite{abinpx-96-tps}: an automatic prover which
-allows users to specify proof outlines, based on expansion proofs. Benzm\"uller
-and colleagues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
-resolution which introduced the cooperative paradigm. Provers implementing this paradigm
-invoke first-order backends in regular intervals to finish the proof. The latest
-iteration in the LEO family of provers is Leo-III \cite{sb-21-leo3}. Satallax
-\cite{cb-12-satallax} is based on higher-order analytic tableau and uses SAT solver
-to close tableau branches. It won the higher-order division of CASC on eight occasions:
-in 2011 and every year from 2013 to 2019.
+colleagues developed TPS~\cite{abinpx-96-tps}: an automatic prover which allows
+users to specify proof outlines, based on expansion proofs. Benzm\"uller and
+colleagues developed LEO \cite{cbmk-98-leo}, a prover based on higher-order
+resolution which introduced the cooperative paradigm. Provers implementing this
+paradigm invoke first-order backends in regular intervals to finish the proof.
+The latest iteration in the LEO family of provers is Leo-III \cite{sb-21-leo3}.
+Satallax \cite{cb-12-satallax} is based on higher-order analytic tableaux. Such
+representations of logical formulas are tree structures with at each node a
+subformula of the original formula to be proved or refuted. Satallax improves on
+the method by using a SAT solver to close tableau branches.
+It won the higher-order division of CASC on eight occasions: in 2011 and every
+year from 2013 to 2019.
 
 Various researchers also experimented with the idea of extending a first-order
 prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order

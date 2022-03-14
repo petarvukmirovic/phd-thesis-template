@@ -140,17 +140,20 @@ terms of higher-order logic. For convenience, we still call terms of Boolean
 type \emph{formulas}.
 
 \looseness=-1
-With $\alpha$-renaming we assume the rule $(\lambda x. \, s) \longrightarrow \lambda
-y. \, \{x \mapsto y\}(s)$ where $y$ does not occur loosely bound in $s$ and 
-$y$ is not bound in $s$. Application of substitution $\sigma$ to term
-$t$, implicitly $\alpha$-renames bound variables to avoid capture.  For example,
-$\{X \mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$. The
-$\beta$-reduction rule corresponds to applying arguments to function: $(\lambda
-x. s) \, t \longrightarrow \{x \mapsto t\} (s)$, where the bound variables in $s$
-are renamed to avoid capture. Lastly, $\eta$-reduction is defined as $\lambda
-x.\, s \, x \longrightarrow s$ under the condition that $x$ is not loosely
-bound in $x$. We write $s \equi t$ if terms $s$ and $t$ are equal modulo $\alpha\beta\eta$
-converison. 
+With $\alpha$-conversion we assume the rule $(\lambda x. \, s) \longrightarrow
+\lambda y. \, \{x \mapsto y\}(s)$ where $y$ does not occur loosely bound in $s$
+and $y$ is not bound in $s$. Application of a substitution to a term,
+implicitly $\alpha$-renames bound variables to avoid capture.  For example, $\{X
+\mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$. The
+$\beta$-reduction rule, roughly speaking, corresponds to passing arguments in a
+function call: $(\lambda x. s) \, t \longrightarrow \{x \mapsto t\} (s)$, where
+the bound variables in $s$ are renamed to avoid capture. Lastly,
+$\eta$-reduction is defined as $\lambda x.\, s \, x \longrightarrow s$ under the
+condition that $x$ is not loosely bound in $x$. We write $s \equi t$ if terms
+$s$ and $t$ are equal modulo $\alpha\beta\eta$-conversion. Terms that are
+convertible with respect to any of the rules form equivalence classes. Thus, we
+also say that $\alpha$($\beta\eta$)-convertible terms are
+$\alpha$($\beta\eta$)-equivalent. 
 
 \looseness=-1
 As hinted in previous definitions, higher-order substitutions
@@ -204,7 +207,6 @@ disjunctively:\ $l_1 \llor \cdots \llor l_n$. Free variables of clauses are
 implicitly universally quantified. Note that $\llor$ denoting disjunction in
 clauses is different from the formula-building $\ior$. In general,
 formula-building logical connectives are written in boldface.
-
 In standard, non-clausal first-order logic, an atom is either
 predicate or equational. For uniformity, and to
 stay close to the implementation, we encode predicate atoms as equations with
@@ -224,6 +226,19 @@ substitution.
 Superposition is one of the most successful calculi for first-order logic with
 equality. It owes its success to a careful treatment of equality and built-in
 heuristics to prune the search space such as term order and selection functions.
+
+This calculus works on problems in clausified form and proves the problem by
+refuting its negation. In practice this means that, to apply superposition to a
+given problem, we first must negate its conjecture and clausify the whole
+problem using some of the clausification algorithms
+\cite{nw-01-small-cnf,rsv-16-vcnf}. The calculus then applies its inference
+rules to the clauses, adding results of the inferences to the working set of
+clauses. As this process is quite prolific it also uses the term order to determine
+if some clauses can be simplified or eliminated from the working set.
+Superposition is refutationally complete: This means that, if results of all
+inferences are computed in a systematic, fair manner, empty clause ($\bot$) will
+eventually be derived for a provable problem. As first-order logic is
+undecidable, no guarantees are given for unprovable problems.
 Before introducing the rules of the calculus, we provide definitions of these and other
 background concepts.
 
@@ -281,7 +296,7 @@ first-order logic admits efficient algorithms for computing the most general
 unifier \cite{hv-09-unifalgs}.
 
 In higher-order logic, unification is performed modulo rules of
-$\alpha\beta\eta$ conversion. Under these conditions, the uniqueness of the most
+$\alpha\beta\eta$-conversion. Under these conditions, the uniqueness of the most
 general unifier is not guaranteed. Consider the constraint $X \,
 (\cst{f} \, \cst{a}) \unif \cst{f} \, (X \, \cst{a})$. Any substitution of the
 form $\{ X \mapsto \lamx{\cst{f}^i \, x} \}$ is a unifier, with $\cst{f}^i \, x$
@@ -322,7 +337,7 @@ is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals 
 \sigmacl{C} or (2) \selfun{} selected some literals and \sigmacl{l} is the maximal
 within either positive or negative selected literals. We say \sigmacl{l} is
 eligible for paramodulation if it is positive, nothing is selected and
-\sigmacl{l} is the maximal literal within the literals of \sigmacl{C}. With
+\sigmacl{l} is the maximal literal within the literals of \sigmacl{C}.  With
 $\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using a horizontal
 line to separate premises and the conclusion, four inference rules of
 superposition are as follows:
@@ -373,17 +388,17 @@ Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
 \noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ (with $\sigma = \{ Y \mapsto X \}$). This clause
 then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
 
-Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what mathematicians do when
-they ``replace equals by equals''. The left premise intuitively states that an
-equation $s \eq t$ holds under condition $C$ (or more precisely, its negation).
-Similarly, the right premise asserts that a (dis)equation holds under a
-condition. The superposition rule simply concatenates the conditions for both
-premises and replaces equals by equals in two main inference terms. For example
-given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and $\neg
-\cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition between their
-last literals results in $\neg
-\cst{even}(X) \llor \neg \cst{even}(\cst{b}) \llor \cst{g}(\cst{a}) \eq
-\cst{b}$.
+Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what
+mathematicians do when they ``replace equals by equals''. Name paramodulation is
+also used for rules that replace equals by equals in calculi preceding superposition.  The left premise intuitively
+states that an equation $s \eq t$ holds under condition $C$ (or more precisely,
+its negation). Similarly, the right premise asserts that a (dis)equation holds
+under a condition. The superposition rule simply concatenates the conditions for
+both premises and replaces equals by equals in two main inference terms. For
+example given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and
+$\neg \cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition
+between their last literals results in $\neg \cst{even}(X) \llor \neg
+\cst{even}(\cst{b}) \llor \cst{g}(\cst{a}) \eq \cst{b}$.
 
 % \[
 % \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}

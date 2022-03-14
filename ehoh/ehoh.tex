@@ -347,12 +347,11 @@ To find out whether the cache is valid, it suffices to check that the
 \verb|binding| fields of $x$ and $\appvar(x, \overline{s})$ are equal.
 
 \ourpara{Term Orders} Superposition provers rely on term orders to prune the search
-space. The order must be a simplification order that
+space. The order must be a reduction order
 %can be extended to a simplification order that
 % That's true but pointless. It's equivalent to saying that you need a
 % simplification order and the prover may underapproximate it. -JB
-is total on variable-free
-terms. E implements both the Knuth--Bendix order (KBO) and the lexicographic path order
+(Sect.~\ref{sec:pre:order}). E implements both the Knuth--Bendix order (KBO) and the lexicographic path order
 (LPO). KBO is widely regarded as the more
 robust option for superposition.
 %
@@ -2503,7 +2502,7 @@ For example, the clause set
 $\{\cst{f}\;x \eq x{,}\; \cst{f}\;(y\;\cst{a}) \noteq \cst{a}\}$ is unsatisfiable,
 whereas $\{y\;\cst{a} \noteq \cst{a}\}$ is satisfiable in \lfhol{}. (In full
 higher-order logic, the second clause set would be unsatisfiable thanks to
-the $\{y \mapsto \lambda x.\; x\}$ instance and $\beta$-conversion.)
+the $\{y \mapsto \lambda x.\; x\}$ instance and $\beta$-reduction.)
 %
 For the moment, we have simply disabled definition unfolding in Ehoh. We have
 not measured the effect of this choice, but we conjecture it is not substantial.
