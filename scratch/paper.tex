@@ -91,7 +91,7 @@
     {-21dd plus-8pt minus-4pt}{10.5dd}
      {\normalsize\bfseries\boldmath}}
 
-\spnewtheorem{definitionx}[theorem]{Definition}{\bfseries}{\rmfamily}
+\spnewtheorem{definition}[theorem]{Definition}{\bfseries}{\rmfamily}
 \spnewtheorem{exa}[theorem]{Example}{\bfseries}{\rmfamily}
 
 
@@ -901,13 +901,13 @@ variables, quantifiers, or $\lambda$-abstractions.
 %other problems, all subterms are green.
 
 
-\begin{definitionx}[Green subterms and green positions]
+\begin{definition}[Green subterms and green positions]
   \,Green subterms and green positions are defined inductively as
   follows: $t$ is a green subterm of $t$ at green position $\varepsilon$; if $t$ is a green subterm of $u_i$ at green position $p$
   and $\cst{f}$ is a constant different from $\iforall$ and $\iexists$, then
   $t$ is a green subterm of $\cst{f} \, \tuplen{u}$ at green position $i.p$,
   assuming $i \leq n$.
-\end{definitionx}
+\end{definition}
 
 \begin{exa} The green subterms of the term $F \, \cst{a} \, \iand \, \cst{p} \,
 (\iforall \, (\lambda x. \, \cst{q} \, x)) \, \cst{b}$ are the term itself, $F \, \cst{a}$, $\cst{p} \, (\iforall \, (\lambda x. \, \cst{q} \, x))
@@ -923,7 +923,7 @@ $s \eq t$, neither $s$ not $t$ cannot be selected; if a term $s$ contains a
 variable $X$ as a green subterm, and $X\> \tuplen{u}$, with $n \ge 1$, is a
 maximal term of the clause, $s$ cannot be selected.
 
-\begin{definitionx}[Eligibility]
+\begin{definition}[Eligibility]
   \,Given a substitution $\sigma$ and term order $\succ$, we say a literal $l$
   is (strictly) eligible with respect to $\sigma$ in $C$ if it is selected in
   $C$ or there are no selected literals and no selected Boolean subterms in
@@ -941,7 +941,7 @@ maximal term of the clause, $s$ cannot be selected.
   $t$ are eligible. If a subterm $t$ is eligible and $t$ is of the form $u
   \ieq v$ or $u \ineq v$, then $u$ is eligible if $v\sigma \not\succ u\sigma$
   and $v$ is eligible if $u\sigma \not\succ v\sigma$.
-\end{definitionx}
+\end{definition}
 
 The above definitions of green subterms and eligibility were originally introduced
 with Boolean $\lambda$-superposition \cite{bbtv-21-full-ho-sup}.
@@ -978,7 +978,7 @@ selected literal can take part in few inferences
 introduce another factor to consider:\ the context in which the selected
 subterm occurs. This suggests the following definition:
 
-\begin{definitionx}[Contextualized Boolean selection function]
+\begin{defi}[Contextualized Boolean selection function]
   \label{def:context-bool-sel}
   \,Let $\mathit{ctx}(C)$ be a function that maps a clause $C$ to a set of green positions
   $p$ such that $C|_p$ is a selectable Boolean subterm, and let
@@ -987,7 +987,7 @@ subterm occurs. This suggests the following definition:
   Boolean selection function} $\mathit{Sel\/}_{\mathit{ctx}}^{\,\vartriangleright}(C)$
   selects all terms $t$ such that $t=C|_p$, $p \in \mathit{ctx}(C)$, and
   $(t,p)$ is maximal with respect to $\vartriangleright$.
-\end{definitionx}
+\end{defi}
 
 In the above definition, the function $\mathit{ctx}$ lets
 us choose the context in which the Boolean subterm appears. Then, among
@@ -998,7 +998,7 @@ Ganzinger and Stuber considered Boolean subterm selection for their extension of
 first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus requires
 selection of subterms occurring in negative green positions, defined below.
 
-\begin{definitionx}[Polarity of green positions]
+\begin{defi}[Polarity of green positions]
  \,Negative and positive green positions in a clause $C = l_1 \llor \cdots \llor
  l_n$ are defined inductively as follows: For each
  $1 \leq i \leq n$, the green position $l_i.s$ is positive if $l_i = \poslit{s}$ and negative if $l_i
@@ -1009,7 +1009,7 @@ selection of subterms occurring in negative green positions, defined below.
  then $p.1$ is positive. If $p$ is positive and $C|_p = s \iimplies t$, then
  $p.1$ is negative and $p.2$ is positive; if $p$ is negative and $C|_p = s
  \iimplies t$, then $p.1$ is positive and $p.2$ is negative.
-\end{definitionx}
+\end{defi}
 Note that the polarity of $p$ is undefined whenever $C|_p$ is not a green Boolean subterm
 or it occurs under a (dis)equivalence or an uninterpreted symbol.
 To assess how the function $\mathit{ctx}$ affects performance, we use the following

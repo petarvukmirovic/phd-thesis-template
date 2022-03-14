@@ -615,3 +615,290 @@ evaluation environment. The fact that \relax{BI} has no effect on SH benchmarks
 is to be expected because Sledgehammer does
 not include lemmas whose name contains the substring \texttt{.induct} and that
 contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
+
+\section{Exploring Boolean Selection Functions}
+\label{sec:ho-tech:bool-select}
+
+As discussed in Sect.~\ref{sec:pre:sup}, superposition calculi are parameterized by a literal selection function and a
+term order that help prune considerable swaths of the search space without
+jeopardizing completeness. The core inferences apply only to a clause's
+\emph{eligible} literals, defined as either the clause's selected
+literals or, if none are selected, the clause's literals that are maximal with
+respect to the term order. To further restrict which terms can be targeted by
+an inference, the \osup{} calculus introduces \emph{Boolean selection
+functions}. 
+
+A Boolean selection function chooses \emph{green subterms} of Boolean type
+(different than $\itrue$ or $\ifalse$ and not occurring at either side of a positive
+literal) in a clause and gives rise to a notion of eligibility that considers
+the formula structure. Green subterms correspond to the first-order skeleton of
+a higher-order term; that is, they do not occur in positions under applied
+variables, quantifiers, or $\lambda$-abstractions.
+
+%In particular, green
+%subterms are subterms arising inside first-order-like contexts, and for first
+%other problems, all subterms are green.
+
+
+\begin{defi}[Green subterms and green positions]
+  \,Green subterms and green positions are defined inductively as
+  follows: $t$ is a green subterm of $t$ at green position $\varepsilon$; if $t$ is a green subterm of $u_i$ at green position $p$
+  and $\cst{f}$ is a constant different from $\iforall$ and $\iexists$, then
+  $t$ is a green subterm of $\cst{f} \, \tuplen{u}$ at green position $i.p$,
+  assuming $i \leq n$.
+\end{defi}
+
+\begin{exa} The green subterms of the term $F \, \cst{a} \, \iand \, \cst{p} \,
+(\iforall \, (\lambda x. \, \cst{q} \, x)) \, \cst{b}$ are the term itself, $F \, \cst{a}$, $\cst{p} \, (\iforall \, (\lambda x. \, \cst{q} \, x))
+\, \cst{b}$, $\iforall \, (\lambda x. \, \cst{q} \, x)$, and $\cst{b}$.
+\end{exa} 
+%
+Green positions are lifted to clauses as follows: If $p$ is the green position
+of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
+t\}$ of $C$, the green position of the same subterm in the clause is denoted by $l.s.p$.
+\osup{} mandates additional restrictions on the Boolean selection function:
+$\itrue$, $\ifalse$ and variable-headed terms cannot be selected; for literals
+$s \eq t$, neither $s$ not $t$ cannot be selected; if a term $s$ contains a
+variable $X$ as a green subterm, and $X\> \tuplen{u}$, with $n \ge 1$, is a
+maximal term of the clause, $s$ cannot be selected.
+
+\begin{defi}[Eligibility]
+  \,Given a substitution $\sigma$ and term order $\succ$, we say a literal $l$
+  is (strictly) eligible with respect to $\sigma$ in $C$ if it is selected in
+  $C$ or there are no selected literals and no selected Boolean subterms in
+  $C$ and $\sigmaterm{l}$ is (strictly) maximal in $\sigmacl{C}$ with respect to the
+  term order.
+%
+  The eligible subterms of a clause $C$ with respect to a substitution
+  $\sigma$ are inductively defined as follows:
+  Any subterm selected by the Boolean selection function is eligible.
+  %Any selected subterm is eligible.
+  For a strictly eligible literal $s \eq t$ with $\sigmaterm{t} \not\succ
+  \sigmaterm{s}$, $s$ is eligible. For an eligible literal $s \not\eq t$ with
+  $\sigmaterm{t} \not\succ \sigmaterm{s}$, $s$ is eligible. If a subterm $t$ is eligible
+  and the head of $t$ is not $\ieq$ or $\ineq$, all direct green subterms of
+  $t$ are eligible. If a subterm $t$ is eligible and $t$ is of the form $u
+  \ieq v$ or $u \ineq v$, then $u$ is eligible if $\sigmaterm{v} \not\succ \sigmaterm{u}$
+  and $v$ is eligible if $\sigmaterm{u} \not\succ \sigmaterm{v}$.
+\end{defi}
+The above definitions of green subterms and eligibility were originally introduced
+with \osup{} \cite{bbtv-21-full-ho-sup}.
+The Boolean selection function plays a similar role as the literal
+selection function in standard superposition.
+Literal selection functions eliminate some of the nondeterminism present in the superposition
+calculus by focusing on selected parts of the search space. Boolean selection functions achieve
+the same goal, but in a different context: They eliminate nondeterminism that is not
+present in standard superposition, namely, the choice of subformula on which 
+the Boolean calculus rules are to be applied. As with literal selection functions,
+selecting few (and smaller) subterms can give rise to fewer possible inferences
+and reduce clause proliferation.
+
+%
+This notion of eligibility opens up possibilities for reasoning with
+formulas that are hard to simulate with the existing superposition machinery.
+For example, given a formula $\varphi \iimplies \psi$, selecting the antecedent
+simulates forward reasoning, whereas selecting the consequent simulates backward
+reasoning. The new eligibility also makes it possible to restrict the proof
+search to a small, promising part of a formula. Note that
+literal selection can override Boolean selection: Selecting a literal 
+might make some of its green subterms eligible, regardless
+of Boolean selection.
+
+In our previous work \cite{nbtv-2021-foboolsup}, we left this area of new
+possibilities largely unexplored. We designed simple functions that selected
+smallest, largest, innermost, or outermost terms, but they did not impact
+performance much. Here, we propose alternatives.
+%
+Intuitively, a well-performing literal selection
+function might succeed at taming the combinatorial explosion if the
+selected literal can take part in few inferences
+\cite{hrsv-16-selsel}. However, Boolean selection functions
+introduce another factor to consider:\ the context in which the selected
+subterm occurs. This suggests the following definition:
+
+\begin{defi}[Contextualized Boolean selection function]
+  \label{def:context-bool-sel}
+  \,Let $\mathit{ctx}(C)$ be a function that maps a clause $C$ to a set of green positions
+  $p$ such that $C|_p$ is a selectable Boolean subterm, and let
+  $\vartriangleright$ be a partial order on pairs of terms and green positions.
+  The \emph{context
+  Boolean selection function} $\mathit{Sel\/}_{\mathit{ctx}}^{\,\vartriangleright}(C)$
+  selects all terms $t$ such that $t=C|_p$, $p \in \mathit{ctx}(C)$, and
+  $(t,p)$ is maximal with respect to $\vartriangleright$.
+\end{defi}
+
+In the above definition, the function $\mathit{ctx}$ lets
+us choose the context in which the Boolean subterm appears. Then, among
+the terms in the chosen context, we choose the ones that are maximal with
+respect to $\vartriangleright$.
+
+Ganzinger and Stuber considered Boolean subterm selection for their extension of
+first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus requires
+selection of subterms occurring in negative green positions, defined below.
+
+\begin{defi}[Polarity of green positions]
+ \,Negative and positive green positions in a clause $C = l_1 \llor \cdots \llor
+ l_n$ are defined inductively as follows: For each
+ $1 \leq i \leq n$, the green position $l_i.s$ is positive if $l_i = \poslit{s}$ and negative if $l_i
+ = \neglit{s}$. If $p$ is positive (negative) and $C|_p = s \,
+ \tuplen{t}$ where $s$ is either $\iand$ or $\ior$, then each
+ $p.i, 1 \leq i \leq n$, is positive (negative). If $p$ is positive and $C|_p =
+ \inot \, s$, then $p.1$ is negative; if $p$ is negative and $C|_p = \inot \, s$,
+ then $p.1$ is positive. If $p$ is positive and $C|_p = s \iimplies t$, then
+ $p.1$ is negative and $p.2$ is positive; if $p$ is negative and $C|_p = s
+ \iimplies t$, then $p.1$ is positive and $p.2$ is negative.
+\end{defi}
+Note that the polarity of $p$ is undefined whenever $C|_p$ is not a green Boolean subterm
+or it occurs under a (dis)equivalence or an uninterpreted symbol.
+To assess how the function $\mathit{ctx}$ affects performance, we use the following
+selection functions that consider green positions of selectable Boolean terms:
+%
+% \begin{description}[labelwidth=\widthof{\rm\texttt{Backward}~}]
+%   \item[\rm\texttt{Any}~] select all green positions;
+%   \item[\rm\texttt{Pos}~] select all positive green positions;
+%   \item[\rm\texttt{Neg}~] select all negative green positions;
+%   \item[\rm\texttt{Forward}~] select all green positions $p = q.1$ such that $C|_q = s \iimplies t$;
+%   \item[\rm\texttt{Backward}~] select all green positions $p = q.2$ such that $C|_q = s \iimplies t$;
+%   \item[\rm\texttt{Deep}~] select all green positions of maximal length;
+%   \item[\rm\texttt{Shallow}~] select all green positions of minimal length.
+% \end{description}
+
+\begin{tabular}{ll}
+\texttt{Any} &  select all green positions; \\
+\texttt{Pos} &  select all positive green positions; \\
+\texttt{Neg} &  select all negative green positions; \\
+\texttt{Forward} &  select all green positions $p = q.1$ such that $C|_q = s \iimplies t$; \\
+\texttt{Backward} &  select all green positions $p = q.2$ such that $C|_q = s \iimplies t$; \\
+\texttt{Deep} &  select all green positions of maximal length; \\
+\texttt{Shallow} &  select all green positions of minimal length.   \\
+\end{tabular}
+
+\smallskip
+\looseness=-1
+We also introduce three partial orders for selecting subterms from a given
+context. For all three orders, if exactly one of the subterms has a logical head,
+then the subterm with the nonlogical head is larger, because logical symbols
+are more explosive. Otherwise, the orders use the following criteria:
+%
+% \begin{description}[labelwidth=\widthof{$\vartriangleright_\text{ground}$~}]
+%   \item[\rm$\vartriangleright_\text{ground}$~] If exactly one of the subterms is ground, make the
+%   ground subterm larger; otherwise, if exactly one of the subterms is of the form $s \ieq
+%   t$, make this subterm larger.
+
+%   \item[\rm$\vartriangleright_\text{depth}$~] If one of the subterms has larger subterm depth
+%   (longest valid green subterm position), make this subterm larger; otherwise, if one of the
+%   subterms has less distinct variables, make this subterm larger.
+
+%   \item[\rm$\vartriangleright_\text{def}$~] If exactly one of the subterms is of the form
+%   $\cst{p}\,\tuplen{X}$ where $\tuplen{X}$ is a tuple of free variables, make
+%   the other subterm larger; otherwise, if exactly one of the subterms is of the form $X \,
+%   \tuplen{s}$, make the other subterm larger.
+% \end{description}
+\smallskip
+\begin{tabular}{lp{0.8\linewidth}}
+  $\vartriangleright_\text{ground}$ & If exactly one of the subterms is ground, make the
+  ground subterm larger; otherwise, if exactly one of the subterms is of the form $s \ieq
+  t$, make this subterm larger. \\[2\jot]
+  $\vartriangleright_\text{depth}$ & If one of the subterms has larger subterm depth
+     (longest valid green subterm position), make this subterm larger; otherwise, if one of the
+     subterms has less distinct variables, make this subterm larger. \\[2\jot]
+  $\vartriangleright_\text{def}$ & If exactly one of the subterms is of the form
+  $\cst{p}\,\tuplen{X}$ where $\tuplen{X}$ is a tuple of free variables, make
+  the other subterm larger; otherwise, if exactly one of the subterms is of the form $X \,
+  \tuplen{s}$, make the other subterm larger.
+\end{tabular}
+\smallskip
+
+In case of a tie, the subterm with the smaller syntactic weight is made larger,
+and if both subterms have the same weight, the term that occurs in a position further
+to the left (i.e., that has a lexicographically smaller position) is made larger.
+
+These orders follow the design principle enunciated by Hoder et
+al.~\cite{hrsv-16-selsel} that ground or deep terms and terms with repeated
+variables are ``less unifiable'' with the similar observation for higher-order
+logic that reasoning about interpreted symbols or applied variables is usually
+explosive.
+
+\begin{exa}
+  Selecting the right Boolean subterm can help avoid elaborating
+  high\-er-order inferences. Consider the unsatisfiable clause set consisting of $\poslit{\cst{p} \, (\lambda y.\, X
+  \, (\lambda x.\, x) \, \cst{a}) \iimplies\allowbreak \inot(\cst{p} \, (\lambda y. \allowbreak\, X
+  \, y \, \cst{a}))}$, $\poslit{\cst{p} \, (\lambda y.\, \cst{a})}$, and
+  $\poslit{\cst{p} \, (\lambda y. \, y^{100} \, \cst{b})}$, where superscript $i$ denotes $i$-fold
+  application of a unary term.
+  Note that $\cst{p} \, (\lambda y.\, X
+  \, (\lambda x.\, x) \, \cst{a})$ and $\cst{p} \,
+  (\lambda y.\, \cst{a})$ have infinitely many unifiers of the form $\{ X \mapsto \lambda fx.
+  \, f^i\, (x) \}, i \geq 0$, whereas terms $\cst{p} \, (\lambda y. \, X
+  \, y \, \cst{a})$ and $\cst{p} \, (\lambda y. y^{100} \, \cst{b})$ have the MGU. 
+  When \texttt{Forward} context selection is enabled, % the subterm
+  $\cst{p} \, (\lambda y.\, X \, (\lambda x.\, x) \, \cst{a})$ is made the target of superposition inference, 
+  forcing computation of at least 100 unifiers (under the assumption that
+  unifiers are returned in order of increasing $i$) before we get to refute
+  $\inot(\cst{p} \, (\lambda y. y^{100} \, \cst{b}))$.
+  In contrast, \texttt{Backward} context selection allows us to
+  superpose from $\cst{p} \, (\lambda y. \, y^{100} \, \cst{b})$ into $\cst{p} \, (\lambda y. \, X
+  \, y \, \cst{a})$, avoiding this explosion. 
+\end{exa}
+
+\ourpara{Evaluation and Discussion}
+
+\begin{figure}
+\centering
+\def\arraystretch{1.1}%
+ \begin{tabular}{@{}l@{\hskip 1.5em}l@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{}} \toprule
+  &                                    & \texttt{Any} & \texttt{Pos} & \texttt{Neg}        & \texttt{Forward} & \texttt{Backward} & \texttt{Deep}     & \texttt{Shallow}  \\ \midrule
+  TPTP &
+    $\vartriangleright_\text{ground}$  & 1538         & 1550         & 1547                & 1534             & {\bf 1554}        & 1539              & 1538     \\
+  & $\vartriangleright_\text{depth}$   & 1542         & 1550         & 1528                & 1542             & 1550              & 1547              & 1535     \\
+  & $\vartriangleright_\text{def}$     & 1543         & 1551         & 1540                & 1540             & 1551              & 1545              & 1537  \\ \midrule
+
+%  \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{SH}}} &
+  SH &
+    $\vartriangleright_\text{ground}$  & \colalign386 & \colalign379  & \colalign386       & \colalign386     & \colalign379      & \colalign{\bf387} & \colalign{\bf387}     \\
+  & $\vartriangleright_\text{depth}$   & \colalign377 & \colalign376  & \colalign384       & \colalign378     & \colalign376      & \colalign379      & \colalign376      \\
+  & $\vartriangleright_\text{def}$     & \colalign379 & \colalign374  & \colalign{\bf387}  & \colalign379     & \colalign380      & \colalign377      & \colalign381  \\ \bottomrule
+ \end{tabular}
+ \caption{Impact of the Boolean selection function}
+ \label{fig:bool-sel}
+\end{figure}
+
+When the input problem is clausified using immediate clausification, almost
+all Boolean structure is lost. In this case, we expect Boolean selection to
+have a modest effect. To better assess this feature, in this evaluation we use
+\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:ho-tech:formulas} as the baseline
+configuration. To avoid interference of literal and Boolean selection, we
+additionally forbid the literal selection function from selecting a literal if
+it contains a selectable Boolean subterm.
+
+The results of evaluating 21 concrete selection functions obtained
+by instantiating the contextualized Boolean selection function are shown in
+Fig.~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
+while columns denote the function $\mathit{ctx}$.
+
+\looseness=-1
+On TPTP benchmarks, Boolean selection helps tame the explosion caused by
+dynamic clausification used as inference: \NumberOK{All but one} selection functions
+outperform the \relax{DCI}$-$\relax{LA} baseline of \NumberOK{1532} proved problems. Coming back to the problem
+\texttt{NUM636\^{}2} from Sect.~\ref{sec:ho-tech:formulas}, using Boolean selection
+can reduce the number of given clause loop iterations from
+\NumberOK{294} to \NumberOK{71}.
+
+The results suggest that selection of term context has more impact
+than the partial term order. % The number of proved problems fluctuates more when
+%changing the function $\mathit{ctx}$ than when changing the partial order.
+Also, the best results are obtained when a context more specific than \texttt{Any}
+is chosen. Remarkably, functions using \texttt{Pos} context
+perform better than the ones using \texttt{Neg} context
+on TPTP but the opposite is observed on SH.
+
+
+Using different Boolean selection functions yields vastly different sets of
+proved problems on TPTP benchmarks: In total, there are \NumberOK{103} problems
+proved by some configuration from Fig.~\ref{fig:bool-sel} but not by
+\relax{DCI}$-$\relax{LA}. However, there are only \NumberOK{16} such SH problems.
+It would seem that the advanced formula reasoning facilitated by the Boolean
+selection formulas is usually not required by Sledgehammer problems.
+
+
+
