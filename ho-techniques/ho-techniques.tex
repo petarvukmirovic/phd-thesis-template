@@ -172,7 +172,7 @@ superposition from such axioms into Boolean subterms,
 while avoiding the explosion incurred by adding these axioms to the proof state. It
 also includes rules that simulate Boolean inferences below applied variables.
 Both sets of rules are disabled or replaced with incomplete, ad hoc rules
-described in the previus chapter in most configurations
+described in the previous chapter in most configurations
 of the CASC portfolio.
 A new feature of the calculus that we explore in detail is
 the ability to select Boolean subterms
@@ -186,7 +186,7 @@ applied variables with partially applied combinators from the complete
 combinator set $\{\cst{S}, \cst{K}, \cst{B}, \cst{C}, \cst{I}\}$. This calculus
 is the basis of Vampire~4.5 \cite{br-20-full-sup-w-combs}, which finished
 closely behind Satallax 3.4 %~and~3.5
-at higher-order division of CASC in 2020.
+at the higher-order division of CASC in 2020.
 
 \looseness=-1
 A different, very successful calculus is Satallax's SAT-guided tableaux
@@ -222,7 +222,8 @@ uniformly used monomorphic benchmarks.
 We fixed a \emph{base} configuration
 of Zipperposition parameters as a baseline for all comparisons. This is an
 incomplete, pragmatic configuration of \osup{} using heuristics expected to perform
-well on a wide range of problems.
+well on a wide range of problems. The set of parameters used for baseline configuration in this
+chapter differs from the one in the previous chapter.
 %Note that
 %we use a different baseline configuration than in our earlier paper \cite{making-ho-work}.
 %%% That goes without saying. We use a different calculus! Now clarified in intro. --JB
@@ -421,7 +422,7 @@ problem. This might partly explain Satallax's dominance in the THF division of C
 competitions until the 2020 edition of CASC.
 
 The \osup{} calculus supports \emph{delayed clausification rules} that insert
-problems into the proof state in their original, nonclausified form, and
+the formulas of a problem into the proof state in their original, nonclausified form, and
 clausify them gradually. Delayed clausification allows the prover to analyze the
 syntactic structure of formulas during saturation, whereas the more traditional
 approach of \emph{immediate clausification} applies a standard clausification
@@ -476,7 +477,7 @@ form $(\iforall x.\, \varphi) \eq \itrue \llor C$, yielding $\substterm{\{x
 \mapsto\nobreak X\}}{\varphi} \eq \itrue \llor C$, we can create additional
 clauses in which $x$ is replaced with $t \in \instset$, where $\instset$ is a
 set of heuristically chosen terms. This set contains $\lambda$-abstractions
-whose bodies are formulas and that occur in activated clauses; it also containts
+whose bodies are formulas and that occur in activated clauses; it also contains
 \emph{primitive instantiations}---that is, imitations (in the sense of
 higher-order unification) of logical symbols that approximate the shape of a
 predicate that can instantiate a predicate variable. Primitive instantiations
@@ -484,7 +485,7 @@ are described in Sect.~\ref{sect:bool:native}.
 
 Since a new term $t$ can be added to $\mathit{Inst}$ after a clause with a
 quantified variable of $t$'s type has been activated, we remember the clauses
-$\sigmaterm{\{x \mapsto X\}}{\varphi} \eq \itrue\allowbreak \llor C$ and instantiate them when
+$\substterm{\{x \mapsto X\}}{\varphi} \eq \itrue\allowbreak \llor C$ and instantiate them when
 $\mathit{Inst}$ is extended. Conveniently, these instantiated clauses are not
 recognized as subsumed by Zipperposition, which uses an optimized, incomplete
 higher-order subsumption algorithm.
@@ -589,7 +590,7 @@ but not with $+$\relax{BI}, which suggests that Boolean instantiation can be
 explosive.
 %
 One of the problems Boolean instantiation helps solve is \texttt{NUM636\^{}2} (a
-re-encoding of \texttt{NUM636\^{}3}, which is disucssed in Example \ref{hot:exa:num636}).
+reencoding of \texttt{NUM636\^{}3}, which is discussed in Example \ref{hot:exa:num636}).
 It conjectures that $\iforall x.\, \cst{s} \, x \ineq x$, where $x$ ranges over
 Peano-style numbers specified by $\cst{z}$ and $\cst{s}$. The given axioms are
 the induction principle $\forall p.\, p \, \cst{z} \,\iand\, \forall x. \, (p \,
