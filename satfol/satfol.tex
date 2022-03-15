@@ -1,3 +1,33 @@
 \chapter{SAT-Inspired Eliminations for Superposition}
 \setheader{SAT-Inspired Eliminations for Superposition}
 \label{ch:satfol}
+
+\includeversion{noqle}
+\excludeversion{qle}
+\newcommand{\paper}[0]{chapter}
+
+\authors{
+    Joint work with\\
+    Jasmin Blanchette,
+    and Marijn J.H. Heule
+}
+
+\begin{abstract}
+Optimized SAT solvers not only preprocess the clause set, they also transform it
+during solving as inprocessing. Some preprocessing techniques have been
+generalized to first-order logic with equality. In this \paper, we port
+inprocessing techniques to work with superposition, a leading first-order proof
+calculus, and we strengthen known preprocessing techniques. Specifically, we
+look into elimination of hidden literals, variables (predicates), and blocked
+clauses. Our evaluation using the Zipperposition prover confirms that the new
+techniques usefully supplement the existing superposition machinery.
+\end{abstract}
+
+\blfootnote{In this work I was the main designer behind all the presented techniques.
+Marijn Heule did weekly supervision and provided his knowledge of SAT solving to 
+guide the design of all techniques. Jasmin Blanchette found the exact conditions
+under which superposition remains complete when predicate elimination rule is added
+to the calculus. I also implemented and evaluated all the techniques. 
+}
+
+\newpage
