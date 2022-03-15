@@ -593,10 +593,10 @@ One of the problems Boolean instantiation helps solve is \texttt{NUM636\^{}2} (a
 reencoding of \texttt{NUM636\^{}3}, which is discussed in Example \ref{hot:exa:num636}).
 It conjectures that $\iforall x.\, \cst{s} \, x \ineq x$, where $x$ ranges over
 Peano-style numbers specified by $\cst{z}$ and $\cst{s}$. The given axioms are
-the induction principle $\forall p.\, p \, \cst{z} \,\iand\, \forall x. \, (p \,
-x \iimplies p \, (\cst{s} \, x)) \iimplies \forall x. \, p\, x$, injectivity
-$\forall x y. \, \cst{s}\,x \ieq \cst{s}\,y \iimplies x \ieq y$, and
-distinctness $\forall x. \, \cst{s}\,x \ineq \cst{z}$. The conjecture is easily
+the induction principle $\iforall p.\, p \, \cst{z} \,\iand\, \iforall x. \, (p \,
+x \iimplies p \, (\cst{s} \, x)) \iimplies \iforall x. \, p\, x$, injectivity
+$\iforall x y. \, \cst{s}\,x \ieq \cst{s}\,y \iimplies x \ieq y$, and
+distinctness $\iforall x. \, \cst{s}\,x \ineq \cst{z}$. The conjecture is easily
 proved if Boolean instantiation is enabled: Even though the conjecture literal
 cannot be abstracted, instantiating $p$ with the term $\lambda x.\, \cst{s}
 \, x \ineq x$ used in the encoding of the (nonclausified) conjecture leads to a proof in just
@@ -707,7 +707,8 @@ of Boolean selection.
 In our previous work \cite{nbtv-2021-foboolsup}, we left this area of new
 possibilities largely unexplored. We designed simple functions that selected
 smallest, largest, innermost, or outermost terms, but they did not impact
-performance much. Here, we propose alternatives.
+performance much. A similar idea has been discussed in the context of \infname{Cases}(\infname{Simp}) rule
+in Sect.~\ref{sect:bool:native}.  Here, we propose alternatives.
 %
 Intuitively, a well-performing literal selection
 function might succeed at taming the combinatorial explosion if the
@@ -899,6 +900,398 @@ proved by some configuration from Fig.~\ref{fig:bool-sel} but not by
 \relax{DCI}$-$\relax{LA}. However, there are only \NumberOK{16} such SH problems.
 It would seem that the advanced formula reasoning facilitated by the Boolean
 selection formulas is usually not required by Sledgehammer problems.
+
+
+\section{Enumerating Infinitely Branching Inferences}
+\label{sec:ho-tech:infinite-branching}
+
+\looseness=-1
+As an optimization and to simplify the code, Leo-III
+\cite{as-18-phd} and Vampire 4.4 \cite{br-19-restricted-unif} (which uses
+\confrep{}{\emph{restricted combinatory unification}, }a predecessor of combinatory
+superposition) compute only a finite subset of the possible conclusions for
+inferences that require enumerating a CSU. Not only is this a source of
+incompleteness, but choosing the cardinality of the computed subset is a
+difficult heuristic choice. Small sets can result in missing the necessary unifier, while large sets make the prover spend too long in
+the unification procedure, generate useless clauses, and possibly get sidetracked into the wrong parts of the search space.
+
+We propose a modification to the given clause procedure to seamlessly
+interleave unifier computation and proof state exploration. Given a complete
+unification procedure, which may yield infinite streams of unifiers, our
+modification fairly enumerates all conclusions of inferences relying on
+elements of a CSU. Under some reasonable assumptions, it behaves exactly like
+the standard given clause procedure on purely first-order problems.
+We also describe heuristics that help achieve a similar
+performance as when using incomplete, terminating unification procedures
+without sacrificing completeness.
+\pagebreak[2]
+
+Given that we cannot decide whether there exists a next CSU
+element in a stream of unifiers, the request for the next conclusion might not
+terminate,
+effectively bringing the theorem prover to a halt. Our modified given clause procedure
+expects the unification procedure to return a lazily computed stream
+\cite[Sect.~4.2]{co-1999-funds}, where each element is either $\emptyset$ or
+a singleton set containing a unifier. To avoid getting stuck waiting for a unifier
+that may not exist, the unification procedure should return
+$\emptyset$ after it performs some number of operations without finding a unifier.
+
+The complete unification procedure described in Chapter \ref{ch:unif} returns such a stream. Other procedures such
+as Huet's \cite{gh-75-unification} and Jensen and
+Pietrzykowski's \cite{jp-76-unif} can easily be adapted to meet this
+requirement. Based on the stream of unifiers interspersed with $\emptyset$, we
+can construct a stream of inferences similarly interspersed with $\emptyset$.
+Any finite prefixes of this stream can be computed in finite time.
+
+To support such streams in the given clause procedure, we extend it to
+represent the proof state not only by the active ($\mathcal{A}$) and passive ($\mathcal{P}$) clause
+sets, but also by a priority queue $\mathcal{Q}$ containing the inference streams,
+similar to the ``to do'' set $T$ present in the abstract Zipperposition loop of 
+Waldmann et al.\  \cite[Sect.~4]{wtrb-20-sat-framework}.
+Each stream is associated with a weight, and $\mathcal{Q}$ is sorted in order of
+increasing weight\confrep{}{, a low weight corresponding to a high priority}.
+When they introduced \lsup, Bentkamp et al.\
+\cite{bbtvw-21-sup-lam} described an older version of this extension. Here
+we present a newer version in more detail, including heuristics to postpone
+unpromising streams. The pseudocode of the modified procedure is as follows:
+\newcommand\ParamMode{\ensuremath{K_{\mathrm{fair}}}}
+\newcommand\ParamMaxStreams{\ensuremath{K_{\mathrm{best}}}}
+\newcommand\ParamRetry{\ensuremath{K_{\mathrm{retry}}}}
+\newcommand{\assign}[2]{\State \ensuremath{\mathit{#1} \gets #2}}
+\newcommand{\assignSameLine}[2]{\ensuremath{\mathit{#1} \gets #2}}
+\algrenewcommand\algorithmicindent{1em}
+\begin{algorithmic}[0]
+    \Function{ExtractClause}{$Q$, $\mathit{stream}$}
+      \assign{maybe\_clause}{\text{pop and compute the first element of } \mathit{stream} }
+      \If{$\mathit{stream}$ is not empty}
+        \State add $\mathit{stream}$ to $Q$ with an increased weight
+      \EndIf
+      \State \Return $\mathit{maybe\_clause}$
+    \EndFunction
+
+    \vspace{2\jot}
+
+    \Function{HeuristicProbe}{$Q$}
+      \assign{i}{0}
+      \assign{collected\_clauses}{\emptyset}
+      \While{$i < \ParamMaxStreams$ and $Q \not= \emptyset$}
+        \assign{j}{0}
+        \assign{maybe\_clause}{\emptyset}
+        \While{$j < \ParamRetry$ and $Q \not= \emptyset$ and $\mathit{maybe\_clause} = \emptyset$}
+          \assign{stream}{\text{pop the lowest-weight stream in } Q}
+          \assign{maybe\_clause}{\textsc{ExtractClause}(Q, \mathit{stream})}
+          \assign{j}{j+1}
+        \EndWhile
+        \assign{collected\_clauses}{\mathit{collected\_clauses} \mathrel\cup \mathit{maybe\_clause}}
+        \assign{i}{i+1}
+      \EndWhile
+      \State \Return $\mathit{collected\_clauses}$
+    \EndFunction
+
+  \newpage
+  \Function{FairProbe}{$Q$, $\mathit{num\_oldest}$}
+    \assign{collected\_clauses}{\emptyset}
+    \assign{oldest\_streams}{\text{pop } \mathit{num\_oldest} \text{ oldest streams from } Q}
+    \For{$\mathit{stream}$ in $\mathit{oldest\_streams}$}
+      \assign{collected\_clauses}{\mathit{collected\_clauses} \mathrel\cup \textsc{ExtractClause}(Q, \mathit{stream})}
+    \EndFor
+    \State \Return $\mathit{collected\_clauses}$
+  \EndFunction
+
+  \vspace{2\jot}
+
+  \Function{ForceProbe}{$Q$}
+    \assign{collected\_clauses}{\emptyset}
+    \While {$Q \not= \emptyset$ and $\mathit{collected\_clauses} = \emptyset$}
+      \assign{collected\_clauses}{\textsc{FairProbe}(Q, |Q|)}
+    \EndWhile
+
+    \If{$Q = \emptyset$ and $\mathit{collected\_clauses} = \emptyset$}
+      \assign{status}{\textsf{Satisfiable}}
+      % \Return (\textsf{Satisfiable}, $\mathit{collected\_clauses}$)
+    \Else{}
+      \assign{status}{\textsf{Unknown}}
+      % \Return (\textsf{Unknown}, $\mathit{collected\_clauses}$)
+    \EndIf
+
+    \State \Return $(\mathit{status}, \mathit{collected\_clauses})$
+  \EndFunction
+
+  \vspace{2\jot}
+
+  \Function{GivenClause}{$P$, $A$, $Q$}
+
+  \assign{i}{0}
+  \assign{status}{\textsf{Unknown}}
+  \While{$\mathit{status} = \textsf{Unknown}$}
+    \If{$P = \emptyset$}
+      \assign{(status, \,forced\_clauses)}{\textsc{ForceProbe}(Q)}
+      \assign{P}{P \mathrel\cup \mathit{forced\_clauses}}
+    \Else
+      \assign{given}{\text{pop a chosen clause from }P \text{ and simplify it}}
+      \If{$\mathit{given}$ is the empty clause}
+        \assign{status}{\textsf{Unsatisfiable}}
+      \Else
+        \assign{A}{A \mathrel\cup \{\mathit{given}\}}
+        \For{$\mathit{stream}$ in streams of inferences between $\mathit{given}$ and $\mathit{other} \in A$}
+          \If{$\mathit{stream}$ is not empty} \assign{P}{P \mathrel\cup \textsc{ExtractClause}($Q$, \mathit{stream})}
+          \EndIf
+        \EndFor
+        \assign{i}{i+1}
+        \If{$i \; \mathrm{mod} \; \ParamMode = 0$} \assign{P}{P \mathrel\cup \textsc{FairProbe}(Q, i/\ParamMode )}
+        \Else{} \assign{P}{P \mathrel\cup \textsc{HeuristicProbe}(Q)}
+        \EndIf
+      \EndIf
+    \EndIf
+  \EndWhile
+
+  \State \Return $\mathit{status}$
+
+  \EndFunction
+\end{algorithmic}
+% \caption{Our modified given clause procedure}
+% \label{fig:gc-pseudocode}
+%
+% \end{figure}
+% \vspace{2.5\jot}
+
+Entry point to the above pseudocode is the function \textsc{GivenClause}, called
+with arguments $(\mathcal{P}, \mathcal{A}, \mathcal{Q})$, which are initialized
+as usual: All input clauses are put into $\mathcal{P}$, and $\mathcal{A}$ and
+$\mathcal{Q}$ are empty. In other words, the parameters $P, A$, and $Q$ intuitively
+correspond to $\mathcal{P}, \mathcal{A}$, and $\mathcal{Q}$. Unlike in the
+standard given clause procedure, inference results are represented as clause
+streams. The first element is inserted into $P$, and the rest of the stream is
+stored in $Q$ with some positive integer weight computed from the inference
+rule.
+
+\looseness=-1
+To eventually consider inference conclusions from streams in $Q$ as given
+clauses, we extract elements from, or \emph{probe}, streams and move any obtained
+clauses to $P$. Analogously to the traditional pick--given ratio
+\cite{ss-02-brainiac,mcw-1997-otter}, we use a parameter
+\ParamMode{} (by default, $\ParamMode = 70$) to ensure fairness: Every \ParamMode{}th iteration,
+\textsc{FairProbe} probes an increasing number of oldest streams, which achieves
+dovetailing. In all other iterations, \textsc{HeuristicProbe} attempts to
+extract up to \ParamMaxStreams{}~clauses from the most promising streams (by default,
+$\ParamMaxStreams = 7$).
+In each attempt, the most promising stream in $Q$ is chosen. If its first
+element is $\emptyset$, the rest of the stream is inserted into $Q$ and a new stream is
+chosen. This is repeated until either \ParamRetry{} occurrences of $\emptyset$ have  been
+met (by default, $\ParamRetry = 20$) or the stream yields a singleton. Setting $\ParamRetry > 0$ increases
+the chance that \textsc{HeuristicProbe} will return $\ParamMaxStreams$ clauses, as desired. Finally, if $P$ becomes empty, \textsc{ForceProbe}
+searches relentlessly for a clause in $Q$, as a fallback.
+
+\looseness=-1
+The function \textsc{ExtractClause} extracts an element from a nonempty stream
+not in $Q$ and inserts the remaining
+stream into $Q$ with an increased weight, calculated as follows.
+Let $n$ be the number of times the stream was chosen for
+probing. If probing results in $\emptyset$, the stream's weight is increased by
+$\max\,\{2{,}\; n-16\}$. If probing results in a clause $C$ whose penalty is
+$p$, the stream's weight is increased by $p \cdot \max\,\{1{,}\; n-64\}$. The
+penalty of a clause is a number assigned by Zipperposition based on
+features such as the depth of its derivation and the rules used in it.
+The constants $16$ and $64$ increase the chance that newer clause-producing streams are picked,
+which is desirable because their first clauses are expected to be useful.
+
+\looseness=-1
+All three probing functions are invoked by
+\textsc{GivenClause}, which contains the saturation loop. It differs
+from the standard given clause procedure in three ways:
+First, the proof state includes $Q$ in addition to $P$ and $A$. Second,
+new inferences involving the given clause are added to $Q$ instead of being
+performed immediately. Third, inferences in $Q$ are periodically performed
+lazily to fill $P$.
+
+\newcommand\infstream[1]{[#1]}
+
+\begin{exa} 
+  \begin{sloppypar}
+  In this example we simplify the notation by writing positive predicate literals
+  $\poslit{s}$ as $s$ and negative predicate literals $\neglit{t}$ as $\neg t$.
+  Consider the unsatisfiable two-clause problem $\{ X \, (\cst{f} \,
+  \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}),\allowbreak
+  \neg \cst{p} \, (\cst{f}^{100} \, \cst{a})  \}$ and a selection function which
+  selects negative literals. 
+  Let $P \mid A \mid Q$ denote
+  the state of the given clause loop (i.e., the contents of the passive and active set
+  and of the stream queue), and let $\infstream{ a_1, a_2, \ldots }$
+  denote an infinite stream of elements.
+  \end{sloppypar}
+
+  The given clause loop begins in the state $X \, (\cst{f} \, \cst{a}) \not\eq
+  \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}), \neg \cst{p} \,
+  (\cst{f}^{100} \, \cst{a}) \mid \emptyset \mid \emptyset$. If the clause $\neg
+  \cst{p} \, (\cst{f}^{100} \, \cst{a})$ is chosen for processing, since $Q$ is empty
+  and no inferences with the chosen clause are possible, the state becomes $X \,
+  (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \,
+  \cst{a}) \mid \neg \cst{p} \, (\cst{f}^{100} \, \cst{a}) \mid \emptyset$. When
+  the clause $X \, (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor
+  \cst{p} \, (X \, \cst{a})$ is chosen, a new stream which enumerates results of
+  equality resolution (on its first literal) is created. There are infinitely many
+  conclusions of this inference, since there are infinitely many unifiers for the
+  first literal of the form $\{ X \mapsto \lambda x. \, \cst{f}^i \, x \}$, for
+  $i \geq 0$. Thus, the stream is $\infstream{ \{\cst{p} \, \cst{a}\}, \{\cst{p} \, (\cst{f}\,\cst{a})\}, \ldots }$,
+  possibly with $\emptyset$s interspersed. With the standard given clause procedure,
+  there would have been no way to represent this infinitary result.
+  %The creation of the
+  %inference result stream is the most striking difference between our
+  %and standard given clause procedure.
+
+  When the stream is created, its first element is popped and put into $P$. Then, based on the
+  parameters that control inference stream probing, some number of clauses from
+  the stream are computed and moved to $P$. After two iterations, the state might be
+  $ \cst{p} \,
+  \cst{a}, \cst{p} \, (\cst{f} \, \cst{a}), \allowbreak \cst{p} \, (\cst{f} \, (\cst{f} \, \cst{a}))   \mid X \,
+  (\cst{f} \, \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \,
+  \cst{a}), \neg \cst{p} \, (\cst{f}^{100} \, \cst{a}) \mid \infstream{ \{\cst{p} \, (\cst{f}^3\,\cst{a})\}, \ldots }$. 
+  
+  In the next iterations, some clause of the form $\cst{p} \, (\cst{f}^{i} \,
+  \cst{a})$, where $i < 100$, is chosen, but no inferences with it can be
+  performed. Then, the stream created in the second iteration is probed, and its
+  results fill the set $P$. Ultimately, the clause $\cst{p} \, (\cst{f}^{100} \,
+  \cst{a})$ is chosen, at which point $\bot$ is quickly derived.
+\end{exa}
+
+\textsc{GivenClause} eagerly stores the first element of a new inference stream
+in $P$ to imitate the standard given clause procedure. If the underlying
+unification procedure behaves like the standard first-order unification
+algorithm on higher-order logic's first-order fragment, our given clause
+procedure coincides with the standard one. The unification procedure described in Chapter \ref{ch:unif}
+terminates on the first-order and other fragments. To avoid computing
+complicated unifiers eagerly, it immediately returns $\emptyset$ for a problem that does not
+belong to one of the fragments that admit efficient unifier computation.
+
+
+The design of our given clause procedure was guided by folklore knowledge about
+higher-order theorem proving. First, in our experience most steps in
+long higher-order proofs involve first-order literals. The unification
+procedure and inference scheduling ensure that first-order inference
+conclusions are put in the proof state as early as possible. Second, some
+inference rules are expected to be largely useless. We initialize the stream
+penalty differently for each rule, allowing old streams of more useful
+inferences to be queried before newly added, but potentially less useful
+streams. Finally, if we use a unification procedure that has aggressive
+redundancy elimination, we will often find the necessary unifier within the
+first few unifiers returned. Similarly, if a stream keeps returning
+$\emptyset$, it is likely that it is blocked in a nonterminating computation
+and should be ignored. Our heuristics to increase the stream penalties take
+both observations into account.
+
+\ourpara{Evaluation and Discussion}
+
+\begin{sloppypar}
+  
+  The evaluation of our unification algorithm in Sect.~\ref{sec:unif:evaluation}
+  shows that Zipperposition is the only competing
+  higher-order prover that proves all Church numeral problems from the TPTP,
+  never spending more than 5~s on a problem. On these hard
+  unification problems, the stream system allows the prover to explore the proof
+  state lazily.
+\end{sloppypar}
+
+Consider the TPTP problem \verb|NUM800^1|, which requires finding
+a function $F$ such that $F \, \cst{c_1} \, \cst{c_2}
+\ieq \cst{c_2} \iand F \, \cst{c_2} \, \cst{c_3} \ieq \cst{c_6}$, where
+$\cst{c}_n$ abbreviates the Church numeral for~$n$, $\lambda s\, z. \>
+s^n \, z$. To prove
+\confrep{it}{the problem}, it suffices to take $F$ to be the multiplication operator
+$\lambda x \, y \, s \, z. \> x \, (y \, s) \, z$.
+However, this unifier is only one out of many available for each occurrence of
+$F$.
+
+% TODO: If I add a new benchmark set, make sure this sentence is fixed
+\looseness=-1
+For evaluation of our unification algorithm (using somewhat different
+evaluation setup and older version of Zipperposition), we also compared a complete, nonterminating variant of the
+unification procedure and a pragmatic, terminating variant. The
+pragmatic variant was used directly---all the inference conclusions were put
+immediately in $P$, bypassing $Q$. The complete variant, which relies on
+possibly infinite streams and is much more prolific, proved only 15  problems
+less than the most competitive pragmatic variant. Furthermore, it proved 19
+problems not proved by the pragmatic variant.
+%
+This shows that our given clause procedure, with its heuristics, allows the
+prover to defer exploring less promising branches of the unification and uses
+the full power of a complete higher-order unifier search to solve unification
+problems that cannot be proved by a restricted procedure.
+
+\looseness=-1
+The parameters \ParamMode{}, \ParamRetry{}, and \ParamMaxStreams{} can greatly
+influence the behavior of the given clause procedure, even when the same
+unification procedure is used. Figure~\ref{fig:streams}
+presents the effects of these parameters on TPTP and SH.
+Selecting a low number of best clauses seems to
+perform well on both benchmark sets. However, on SH benchmarks, which require
+overwhelmingly first-order unifiers, visiting older streams should be delayed
+a lot.
+
+As with Boolean selection functions, changing these three parameters causes
+a substantial difference in the set of proved problems. For example, the
+configuration that performs the worst on TPTP benchmarks proves \NumberOK{12}
+problems that the configuration performing the best on TPTP cannot prove; moreover, there
+are \NumberOK{29} TPTP problems that are proved by some set of parameters
+other than $\ParamMode=\ParamMaxStreams=16, \ParamRetry=2$. On SH, these
+effects are much weaker; most reasonable combinations
+of parameters perform similarly.
+
+Among the competing higher-order provers, only Satallax uses infinitely
+branching calculus rules. It maintains a queue of ``commands'' that contain
+instructions on how to create a successor state in the tableau. One
+command describes infinite enumeration of all closed terms of a given function
+type. Each execution of this command makes progress in the enumeration. Unlike
+evaluation of streams representing elements of CSU, each command execution
+is guaranteed to make progress in enumerating the next closed functional
+term, so there is no need to ever return $\emptyset$.
+
+
+
+\begin{figure}
+\captionsetup[subfigure]{justification=centering}
+
+\centering
+\begin{subfigure}[b]{1\textwidth}
+  \centering
+  \begin{tabular}{@{}l@{\kern.5em}l@{\qquad}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}}\toprule
+  &&&&&&& \ParamMode \\[.5\jot]
+  & & & 2 & & \hbox{\qquad} & & 16 & & \hbox{\qquad} & & 128 & \\[.25\jot]
+  \cline{3-5}\cline{7-9}\cline{11-13}
+  \\[-1.5\jot]
+  &&& \ParamRetry &&&& \ParamRetry &&&& \ParamRetry \\[.5\jot]
+  %                                     2                        16                     256
+  &                         & 2    & 16   & 128  & & 2         & 16   & 128  & & 2    & 16   & 128 \\\midrule
+  & $2$                     & 1643 & 1645 & 1645 & & 1661      & 1661 & 1658 & & 1669 & 1664 & 1664 \\[0.5\jot]
+  $\ParamMaxStreams$ & $16$ & 1647 & 1646 & 1609 & & {\bf1670} & 1654 & 1602 & & 1665 & 1659 & 1597 \\[0.5\jot]
+  & $128$                   & 1646 & 1644 & 1583 & & 1661      & 1656 & 1577 & & 1665 & 1658 & 1576 \\ \bottomrule
+  \end{tabular}
+  \caption{TPTP benchmarks}
+  \label{fig:streams-tptp}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}[b]{1\textwidth}
+  \centering
+  \begin{tabular}{@{}l@{\kern.5em}l@{\qquad}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}l@{}c@{\kern.75em}c@{\kern.75em}c@{}}\toprule
+  &&&&&&& \ParamMode \\[.5\jot]
+  & & & 2 & & \hbox{\qquad} & & 16 & & \hbox{\qquad} & & 128 & \\[.25\jot]
+  \cline{3-5}\cline{7-9}\cline{11-13}
+  \\[-1.5\jot]
+  &&& \ParamRetry &&&& \ParamRetry &&&& \ParamRetry \\[.5\jot]
+  %                                          2                                               16                                      128
+  &                         & 2            & 16            & 128          & & 2            & 16            & 128          & & 2                  & 16            & 128 \\\midrule
+  & $2$                     & \colalign460 & \colalign455  & \colalign454 & & \colalign465 & \colalign463  & \colalign458 & & \colalign466       & \colalign461  & \colalign461 \\[0.5\jot]
+  $\ParamMaxStreams$ & $16$ & \colalign458 & \colalign453  & \colalign445 & & \colalign464 & \colalign459  & \colalign441 & & \colalign{\bf468}  & \colalign459  & \colalign442 \\[0.5\jot]
+  & $128$                   & \colalign456 & \colalign452  & \colalign430 & & \colalign465 & \colalign458  & \colalign428 & & \colalign{\bf468}  & \colalign459  & \colalign425 \\ \bottomrule
+  \end{tabular}
+  \caption{SH benchmarks}
+  \label{fig:streams-sh}
+\end{subfigure}
+\caption{Impact of the stream enumeration parameter}
+\label{fig:streams}
+\end{figure}
+
+
+
 
 
 

@@ -27,6 +27,7 @@
 \RequirePackage[dutch,english]{babel}
 \RequirePackage{calc}
 \RequirePackage[nooneline,footnotesize]{caption}
+\RequirePackage{subcaption}
 %\RequirePackage{chapterbib}
 \RequirePackage{etaremune}
 \RequirePackage{fancyhdr}
@@ -174,9 +175,9 @@
 
 % *** GRAPHICS RELATED PACKAGES ***
 %
-\RequirePackage{subfig}
+% \RequirePackage{subfig}
 %% Make figures appear in the same section (to avoid a bunch of figures at the end of a section)
-\RequirePackage[section]{placeins}
+% \RequirePackage[section]{placeins}
 % declare the path(s) where your graphic files are
 \graphicspath{{figs/},{asats/figs/},{last-line/figs/},{travis-analysis/figs/},{watchdog-tse/figs/},{debugging/figs/},{debugging/img/}}
 % and their extensions so you won't have to specify these with
@@ -223,7 +224,7 @@
 \RequirePackage{multicol}
 
 \RequirePackage{algorithm}
-\RequirePackage{algpseudocode}
+\RequirePackage[noend]{algpseudocode}
 \newcommand{\var}[1]{{\ttfamily#1}}% variable
 
 \newcommand{\ahref}[2]{\href{#1}{\nolinkurl{#2}}}
