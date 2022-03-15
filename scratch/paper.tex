@@ -219,7 +219,7 @@ Zipperposition won the higher-order division of the CASC-J10 competition.
 \newcommand{\confrep}[2]{#2}
 
 \section{Introduction}
-\label{sec:ho-tech:intro}
+\label{sec:satfol:ho-tech:intro}
 
 %In recent decades,
 Superposition-based first-order automatic theorem provers
@@ -268,32 +268,32 @@ higher-order logic, including an interpreted Boolean type.
 Many higher-order problems extensively use symbol definitions to simplify
 their representation. We describe several ways to exploit the definitions,
 %of which the most successful is
-such as turning them into rewrite rules (Sect.~\ref{sec:ho-tech:preprocessing}).
+such as turning them into rewrite rules (Sect.~\ref{sec:satfol:ho-tech:preprocessing}).
 %Interesting patterns can be observed in various higher-order problem encodings.
-%We show how we can exploit these to simplify problems (Sect.~\ref{sec:ho-tech:preprocessing}).
+%We show how we can exploit these to simplify problems (Sect.~\ref{sec:satfol:ho-tech:preprocessing}).
 %
 By working on formulas rather than clauses, tableau techniques take a more
 holistic view of a higher-order problem.
 Through its support for delayed clausification and, more generally,
 calculus-level formula manipulation, \osup{} enables us to
 simulate most successful tableau techniques in a saturating prover
-(Sect.~\ref{sec:ho-tech:formulas}). This calculus also supports \emph{Boolean selection
+(Sect.~\ref{sec:satfol:ho-tech:formulas}). This calculus also supports \emph{Boolean selection
 functions}, a mechanism that allows us to choose on which Boolean subterms
 to perform inferences first.
 We implemented some Boolean selection functions and
-evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
+evaluated them (Sect.~\ref{sec:satfol:ho-tech:bool-select}).
 
 The main drawback of both \lsup{} variants compared with combinatory
 superposition is that they rely on rules that enumerate possibly infinite sets
 of unifiers. We describe a mechanism that interleaves infinitely
 branching inferences with the standard saturation process
-(Sect.~\ref{sec:ho-tech:infinite-branching}). The prover
+(Sect.~\ref{sec:satfol:ho-tech:infinite-branching}). The prover
 retains the same behavior as
 before on first-order problems, smoothly scaling with
 increasing numbers of higher-order clauses.
 %
 We also propose some heuristics to curb the explosion induced by highly
-prolific calculus rules (Sect.~\ref{sec:ho-tech:explosiveness}).
+prolific calculus rules (Sect.~\ref{sec:satfol:ho-tech:explosiveness}).
 
 Using first-order backends to finish the proof is common practice in
 higher-order reasoning. Since \lsup{} coincides with standard
@@ -302,11 +302,11 @@ seem redundant; yet Zipperposition is nowhere as efficient as E
 \cite{scv-19-e23} or Vampire \cite{lkav-13-vampire}, so invoking a more
 efficient backend does make sense. We describe how to achieve a balance
 between allowing native higher-order reasoning and
-delegating reasoning to a backend (Sect.~\ref{sec:ho-tech:backends}).
+delegating reasoning to a backend (Sect.~\ref{sec:satfol:ho-tech:backends}).
 %
 Finally, we compare Zipperposition~2 with other provers on all monomorphic
 higher-order TPTP benchmarks \cite{gs-17-tptp} to perform a more extensive
-evaluation than at CASC (Sect.~\ref{sec:ho-tech:comparison}). Our evaluation
+evaluation than at CASC (Sect.~\ref{sec:satfol:ho-tech:comparison}). Our evaluation
 corroborates the competition results.
 
 This article is an extended version of a paper accepted at CADE-28
@@ -317,7 +317,7 @@ more techniques,
 introduces new benchmark sets, and presents more examples.
 
 \section{Background and Setting}
-\label{sec:ho-tech:background}
+\label{sec:satfol:ho-tech:background}
 
 We focus on monomorphic higher-order logic, without the axiom of infinity 
 or the axiom of at least two individuals. However, the techniques can easily be
@@ -450,7 +450,7 @@ CASC portfolio mode. The raw evaluation results are available online.%
 
 
 \section{Preprocessing Higher-Order Problems}
-\label{sec:ho-tech:preprocessing}
+\label{sec:satfol:ho-tech:preprocessing}
 
 The TPTP library contains thousands of higher-order problems. Despite their
 diversity, they have a markedly different flavor from the TPTP first-order
@@ -642,7 +642,7 @@ pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
 by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
 
 \section{Reasoning about Formulas}
-\label{sec:ho-tech:formulas}
+\label{sec:satfol:ho-tech:formulas}
 
 Higher-order logic identifies formulas with terms of Boolean type. To prove a problem, we often
 need to instantiate a variable with the right predicate.
@@ -878,7 +878,7 @@ not include lemmas whose name contains the substring \texttt{.induct} and that
 contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
 
 \section{Exploring Boolean Selection Functions}
-\label{sec:ho-tech:bool-select}
+\label{sec:satfol:ho-tech:bool-select}
 
 Superposition calculi are parameterized by a literal selection function and a
 term order that help prune considerable swaths of the search space without
@@ -1106,7 +1106,7 @@ explosive.
 When the input problem is clausified using immediate clausification, almost
 all Boolean structure is lost. In this case, we expect Boolean selection to
 have a modest effect. To better assess this feature, in this evaluation we use
-\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:ho-tech:formulas} as the baseline
+\relax{DCI}$-$\relax{LA} from Sect.~\ref{sec:satfol:ho-tech:formulas} as the baseline
 configuration. To avoid interference of literal and Boolean selection, we
 additionally forbid the literal selection function from selecting a literal if
 it contains a selectable Boolean subterm.
@@ -1120,7 +1120,7 @@ while columns denote the function $\mathit{ctx}$.
 On TPTP benchmarks, Boolean selection helps tame the explosion caused by
 dynamic clausification used as inference: \NumberOK{All but one} selection functions
 outperform the \relax{DCI}$-$\relax{LA} baseline of \NumberOK{1532} proved problems. Coming back to the problem
-\texttt{NUM636\^{}2} from Sect.~\ref{sec:ho-tech:formulas}, using Boolean selection
+\texttt{NUM636\^{}2} from Sect.~\ref{sec:satfol:ho-tech:formulas}, using Boolean selection
 can reduce the number of given clause loop iterations from
 \NumberOK{294} to \NumberOK{71}.
 
@@ -1164,7 +1164,7 @@ selection formulas is usually not required by Sledgehammer problems.
 % }
 
 \section{Enumerating Infinitely Branching Inferences}
-\label{sec:ho-tech:infinite-branching}
+\label{sec:satfol:ho-tech:infinite-branching}
 
 \looseness=-1
 As an optimization and to simplify the code, Leo-III
@@ -1568,7 +1568,7 @@ term, so there is no need to ever return $\emptyset$.
 \end{figure}
 
 \section{Controlling Prolific Rules}
-\label{sec:ho-tech:explosiveness}
+\label{sec:satfol:ho-tech:explosiveness}
 
 To support higher-order features
 such as function extensionality and quantification over functions,
@@ -1773,7 +1773,7 @@ $\ParamPenaltyIncrease=1$.
 %of some rules to shallow clauses, but this had no clear impact.
 
 \section{Controlling the Use of Backends}
-\label{sec:ho-tech:backends}
+\label{sec:satfol:ho-tech:backends}
 
 \newcommand{\ParamNumClauses}{\ensuremath{K_\mathrm{size}}}
 \newcommand{\ParamTime}{\ensuremath{K_\mathrm{time}}}
@@ -1924,7 +1924,7 @@ containing $\lambda$-abstractions.
   than including a large number of such clauses.
 
 \section{Comparison with Other Provers}
-\label{sec:ho-tech:comparison}
+\label{sec:satfol:ho-tech:comparison}
 
 %The raw evaluation data for the previous experiments show that
 Different choices of
@@ -1943,7 +1943,7 @@ Vampire's higher-order schedule is optimized for running on a single core.
 We also include E~2.7 (more precisely, Ehoh, its higher-order configuration), the first version of this prover to syntactically support
 full higher-order logic, including $\lambda$-abstractions.
 Semantically, E~2.7 is arguably the weakest among the listed provers:
-It simply performs $o$-RW rewriting described in Sect.~\ref{sec:ho-tech:preprocessing} followed by
+It simply performs $o$-RW rewriting described in Sect.~\ref{sec:satfol:ho-tech:preprocessing} followed by
 $\lambda$-lifting before it applies \relax{$\lambda$-free superposition} \cite{bbcw-21-lfho}
 (a precursor of all three higher-order superposition calculi) on the preprocessed problem.
 
@@ -2170,8 +2170,8 @@ Marijn J.H. Heule\textsuperscript{3}\orcid{0000-0002-5587-8801}}\\
 
 \begin{document}
 
-% \newcommand\ourparagraph[1]{\noindent{\textbf{\upshape#1.}}}
-\newcommand\ourparagraph[1]{\subsection{#1}}
+% \newcommand\ourpara[1]{\noindent{\textbf{\upshape#1.}}}
+\newcommand\ourpara[1]{\subsection{#1}}
 
 %% TYPESETTING: hacks
 \newcommand\medrightarrow{\mathrel{{{\color{black}\relbar}\kern-0.9ex\rlap{\color{white}\ensuremath{\blacksquare}}\kern-0.9ex}\joinrel{\color{black}\rightarrow}}}
@@ -2317,7 +2317,7 @@ techniques usefully supplement the existing superposition machinery.
 \end{abstract}
 
 \section{Introduction}
-\label{sec:introduction}
+\label{sec:satfol:introduction}
 
 Automated reasoning tools have become much more powerful in the last few
 decades thanks to procedures such as conflict-driven clause learning (CDCL)
@@ -2335,7 +2335,7 @@ techniques such as hidden literal and hidden tautology elimination
 \cite{hjb-2010-cl-elim,hjb-2011-big-simplification} and failed literal
 detection \cite[Sect.~1.6]{jwf-1995-fld}. We generalize these techniques to
 first-order logic with equality
-(Sect.~\ref{sec:hidden-literal-based-elimination}). Since the generalization
+(Sect.~\ref{sec:satfol:hidden-literal-based-elimination}). Since the generalization
 involves reasoning about infinite sets of literals, we propose restrictions to
 make them usable.
 
@@ -2355,7 +2355,7 @@ Specializing second-order quantifier elimination
 \cite{go-1992-so-pred-elim,hjo-1996-scan}, Khasidashvili and Korovin
 \cite{kk-2016-pe-fol} adapted variable elimination to preprocess first-order
 problems, yielding a technique we call \emph{singular predicate elimination}. We
-extend their work along two axes (Sect.~\ref{sec:predicate-elimination}): We
+extend their work along two axes (Sect.~\ref{sec:satfol:predicate-elimination}): We
 generalize E\'en and Biere's refinement to first-order logic, resulting in
 \emph{defined predicate elimination}, and explain how both types of predicate
 elimination can be used during the proof search as inprocessing.
@@ -2365,11 +2365,11 @@ It is well known that clauses containing \emph{pure literals}---predicate
 literals whose root symbol occurs only with one polarity in the problem---can
 be eliminated. We propose a generalization of this technique, under the name
 \emph{quasipure literal elimination}, to allow the elimination of some bipolar
-literals as well (Sect.~\ref{sec:quasipure-literal-elimination}).
+literals as well (Sect.~\ref{sec:satfol:quasipure-literal-elimination}).
 \end{qle}
 
 The last technique we study is \emph{blocked clause elimination} (Sect.\
-\ref{sec:satisfiability-by-clause-elimination}). It is used in both SAT
+\ref{sec:satfol:satisfiability-by-clause-elimination}). It is used in both SAT
 \cite{jbh-10-BCE} and QBF solvers \cite{bls-11-bloqqer}. Its generalization to first-order
 logic has produced good results when used as a preprocessor, especially on
 satisfiable problems \cite{ksstb-2017-blockedfol}. We explore more ways to use
@@ -2404,7 +2404,7 @@ refutational completeness of superposition.
 % preprocessing and inprocessing techniques from propositional to first-order logic,
 % including failed literal detection, hidden literal elimination, hidden
 % tautology elimination
-% (Sect.~\ref{sec:hidden-literal-based-elimination}). These
+% (Sect.~\ref{sec:satfol:hidden-literal-based-elimination}). These
 % techniques are fairly inexpensive in propositional logic but need to be
 % curtailed in first-order logic because they would otherwise involve reasoning
 % about an infinite set of literals.
@@ -2413,11 +2413,11 @@ refutational completeness of superposition.
 % resolution to first-order logic with equality. We call their technique
 % \emph{singular predicate elimination}. We also adapt bounded variable
 % elimination by substitution, yielding \emph{defined predicate elimination}
-% (Sect.~\ref{sec:predicate-elimination}). With some care, we can integrate these
+% (Sect.~\ref{sec:satfol:predicate-elimination}). With some care, we can integrate these
 % techniques with superposition without losing refutational completeness.
 
 % Finally, we study a first-order generalization of blocked clause
-% elimination~\cite{jbh-10-BCE} (Sect.~\ref{sec:satisfiability-by-clause-elimination}).
+% elimination~\cite{jbh-10-BCE} (Sect.~\ref{sec:satfol:satisfiability-by-clause-elimination}).
 % %Unlike the other techniques, it weakens the clause set.
 % If all clauses in the current clause set are blocked, this means that it is
 % satisfiable.
@@ -2430,8 +2430,8 @@ refutational completeness of superposition.
 % completeness.
 
 All techniques are implemented in the Zipperposition prover
-(Sect.~\ref{sec:implementation}), allowing us to ascertain their usefulness
-(Sect.~\ref{sec:evaluation}). The best configuration solves \NumberOK{160}
+(Sect.~\ref{sec:satfol:implementation}), allowing us to ascertain their usefulness
+(Sect.~\ref{sec:satfol:evaluation}). The best configuration solves \NumberOK{160}
 additional problems on benchmarks consisting of all 13\,495 first-order TPTP theorems
 \cite{gs-17-tptp}. The raw experimental data are publicly available.%
 \footnote{\url{https://doi.org/10.5281/zenodo.4552499}}\confrep{
@@ -2445,9 +2445,9 @@ variables in Definition~\ref{def:equality-blocked}.
 \end{rep}
 
 \section{Preliminaries}
-\label{sec:preliminaries}
+\label{sec:satfol:preliminaries}
 
-\ourparagraph{Clausal First-Order Logic}
+\ourpara{Clausal First-Order Logic}
 \looseness=-1
 Our setting is many-sorted, or many-typed, first-order logic \cite{jg-1987-logic-textbook} with
 interpreted equality and a distinguished type (or sort) $o$.
@@ -2513,7 +2513,7 @@ to first-order logic with equality: If a clause set is satisfiable, then it
 is satisfiable in a canonical model.
 \end{rep}
 
-\ourparagraph{Superposition Provers}
+\ourpara{Superposition Provers}
 %
 Superposition \cite{bg-94-superposition} is a calculus for clausal
 first-order logic that extends ordered resolution
@@ -2552,7 +2552,7 @@ The provers differ in which clauses are used for simplification: Otter-loop
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.}
 
 \section{Hidden-Literal-Based Elimination}
-\label{sec:hidden-literal-based-elimination}
+\label{sec:satfol:hidden-literal-based-elimination}
 
 In propositional logic, binary clauses from a clause set $N$ can be used to
 efficiently discover literals $L, L'$ for which the implication $L' \impl L$
@@ -2880,7 +2880,7 @@ as desired.
 \end{rep}
 
 \section{Predicate Elimination}
-\label{sec:predicate-elimination}
+\label{sec:satfol:predicate-elimination}
 
 For propositional logic, variable elimination \cite{eb-2005-satpreprocess} is
 one of the main preprocessing and inprocessing techniques. Following Gabbay and Ohlbach's ideas
@@ -3830,7 +3830,7 @@ contain a labeled empty clause.\qed
 
 \begin{qle}
 \section{Quasipure Literal Elimination}
-\label{sec:quasipure-literal-elimination}
+\label{sec:satfol:quasipure-literal-elimination}
 
 \emph{Pure literal elimination} (PLE) is one of the simplest optimizations
 implemented in SAT solvers. It is a special case of variable elimination: If a
@@ -3953,12 +3953,12 @@ predicate occurs with the wrong polarity in a clause
 $\arbpredlit{\cst{p}(\ldots)} \lor \arbpredlit{\cst{q}_1(\ldots)} \lor \cdots \lor
 \arbpredlit{\cst{q}_n(\ldots)} \lor C$, try to extend the polarity map $s$ and
 the predicate set $P$ with one of the $\arbpredlit{\cst{q}_i}$'s and continue
-recursively with $\cst{q}_i$. In Sect.~\ref{sec:implementation}, we will see a
+recursively with $\cst{q}_i$. In Sect.~\ref{sec:satfol:implementation}, we will see a
 more efficient approach based on a SAT encoding.
 \end{qle}
 
 \section{Satisfiability by Clause Elimination}
-\label{sec:satisfiability-by-clause-elimination}
+\label{sec:satfol:satisfiability-by-clause-elimination}
 
 \looseness=-1
 The main approaches to show satisfiability of a first-order problem are to
@@ -4265,7 +4265,7 @@ procedure also terminates only for finite Herbrand models.
  
  
 \section{Implementation}
-\label{sec:implementation}
+\label{sec:satfol:implementation}
 % {\large\bf {TODO: Shorten and introduce SPPE here in a sentence}}
 
 \newcommand{\impmap}{\textit{Imp}}
@@ -4281,7 +4281,7 @@ of improvements to superposition, but it implements many of the most successful
 heuristics from the E prover \cite{scv-19-e23} and has recently become
 quite competitive \cite{gs-19-casc27}.
 
-\ourparagraph{Hidden-Literal-Based Elimination}
+\ourpara{Hidden-Literal-Based Elimination}
 % 
 % Heule et al.\ \cite{hjb-2010-cl-elim} show how hidden tautologies can be removed
 % without creating the binary implication graph. For each literal~$L$ occurring in
@@ -4289,7 +4289,7 @@ quite competitive \cite{gs-19-casc27}.
 % \in \PHL(L,N)$, they label $L'$ with $L$. A clause $C$ is a hidden tautology if
 % there are two literals $L,L' \in C$ such that $L'$ is labeled with $L$. The
 % described approach can be generalized to first-order logic and used to implement
-% all rules from Sect.~\ref{sec:hidden-literal-based-elimination}.
+% all rules from Sect.~\ref{sec:satfol:hidden-literal-based-elimination}.
 % 
 For HLBE, an efficient representation of $\HL(L,N)$ is crucial. Because
 this set may be infinite, we underapproximate it by
@@ -4535,7 +4535,7 @@ literals. This relies on syntactic literal comparisons, which is very
 fast in propositional logic but not in first-order logic, because of
 substitutions and congruence.
 
-\ourparagraph{Predicate Elimination}
+\ourpara{Predicate Elimination}
 % 
 To implement portfolio predicate elimination, we maintain a record for each
 predicate symbol $\cst{p}$ occurring in the problem with the
@@ -4597,7 +4597,7 @@ occur in the conjecture often harms performance. Thus, Zipperposition
 recognizes definitions only for the remaining symbols.
 
 \begin{qle}
-\ourparagraph{Quasipure Literal Elimination}
+\ourpara{Quasipure Literal Elimination}
 
 A simple and efficient implementation of QLE uses a SAT solver. Let $N$ be a
 finite $\mathrm{\Sigma}$-clause set. Without loss of generality, we can assume
@@ -4645,7 +4645,7 @@ even though it works perfectly well in practice.
 \end{qle}
 
 \section{Evaluation}
-\label{sec:evaluation}
+\label{sec:satfol:evaluation}
 
 % {\bf\large TODO: Evaluate \textit{real} PPE in Figure \ref{fig:preprocess} and discuss SPPE and PPE.
 % References to PPE are broken now. }
@@ -4694,7 +4694,7 @@ indicate the number of problems solved minus \NumberOK{\baseres}. Thus,
 positive numbers indicate gains over the baseline. The best result is shown in
 bold.
 
-\ourparagraph{Hidden-Literal-Based Elimination}
+\ourpara{Hidden-Literal-Based Elimination}
 % 
 The first experiments use all implemented HLBE rules.
 To avoid overburdening Zipperposition, we can enable an option to limit the
@@ -4844,7 +4844,7 @@ These results suggest that computing long implication chains \NumberOK{is counte
    \label{fig:bce-sat}
 \end{figure}
 
-\ourparagraph{Predicate and Blocked Clause Elimination}
+\ourpara{Predicate and Blocked Clause Elimination}
 %
 % \textit{Evaluation results discussion paragraph---here effects of definitions can be discussed}
 % \textit{Do not forget to mention SPE was already implemented and }
@@ -4914,7 +4914,7 @@ The last column shows that combining HLBE with other elimination techniques
 \NumberOK{overburdens} the prover.
 
 \begin{qle}
-\ourparagraph{Pure and Quasipure Literal Elimination}
+\ourpara{Pure and Quasipure Literal Elimination}
 \color{red}
 Pure literal elimination is a known technique, but quasipure literals are new,
 so it is quite interesting to find out whether they bring benefits on
@@ -4926,7 +4926,7 @@ We see TODO.
 \endgroup
 \end{qle}
 
-\ourparagraph{Satisfiability by Blocked Clause Elimination}
+\ourpara{Satisfiability by Blocked Clause Elimination}
 %
 \looseness=-1%
 Kiesl et al.\ found that blocked clause elimination is especially effective on
@@ -4948,11 +4948,11 @@ differ---\NumberOK{30} problems are solved by BCE and not by PPE.
 
 \begin{rep}
 \section{Discussion and Related Work}
-\label{sec:discussion-and-related-work}
+\label{sec:satfol:discussion-and-related-work}
 
 %\textbf{TODO: This section probably needs to be reworked.}
 
-We briefly surveyed related work in Sect.~\ref{sec:introduction}. In this
+We briefly surveyed related work in Sect.~\ref{sec:satfol:introduction}. In this
 section, we give a more detail overview and further discuss connections with
 the related work.
 
@@ -5028,7 +5028,7 @@ SGGS~\cite{bonacina-plaisted-2014}.
 \end{rep}
 
 \section{Conclusion}
-\label{sec:conclusion}
+\label{sec:satfol:conclusion}
 
 We adapted several preprocessing and inprocessing elimination techniques implemented in
 modern SAT solvers so that they work in a superposition prover. This involved lifting
@@ -5056,7 +5056,7 @@ further to work with higher-order calculi such as combinatory superposition
 \let\Acksize=\relax
 
 \def\ackname{\Acksize Acknowledgment}
-\ourparagraph{\ackname}
+\ourpara{\ackname}
 {\Acksize
 We are grateful to the maintainers of StarExec for letting us use their
 service.

@@ -2,9 +2,23 @@
 \setheader{SAT-Inspired Eliminations for Superposition}
 \label{ch:satfol}
 
+\excludeversion{conf}
+\includeversion{rep}
 \includeversion{noqle}
 \excludeversion{qle}
 \newcommand{\paper}[0]{chapter}
+
+\newcommand{\eqlit}[2]{\ensuremath{#1 \eq #2}}
+\newcommand{\neqlit}[2]{\ensuremath{#1 \noteq #2}}
+% \newcommand{\eqneqlit}[2]{\ensuremath{#1 \mathrel{\dot{\eq}} #2}}
+\newcommand{\pospredlit}[1]{{#1}}
+\renewcommand{\neglit}[1]{\neg{\kern.2ex #1}}
+\newcommand{\negpredlit}[1]{\neglit{#1}}
+\newcommand{\arbpredlit}[1]{(\neg)\kern.2ex\pospredlit{#1}}
+\newcommand{\cor}{\ensuremath{\mathrel{\lor}}}
+\newcolumntype{d}{D{.}{.}{0}}
+
+
 
 \authors{
     Joint work with\\
@@ -31,3 +45,159 @@ to the calculus. I also implemented and evaluated all the techniques.
 }
 
 \newpage
+
+\section{Introduction}
+\label{sec:satfol:introduction}
+
+Automated reasoning tools have become much more powerful in the last few
+decades thanks to procedures such as conflict-driven clause learning (CDCL)
+\cite{MSLM09HBSAT} for propositional logic and superposition
+\cite{bg-94-superposition} for first-order logic with equality. However,
+the effectiveness of these procedures crucially depends on how the input
+problem is represented as a clause set. The clause set
+can be optimized beforehand (\emph{preprocessing}) or during the execution of
+the procedure (\emph{inprocessing}). In this \paper, we lift several preprocessing and
+inprocessing techniques from propositional logic to clausal first-order logic
+and demonstrate their usefulness in a superposition prover.
+
+For many years, SAT solvers have used inexpensive clause simplification
+techniques such as \emph{hidden literal} and \emph{hidden tautology elimination}
+\cite{hjb-2010-cl-elim,hjb-2011-big-simplification} and \emph{failed literal
+detection} \cite[Sect.~1.6]{jwf-1995-fld}. We generalize these techniques to
+first-order logic with equality
+(Sect.~\ref{sec:satfol:hidden-literal-based-elimination}). Since the generalization
+involves reasoning about infinite sets of literals, we propose restrictions to
+make them usable.
+
+\emph{Variable elimination}, based on Davis--Putnam resolution \cite{dp-60-dp}, has
+been studied in the context of both propositional logic
+\cite{sp-04-niver,cs-00-zres} and quantified Boolean formulas (QBFs)
+\cite{ab-2004-re}. The basic idea is to resolve all clauses with negative
+occurrences of a propositional variable (i.e., a nullary predicate symbol) against
+clauses with positive occurrences and delete the parent clauses. E\'en and
+Biere \cite{eb-2005-satpreprocess} refined the technique to identify a subset
+of clauses that effectively define a variable and use it to further optimize the
+clause set. This latter technique, \emph{variable elimination by substitution},
+has been an important preprocessor component in many SAT solvers since its
+introduction in 2004.
+
+Specializing second-order quantifier elimination
+\cite{go-1992-so-pred-elim,hjo-1996-scan}, Khasidashvili and Korovin
+\cite{kk-2016-pe-fol} adapted variable elimination to preprocess first-order
+problems, yielding a technique we call \emph{singular predicate elimination}. We
+extend their work along two axes (Sect.~\ref{sec:satfol:predicate-elimination}): We
+generalize E\'en and Biere's refinement to first-order logic, resulting in
+\emph{defined predicate elimination}, and explain how both types of predicate
+elimination can be used during the proof search as inprocessing.
+
+\begin{qle}
+It is well known that clauses containing \emph{pure literals}---predicate
+literals whose root symbol occurs only with one polarity in the problem---can
+be eliminated. We propose a generalization of this technique, under the name
+\emph{quasipure literal elimination}, to allow the elimination of some bipolar
+literals as well (Sect.~\ref{sec:satfol:quasipure-literal-elimination}).
+\end{qle}
+
+The last technique we study is \emph{blocked clause elimination} (Sect.\
+\ref{sec:satfol:satisfiability-by-clause-elimination}). It is used in both SAT
+\cite{jbh-10-BCE} and QBF solvers \cite{bls-11-bloqqer}. Its generalization to first-order
+logic has produced good results when used as a preprocessor, especially on
+satisfiable problems \cite{ksstb-2017-blockedfol}. We explore more ways to use
+blocked clause elimination on satisfiable problems, including using it to
+establish equisatisfiability with an empty clause set or as an inprocessing
+rule. Unfortunately, we find that its use as inprocessing can compromise the
+refutational completeness of superposition.
+
+
+All techniques are implemented in the Zipperposition prover
+(Sect.~\ref{sec:satfol:implementation}), allowing us to ascertain their usefulness
+(Sect.~\ref{sec:satfol:evaluation}). The best configuration solves \NumberOK{160}
+additional problems on benchmarks consisting of all 13\,495 first-order TPTP theorems
+\cite{gs-17-tptp}. The raw experimental data are publicly available.%
+\footnote{\url{https://doi.org/10.5281/zenodo.4552499}}\confrep{
+More details, including all the proofs, can be found in a
+technical report \cite{our-report}.}{}
+
+\section{Preliminaries}
+\label{sec:satfol:preliminaries}
+
+% \ourpara{Clausal First-Order Logic}%
+Our setting is many-sorted (i.e., many-typed), first-order
+logic~\cite{jg-1987-logic-textbook} with interpreted equality and a
+distinguished type (or sort) $o$. We introduced this logic in
+Sect.~\ref{sec:pre:fol} and we use the same notation introduced in this section.
+We write $\cst{f}^i(s)$ for the $i$-fold application of an unary symbol
+$\cst{f}$ (e.g., $\cst{f}^3(x) = \cst{f}(\cst{f}(\cst{f}(x)))$) and call nullary
+function symbols \emph{constants}. 
+
+We assume the same notion of substitution introduced in Sect.~\ref{sec:pre:fol}.
+We extend the notation by writing a substitution $\{x_1 \mapsto t_1,
+\ldots,\allowbreak x_n \mapsto t_n\}$ shortly as $\{ \tupleempty{x} \mapsto \tupleempty{t} \}$.
+A substitution is a \emph{variable renaming} if it is a
+bijection from a set of variables to a set of variables.
+
+
+As we are working with clausal logic, we assume the clausal structure as defined
+in Sect.~\ref{sec:pre:clauses}. Recall that predicate literals  are encoded
+as (dis)equations with equality. To simplify the notation in this chapter we write
+predicate literals in unencoded form: positive literal $\eqlit{s}{\itrue}$ is written
+as $s$ and negative literal $\neqlit{s}{\top}$ is written as $\negpredlit{s}$.
+Literals $\eqlit{s}{t}$ where neither $s$ nor $t$ have the type $o$ are called \emph{functional}.
+Given a literal $L$, we overload notation and write $\neglit{L}$ to
+denote its complement. Clauses are often defined
+as sets of literals, but superposition needs multisets; with multisets,
+an instance $\sigmacl{C}$ always has the same number of literals as $C$, a most
+convenient property. Given a clause set $N$, $\binset{N}$ denotes the subset of
+its binary clauses: $\binset{N} = \{ L_1 \cor L_2 \mid L_1 \cor L_2 \in N \}$.
+
+We assume the natural extensions of domain, valuation, interpretation and model
+(as defined by Fitting \cite{mf-1996-fol}) from unsorted to many-sorted logic.
+We also assume the notion of normal models from Sect.~\ref{sec:pre:fol} (with
+corresponding notation) and extend it with the notion of \emph{cannonical
+models}: A canonical model $\ourmodel$ is a normal model such that for every
+element $d$ in one of $\ourmodel$'s domains there exists a ground term $t$ such
+that $\ourmodel$ interprets $t$ as $d$. Canonical models generalize Herbrand
+models \cite{mf-1996-fol} to first-order logic with equality: If a clause set is satisfiable, then
+it is satisfiable in a canonical model.
+
+% \ourpara{Superposition Provers}
+%
+% Superposition \cite{bg-94-superposition} is a calculus for clausal
+% first-order logic that extends ordered resolution
+% \cite{bg-01-resolution} with equality reasoning. It is
+% refutationally complete: Given a finite, unsatisfiable clause set, it will
+% eventually derive the empty clause. It is parameterized by a \emph{selection
+% function} that influences which of a clause's literals are eligible as the target
+% of inferences. Moreover, it is compatible with the \emph{standard redundancy
+% criterion}, which can be used to delete a clause $C$ while preserving completeness of the calculus.
+
+% \looseness=-1
+% The redundancy criterion relies on an order $\succ$ that
+% compares terms, literals, or clauses.
+% The order is used to determine whether clauses can be deleted.
+% If $N$ is ground, $C$ can be deleted
+% if it is entailed by $\prec$-smaller clauses in $N.$ This definition is lifted
+% to nonground sets $N$. The criterion can be used to delete a
+% clause that is \emph{subsumed} by another clause (e.g.,
+% $\cst{\cst{p}(\cst{a})} \cor \cst{q}$ by $\cst{p}(x)$) or
+% to \emph{simplify} a clause $C$ into $C'$, which amounts to adding $C'$ and
+% then deleting $C$ as redundant with respect to $N \cup \{C'\}$.
+% Subsumption and simplification are the main inprocessing mechanisms available
+% to superposition provers. Some provers also implement clause splitting
+% \cite{riazanov-voronkov-2001,fietzke-weidenbach-2009,av-2014-avatar}.
+
+% Superposition provers saturate the input problem with respect to the calculus's
+% inference rules using the \emph{given clause procedure}
+% \cite{mcw-1997-otter,adf-1995-discount}. It partitions the proof state into a
+% passive set $\mathcalx{P}$ and an active set $\mathcalx{A}$. All clauses start in
+% $\mathcalx{P}$. At each iteration of the procedure's main loop, the prover
+% chooses a clause $C$ from $\mathcalx{P}$, simplifies it, and moves it to
+% $\mathcalx{A}$. Then all inferences between $C$ and active clauses are performed.
+% The resulting clauses are again simplified and put in $\mathcalx{P}$.\confrep{}{
+% The provers differ in which clauses are used for simplification: Otter-loop
+% \cite{mcw-1997-otter} provers use both active and passive clauses whereas
+% DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.}
+
+All of the techniques described in this chapter are applied in the context of
+first-order superposition which is introduced in Sect.~\ref{sec:pre:sup}. We
+reuse all the notions introduced in this section and the corresponding notation. 
