@@ -17,6 +17,9 @@
 \newcommand{\arbpredlit}[1]{(\neg)\kern.2ex\pospredlit{#1}}
 \newcommand{\cor}{\ensuremath{\mathrel{\lor}}}
 \newcolumntype{d}{D{.}{.}{0}}
+\definecolor{light-gray}{gray}{0.925}
+\newcommand\MAX[1]{\smash{\setlength{\fboxsep}{.3ex}\colorbox{light-gray}{\ensuremath{\vphantom{('q}{#1}}}}}
+
 
 
 
@@ -139,17 +142,19 @@ bijection from a set of variables to a set of variables.
 
 
 As we are working with clausal logic, we assume the clausal structure as defined
-in Sect.~\ref{sec:pre:clauses}. Recall that predicate literals  are encoded
-as (dis)equations with equality. To simplify the notation in this chapter we write
-predicate literals in unencoded form: positive literal $\eqlit{s}{\itrue}$ is written
-as $s$ and negative literal $\neqlit{s}{\top}$ is written as $\negpredlit{s}$.
-Literals $\eqlit{s}{t}$ where neither $s$ nor $t$ have the type $o$ are called \emph{functional}.
-Given a literal $L$, we overload notation and write $\neglit{L}$ to
-denote its complement. Clauses are often defined
-as sets of literals, but superposition needs multisets; with multisets,
-an instance $\sigmacl{C}$ always has the same number of literals as $C$, a most
-convenient property. Given a clause set $N$, $\binset{N}$ denotes the subset of
-its binary clauses: $\binset{N} = \{ L_1 \cor L_2 \mid L_1 \cor L_2 \in N \}$.
+in Sect.~\ref{sec:pre:clauses}. In this section we use the uppercase letter $L$
+to denote literals, as this is more customary in the related literature for
+propositional logic. Recall that predicate literals  are encoded as
+(dis)equations with equality. To simplify the notation in this chapter we write
+predicate literals in unencoded form: positive literal $\eqlit{s}{\itrue}$ is
+written as $s$ and negative literal $\neqlit{s}{\top}$ is written as
+$\negpredlit{s}$. Literals $\eqlit{s}{t}$ where neither $s$ nor $t$ have the
+type $o$ are called \emph{functional}. Given a literal $L$, we overload notation
+and write $\neglit{L}$ to denote its complement. Clauses are often defined as
+sets of literals, but superposition needs multisets; with multisets, an instance
+$\sigmacl{C}$ always has the same number of literals as $C$, a most convenient
+property. Given a clause set $N$, $\binset{N}$ denotes the subset of its binary
+clauses: $\binset{N} = \{ L_1 \cor L_2 \mid L_1 \cor L_2 \in N \}$.
 
 We assume the natural extensions of domain, valuation, interpretation and model
 (as defined by Fitting \cite{mf-1996-fol}) from unsorted to many-sorted logic.
@@ -161,44 +166,333 @@ that $\ourmodel$ interprets $t$ as $d$. Canonical models generalize Herbrand
 models \cite{mf-1996-fol} to first-order logic with equality: If a clause set is satisfiable, then
 it is satisfiable in a canonical model.
 
-% \ourpara{Superposition Provers}
-%
-% Superposition \cite{bg-94-superposition} is a calculus for clausal
-% first-order logic that extends ordered resolution
-% \cite{bg-01-resolution} with equality reasoning. It is
-% refutationally complete: Given a finite, unsatisfiable clause set, it will
-% eventually derive the empty clause. It is parameterized by a \emph{selection
-% function} that influences which of a clause's literals are eligible as the target
-% of inferences. Moreover, it is compatible with the \emph{standard redundancy
-% criterion}, which can be used to delete a clause $C$ while preserving completeness of the calculus.
-
-% \looseness=-1
-% The redundancy criterion relies on an order $\succ$ that
-% compares terms, literals, or clauses.
-% The order is used to determine whether clauses can be deleted.
-% If $N$ is ground, $C$ can be deleted
-% if it is entailed by $\prec$-smaller clauses in $N.$ This definition is lifted
-% to nonground sets $N$. The criterion can be used to delete a
-% clause that is \emph{subsumed} by another clause (e.g.,
-% $\cst{\cst{p}(\cst{a})} \cor \cst{q}$ by $\cst{p}(x)$) or
-% to \emph{simplify} a clause $C$ into $C'$, which amounts to adding $C'$ and
-% then deleting $C$ as redundant with respect to $N \cup \{C'\}$.
-% Subsumption and simplification are the main inprocessing mechanisms available
-% to superposition provers. Some provers also implement clause splitting
-% \cite{riazanov-voronkov-2001,fietzke-weidenbach-2009,av-2014-avatar}.
-
-% Superposition provers saturate the input problem with respect to the calculus's
-% inference rules using the \emph{given clause procedure}
-% \cite{mcw-1997-otter,adf-1995-discount}. It partitions the proof state into a
-% passive set $\mathcalx{P}$ and an active set $\mathcalx{A}$. All clauses start in
-% $\mathcalx{P}$. At each iteration of the procedure's main loop, the prover
-% chooses a clause $C$ from $\mathcalx{P}$, simplifies it, and moves it to
-% $\mathcalx{A}$. Then all inferences between $C$ and active clauses are performed.
-% The resulting clauses are again simplified and put in $\mathcalx{P}$.\confrep{}{
-% The provers differ in which clauses are used for simplification: Otter-loop
-% \cite{mcw-1997-otter} provers use both active and passive clauses whereas
-% DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.}
-
 All of the techniques described in this chapter are applied in the context of
 first-order superposition which is introduced in Sect.~\ref{sec:pre:sup}. We
 reuse all the notions introduced in this section and the corresponding notation. 
+
+\section{Hidden-Literal-Based Elimination}
+\label{sec:satfol:hidden-literal-based-elimination}
+
+In propositional logic, binary clauses from a clause set $N$ can be used to
+efficiently discover literals $L, L'$ for which the implication $L' \impl L$
+is entailed by $N$'s binary clauses---i.e., $\binset{N} \models L' \impl L$.
+Heule et al.\ \cite{hjb-2011-big-simplification} introduced the concept of \emph{hidden
+literals} to capture such implications.
+
+\begin{defi}
+   Given a propositional literal $L$ and a propositional clause set~$N$, the
+   set of \emph{propositional hidden literals} for $L$ and~$N$ is
+   $\PHL(L, N) = \{ L' \mid L' \bigpimpl{N}^\ast L \} \setminus \{ L \}$, where $\bigpimpl{N}$ is
+   defined such that $\neglit{L_1} \bigpimpl{N} L_2$ whenever $L_1 \cor L_2 \in N.$
+   Moreover, $\PHL(L_1 \cor \cdots \cor L_n, N) = \bigcup_{i=1}^n
+   \PHL(L_i, N)$.
+\end{defi}
+
+Heule et al.\ used a definition based on a fixpoint computation, but our
+definition based on the reflexive transitive closure $\bigpimpl{N}^\ast$ of $\bigpimpl{N}$ is equivalent. Intuitively,
+a hidden literal can be added to or removed from a clause without affecting its
+semantics in models of~$N.$ By eliminating hidden literals from $C$, we simplify
+it. By adding hidden literals to $C$, we might get a tautology $C'$ (i.e., a
+valid clause:\ $\models C'$), meaning that $\binset{N} \models C$, thereby
+enabling us to delete $C$. Note that $\PHL(L,N)$ is finite for a finite~$N.$
+
+\begin{defi}
+   \label{def:hle}\label{def:hte}
+   Given $L' \cor L \cor C \in N,$ if $L' \in
+   \PHL(L, N)$, \emph{hidden literal elimination} (HLE) replaces $N$ by $(N
+   \setminus \{L' \cor L \cor C\}) \cup \{L \cor C\}$.
+   Given $C \in N$, $\{L_1,\dots,L_n\} = \PHL(C, N)$, and $C' = C \cor L_1 \cor
+   \cdots \cor L_n$, if $C'$ is a tautology, \emph{hidden
+   tautology elimination} (HTE) replaces $N$ by $N \setminus \{C\}$.
+\end{defi}
+
+\begin{theorem}
+   The result of applying HLE or HTE to a clause set $N$ is
+   equivalent to $N$.
+\end{theorem}
+
+\begin{proof}
+For HLE, if $L' \in \PHL(L, N)$,  $\binset{N} \models \neglit{L'} \cor L$.
+Then, subsumption resolution \cite{bg-01-resolution} yields shortened clause $L \cor C'$ from
+Definition~\ref{def:hle}. For HTE, it can be shown that $N' \models C$ if and
+only if $C \cor L'$, where $L' \in \PHL(C, N)$. By transitivity of equivalence,
+we get the desired result.
+\end{proof}
+
+We generalize hidden literals to first-order logic with equality by
+considering substitutivity of variables as well as congruence of equality.
+
+\begin{defi}
+\label{def:hl-fo}
+Given a literal $L$ and a clause set $N$,
+the set of \emph{hidden literals} for $L$ and $N$
+is $\HL(L,N) = \{ L' \mid L' \bigfimpl{N}^\ast L \} \setminus \{ L \}$, where
+$\bigfimpl{N}$ is defined so that:
+\begin{enumerate}
+    \item $\sigmaterm{\neglit{L'}} \bigfimpl{N} \sigmaterm{L}$ if
+    $L' \cor L \in N$ and $\sigma$ is a substitution
+    \item $\eqlit{s}{t} \bigfimpl{N} \eqlit{u[s]}{u[t]}$ for all terms $s, t$ and
+    contexts $u[\phantom{\cdot}]$
+    \item $\neqlit{u[s]}{u[t]} \bigfimpl{N} \neqlit{s}{t}$ for all terms $s, t$ and
+    contexts $u[\phantom{\cdot}]$
+\end{enumerate}
+% (1)~;
+% (2)~; and
+% (3)~.
+Moreover, $\HL(L_1 \cor \cdots \cor L_n, N) = \bigcup_{i=1}^n \HL(L_i, N)$.
+\end{defi}
+
+\looseness=-1
+The generalized definition also enjoys the key property that $L'
+\in \HL(L, N)$ implies $\binset{N} \models L' \impl L$. However, $\HL(L, N)$
+may be infinite even for predicate literals; for example,
+$\pospredlit{\cst{p}(\cst{f}^i(x))} \in \HL(\pospredlit{\cst{p}(x)}, \{\pospredlit{\cst{p}(x)} \cor
+\negpredlit{\cst{p}(\cst{f}(x))} \})$ for every $i$.
+
+Based on Definition \ref{def:hl-fo}, we can generalize hidden literal elimination
+and support a related technique:
+\begin{align*}
+    & \namedsimpsc{HLE}{L' \cor L \cor C}{L \cor C}{L' \in \HL(L,N)} \\[.5\jot]
+    & \namedsimpsc{\rlap{FLE}\phantom{HLE}}{L \cor C}{C}{L',\neglit{L'} \in \HL(\neglit{L}, N)}
+ \end{align*}
+Recall that double lines denote simplification rules (Sect.~\ref{sec:pre:sup}).
+The second rule is called \textit{failed literal elimination},
+inspired by the SAT technique of asserting $\neglit{L}$ if $L$ is a \textit{failed literal} \cite{jwf-1995-fld}.
+It is easy to see that rule \infname{HLE} is sound.
+From $L' \in \HL(L,N)$ we have $N \models L' \impl L$ (i.e., $\neglit{L'} \cor L$).
+Performing subsumption resolution \cite{bg-01-resolution} between $L'
+\cor L \cor C$ and $\neglit{L'} \cor L$ yields the conclusion, which is
+therefore entailed by $N.$ For \infname{FLE}, the condition $L',
+\neglit{L'} \in \HL(\neglit{L},N)$ means that $\binset{N} \models \{\neglit{L'} \cor
+\neglit{L}{,}\; L' \cor \neglit{L}\} \models \neglit{L}$.
+
+
+\begin{exa}
+   \label{example:hle}
+   Consider the clause set $N = \{ \cst{p}(x) \cor \neglit{\cst{p}(\cst{f}(x))}{,}\;
+   \cst{p}(\cst{f}(\cst{f}(x))) \cor \eqlit{\cst{a}}{\cst{b}} \}$ and the clause
+   $C = \neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})} \cor \cst{p}(x)$. The first
+   clause in $N$ induces $\cst{p}(\cst{f}(x)) \bigfimpl{N} {\cst{p}(x)}$,
+   $\cst{p}(\cst{f}(\cst{f}(x))) \bigfimpl{N} \cst{p}(\cst{f}(x))$, and
+   hence $\cst{p}(\cst{f}(\cst{f}(x))) \bigfimpl{N}^\ast  \cst{p}(x)$.
+   Together with the second clause in $N$, it can be used to derive $\neqlit{\cst{a}}{\cst{b}}
+   \bigfimpl{N}^\ast  \cst{p}(x)$. Finally, using rule~(3) of Definition
+   \ref{def:hl-fo}, we derive $\neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})}
+   \bigfimpl{N}^\ast  \cst{p}(x)$---that is,
+   $\neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})} \in \HL(\cst{p}(x), N)$. This
+   allows us to remove $C$'s first literal using \infname{HLE}.
+\end{exa}
+
+Two special cases of \infname{HLE} exploit equality congruence as embodied by
+conditions 2 and 3 of Definition~\ref{def:hl-fo} without requiring to
+compute the $\HL$~set:
+\begin{align*}
+  %% TYPESETTING: \,'s below
+  \namedsimp{CongHLE$^+$}{\eqlit{s}{t} \cor \eqlit{u[s]}{u[t]} \cor C}{\eqlit{u[s]}{u[t]} \cor C}\,\, \\[.5\jot]
+  \namedsimp{CongHLE$^-$}{\neqlit{s}{t} \cor \neqlit{u[s]}{u[t]} \cor C}{\neqlit{s}{t} \cor C}
+\end{align*}%
+
+Hidden literals can be combined with unit clauses~$L'$ to remove more literals:
+\[\namedsimpsc{UnitHLE}{L' \quad L \cor C}{L' \quad C}{\sigmaterm{L'} \in \HL(\neglit{L},N)}
+%\text{~for some~}\sigma -- %%% Not necessary in a rule -- all variables are universally quantified. --JB
+\]
+%
+Given a unit clause $L' \in N$, the rule uses it to discharge $\sigmaterm{L'}$ in
+$N \models \sigmaterm{L'} \impl \neglit{L}$. As a result, we have $N \models
+\neglit{L}$, making it possible to remove $L$ from $L \cor C$.
+
+% Kiesl and Suda described first-order generalization of {\it asymmetric literals}
+% \cite{ks-2017-unif-principle}: literal $L\sigma$ is asymmetric for a clause $C$
+% and a clause set $N$ if there exists a clause $D \cor \neglit{L} \in N \setminus
+% \{C \}$ such that $D\sigma \subseteq C$ for some substitution $\sigma$. 
+
+\begin{exa}
+   \label{example:unithle}
+   \looseness=-1
+   Consider the clause set $N = \{\cst{p}(x) \cor \cst{q}(\cst{f}(x)){,}\;
+   \neglit{\cst{q}(\cst{f}(\cst{a}))} \cor \eqlit{\cst{f}(\cst{b})}{\cst{g}(\cst{c})}{,}\;
+   \neqlit{\cst{f}(x)}{\cst{g}(y)}\}$ and the clause $C = \neglit{\cst{p}(\cst{a})} \cor
+   \neglit{\cst{q}(\cst{b})}$. The first clause in $N$ induces
+   $\neglit{\cst{q}(\cst{f}(\cst{a}))} \bigfimpl{N} \cst{p}(\cst{a})$, whereas
+   the second one induces $\neqlit{\cst{f}(\cst{b})}{\cst{g}(\cst{c})} \bigfimpl{N}
+   \neglit{\cst{q}(\cst{f}(\cst{a}))}$. Thus, we have $\neqlit{\cst{f}(\cst{b})}{\cst{g}(\cst{c})}
+   \bigfimpl{N}^\ast \cst{p}(\cst{a})$---that is, $\neqlit{\cst{f}(\cst{b})}{\cst{f}(\cst{c})} \in
+   \HL(\cst{p}(\cst{a}), N)$. By applying the substitution $\{x \mapsto \cst{b}{,}\allowbreak\; y
+   \mapsto \cst{c}\}$ to the third clause in $N$, we can fulfill the conditions of
+   \infname{UnitHLE} and remove $C$'s first literal.
+\end{exa}
+
+Next, we generalize hidden tautologies to first-order logic.
+
+\begin{defi}
+   A clause $C$ is a \emph{hidden tautology} for a clause set $N$ if there
+   exists a finite set $\{L_1,\dots,L_n\} \subseteq \HL(C,N)$ such that
+   $C \cor L_1 \cor \cdots \cor L_n$ is a tautology.
+\end{defi}
+
+\begin{exa}
+   \label{example:hidden-tautologies-completeness}
+   \looseness=-1
+   In general, hidden tautologies are not redundant and cannot be deleted during saturation.
+   Consider the unsatisfiable set $N = \{ \negpredlit{\cst{a}}{,}\;
+   \negpredlit{\cst{b}}{,}\; \pospredlit{\cst{a}} \cor
+   \pospredlit{\cst{c}}{,}\allowbreak\; \pospredlit{\cst{b}} \cor \negpredlit{\cst{c}}
+   \}$, the order $\cst{a} \prec
+   \cst{b} \prec \cst{c}$, and the empty selection function. The
+   only possible superposition inference from $N$ is between the last two clauses,
+   yielding the hidden tautology $\pospredlit{\cst{a}} \cor \pospredlit{\cst{b}}$
+   (after simplifying away $\neqlit{\top}{\top}$), which is entailed by the larger
+   clauses $\pospredlit{\cst{a}} \cor \pospredlit{\cst{c}}$ and
+   $\pospredlit{\cst{b}} \cor \negpredlit{\cst{c}}$. If this clause is removed,
+   the prover could enter an infinite loop, forever generating and deleting the
+   hidden tautology\confrep{}{ and never getting the opportunity to derive the
+   empty clause}.
+\end{exa}
+
+\begin{rep}
+   \newcommand{\aset}{\mathcal{A}}
+   \newcommand{\pset}{\mathcal{P}}
+   
+   In practice, most provers use a variant of the given clause procedure.
+   Removing hidden tautologies breaks the invariant of the procedure that all
+   inferences between clauses in $\aset$ are redundant. The end result is not
+   that the prover diverges, but that it terminates without deriving empty
+   clause.
+
+   To observe this, assume the setting as in Example
+   \ref{example:hidden-tautologies-completeness}, and let $\pset=N$ and
+   $\aset=\emptyset$. After moving the first three clauses from $\pset$ to
+   $\aset$ ($\aset = \{ \negpredlit{\cst{a}}, \negpredlit{\cst{b}}, \pospredlit{\cst{a}} \cor
+   \pospredlit{\cst{c}} \}$, $\pset = \{\pospredlit{\cst{b}} \cor \negpredlit{\cst{c}}\}$), 
+   no inferences are possible, and no new clauses are added to $\pset$. After the last clause
+   is moved to $\aset$, the hidden tautology $\pospredlit{\cst{a}} \cor \pospredlit{\cst{b}}$
+   is produced. If it is deleted, the prover terminates with the unsatisfiable set $\aset$,
+   but does not derive the empty clause. 
+\end{rep}
+
+To delete hidden tautologies during saturation, the prover could check that all
+the relevant clause instances encountered along the computation of $\HL$ are
+$\prec$-smaller than a given hidden tautology. However, this would be expensive
+and seldom succeed, given that superposition creates lots of nonredundant
+hidden tautologies. Instead, we propose to simplify hidden tautologies using the
+following rules:
+%
+%\begin{linenomath*}
+% \begin{align*}
+%    %% TYPESETTING: \,'s below
+%    \namedsimpsc{HTR}{L \cor L' \cor C}{L \cor L'}{\neglit{L'} \in \HL(L, N)} &\\
+%    \namedsimpsc{FLR}{L \cor C}{L}{L',\neglit{L'} \in \HL(L, N)} &
+% \end{align*}
+%
+\begin{align*}
+   & \namedsimpsc{HTR}{L \cor L' \cor C}{L \cor L'}{\neglit{L'} \in \HL(L, N) \text{~and~} C \not= \bot} \\[.5\jot]
+   & \namedsimpsc{\rlap{FLR}\phantom{HTR}}{L \cor C}{L}{L',\neglit{L'} \in \HL(L, N) \text{~and~} C \not= \bot}
+\end{align*}
+%
+
+%\end{linenomath*}
+%
+We call these techniques \emph{hidden tautology reduction} and \emph{failed literal
+reduction}, respectively.
+% \infname{FLD} is inspired by the \confrep{}{eponymous }SAT
+% approach of asserting $L$ if $\neglit{L}$ is determined to be a failed literal
+% \cite{jwf-1995-fld}.
+%
+Both rules are sound.
+%
+As with hidden literals, unit clauses~$L'$ can be exploited:
+\[\namedsimpsc{UnitHTR}{L' \quad L \cor C}{L' \quad L}{\sigmaterm{L'} \in \HL(L,N) \text{~and~} C \not= \bot}
+%\text{~for some~}\sigma
+\]
+
+We give the simplification rules above\confrep{}{ (for hidden literal
+elimination, hidden tautology reduction,
+failed literal detection, and their variants)} the collective name of
+\emph{hidden-literal-based elimination} (HLBE).
+Yet another use of hidden literals is for \emph{equivalent literal
+substitution} \cite{hjb-2010-cl-elim}: If both $L' \in \HL(L, N)$ and $L
+\in \HL(L', N)$, we can often simplify $\sigmacl{L'}$ to $\sigmacl{L}$ in $N$ if
+$\sigmacl{L'} \succ \sigmacl{L}$. We want to investigate this~further.
+
+% \looseness=-1
+% Provers based on the DISCOUNT loop use only active clauses for
+% simplification. If we restrict our attention to a finite subset of hidden
+% literals, we can organize them into data structures that support efficient
+% lookup of a hidden literal. Efficient implementation of these data structures
+% allows to use all passive clauses for simplification, strengthening DISCOUNT
+% loop simplification machinery.
+
+\begin{theorem}
+\begin{sloppypar}
+The rules \infname{HLE}, \infname{FLE}, \infname{CongHLE$^+$},
+\infname{Cong\allowbreak HLE$^-$}, \infname{UnitHLE}, \infname{HTR},
+\infname{FLR}, and \infname{UnitHTR} are sound simplification rules.
+\end{sloppypar}
+\end{theorem}
+
+\begin{rep}
+\begin{proof}
+It is easy to see that the deleted premises are entailed by the conclusions that
+replace them and that the conclusions' instances are $\prec$-smaller than the
+premises' instances, as required by the redundancy criterion. It remains to
+check soundness.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{HLE}:\enskip
+We have $N{,}\> L' \models L$ by the side condition and must show
+$N{,}\> L' \lor L \lor C \models L \lor C$. Let
+$\ourmodel \models N{,}\> L' \lor L \lor C$. If $\ourmodel \models L'$, then
+we also have $\ourmodel \models L$ thanks to the side condition and hence
+$\ourmodel \models L \lor C$. Otherwise, we have $\ourmodel \models L \lor C$,
+which is exactly what we need to show.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{FLE}:\enskip
+We have $N{,}\> L \models L'$ and $N, L \models \lnot L'$ by the side condition.
+If $\ourmodel \models N{,}\> L$, then both $\ourmodel \models L'$ and
+$\ourmodel \models \lnot L'$, an absurdity.
+Otherwise, we have $\ourmodel \models C$, as desired.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{CongHLE$^+$}, \infname{CongHLE$^-$}:\enskip
+Obvious by congruence of equality.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{UnitHLE}:\enskip
+We have $N{,}\> L \models \lnot \sigmaterm{L'}$ by the side condition. If $\ourmodel
+\models N{,}\> L$, then $N \models \lnot \sigmaterm{L'}$. But since $L' \in N$, this is
+an absurdity. Otherwise, we have $\ourmodel \models C$, as desired.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{HTR}:\enskip
+We have $N{,}\> \lnot L' \models L$ by the side condition. If either $\ourmodel
+\models L$ or $\ourmodel \models L'$, the desired result follows directly.
+Otherwise, from $\ourmodel \models \lnot L'$ we also have $\ourmodel \models L$
+thanks to the side condition, contradicting $\ourmodel \models \lnot L$.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{FLR}:\enskip
+We have $N{,}\> L' \models L$ and $N{,}\> \lnot L' \models L$ by the side condition.
+Hence $N \models L$, as desired.
+
+\medskip
+
+\noindent
+\textsc{Case} \infname{UnitHTR}:\enskip
+We have $N{,}\> \sigmaterm{L'} \models L$. Since $L' \in N$, we have $N \models L$,
+as desired.
+\qedhere
+\end{proof}
+\end{rep}

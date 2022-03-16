@@ -171,6 +171,7 @@
 \newcommand{\typeargs}[1]{{\langle#1\rangle}}
 \newcommand{\typ}[1]{{\mathit{#1}}}
 
+\newcommand\scif{\quad\text{if~}}
 \newcommand{\lfsup}{$\lambda$fSup}
 \newcommand{\lsup}{$\lambda$Sup}
 \newcommand{\osup}{$o\lambda$Sup}
@@ -183,4 +184,14 @@
 \newcommand{\withpred}[2]{#1_{#2}}
 \newcommand{\withpredpos}[2]{#1^+_{#2}}
 \newcommand{\withpredneg}[2]{#1^-_{#2}}
+\newcommand{\namedsimpsc}[4]{\prftree[d][r]{\relax{\infname{#1}\scif $#4$}}{\strut#2}{\strut#3}}
+
+\newcommand{\impl}{\iimplies}
+\newcommand{\bigpimpl}[1]{\hookrightarrow_\mathrm{p}}
+\newcommand{\bigfimpl}[1]{\hookrightarrow}
+
+\newcommand{\HL}{\ensuremath{\mathrm{HL}}}
+\newcommand{\PHL}{\ensuremath{\mathrm{HL_\mathrm{p}}}}
+
+
 

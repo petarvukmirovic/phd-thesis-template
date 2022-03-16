@@ -2238,9 +2238,9 @@ Marijn J.H. Heule\textsuperscript{3}\orcid{0000-0002-5587-8801}}\\
 \setlength{\myskip}{0.6ex}
 % TYPESETTING: when two environments are next to
 % each other, we need to somehow squeeze them
-\newcommand{\removemyskip}{\vspace{-\myskip}}
+\newcommand{}{\vspace{-\myskip}}
 
-\newenvironment{theoremx}% environment name
+\newenvironment{theorem}% environment name
 {% begin code
   \vspace{\myskip}
   \begin{theorem}
@@ -2248,7 +2248,7 @@ Marijn J.H. Heule\textsuperscript{3}\orcid{0000-0002-5587-8801}}\\
 {\end{theorem}
  \vspace{\myskip}}% end code
 
-\newenvironment{examplex}% environment name
+\newenvironment{exa}% environment name
 {% begin code
   \vspace{\myskip}
   \begin{example}
@@ -2264,7 +2264,7 @@ Marijn J.H. Heule\textsuperscript{3}\orcid{0000-0002-5587-8801}}\\
 {\end{remark}
  \vspace{\myskip}}% end code
 
-\newenvironment{definitionx}% environment name
+\newenvironment{defi}% environment name
  {% begin code
    \vspace{\myskip}
    \begin{definition}
@@ -2560,14 +2560,14 @@ is entailed by $N$'s binary clauses---i.e., $\binset{N} \models L' \impl L$.
 Heule et al.\ \cite{hjb-2011-big-simplification} introduced the concept of \emph{hidden
 literals} to capture such implications.
 
-\begin{definitionx}
+\begin{defi}
    Given a propositional literal $L$ and a propositional clause set~$N$, the
    set of \emph{propositional hidden literals} for $L$ and~$N$ is
    $\PHL(L, N) = \{ L' \mid L' \bigpimpl{N}^\ast L \} \setminus \{ L \}$, where $\bigpimpl{N}$ is
    defined such that $\neglit{L_1} \bigpimpl{N} L_2$ whenever $L_1 \cor L_2 \in N.$
    Moreover, $\PHL(L_1 \cor \cdots \cor L_n, N) = \bigcup_{i=1}^n
    \PHL(L_i, N)$.
-\end{definitionx}
+\end{defi}
 
 Heule et al.\ used a fixpoint computation, but our definition based on the
 reflexive transitive closure is equivalent. Intuitively, a hidden literal can be added to
@@ -2576,7 +2576,7 @@ By eliminating hidden literals from $C$, we simplify it. By adding hidden litera
 C'$), meaning that $\binset{N} \models C$, thereby enabling us to delete $C$.
 Note that $\PHL(L,N)$ is finite for a finite~$N.$
 
-\begin{definitionx}
+\begin{defi}
    \label{def:hle}\label{def:hte}
    Given $L' \cor L \cor C \in N,$ if $L' \in
    \PHL(L, N)$, \emph{hidden literal elimination} (HLE) replaces $N$ by $(N
@@ -2584,12 +2584,12 @@ Note that $\PHL(L,N)$ is finite for a finite~$N.$
    Given $C \in N$, $\{L_1,\dots,L_n\} = \PHL(C, N)$, and $C' = C \cor L_1 \cor
    \cdots \cor L_n$, if $C'$ is a tautology, \emph{hidden
    tautology elimination} (HTE) replaces $N$ by $N \setminus \{C\}$.
-\end{definitionx}
+\end{defi}
 
-\begin{theoremx}
+\begin{theorem}
    The result of applying HLE or HTE to a clause set $N$ is
    equivalent to $N$.
-\end{theoremx}
+\end{theorem}
 
 \begin{proof}
 For HLE, if $L' \in \PHL(L, N)$,  $\binset{N} \models \neglit{L'} \cor L$.
@@ -2603,7 +2603,7 @@ we get the desired result.
 We generalize hidden literals to first-order logic with equality by
 considering substitutivity of variables as well as congruence of equality.
 
-\begin{definitionx}
+\begin{defi}
 \label{def:hl-fo}
 Given a literal $L$ and a clause set $N$,
 the set of \emph{hidden literals} for $L$ and $N$
@@ -2616,7 +2616,7 @@ contexts $u[\phantom{\cdot}]$; and
 (3)~$\neqlit{u[s]}{u[t]} \bigfimpl{N} \neqlit{s}{t}$ for all terms $s, t$ and
 contexts $u[\phantom{\cdot}]$.
 Moreover, $\HL(L_1 \cor \cdots \cor L_n, N) = \bigcup_{i=1}^n \HL(L_i, N)$.
-\end{definitionx}
+\end{defi}
 
 \looseness=-1
 The generalized definition also enjoys the key property that $L'
@@ -2649,7 +2649,7 @@ therefore entailed by $N.$ For \infname{FLE}, the condition $L',
 \neglit{L}{,}\; L' \cor \neglit{L}\} \models \neglit{L}$.
 
 
-\begin{examplex}
+\begin{exa}
    \label{example:hle}
    Consider the clause set $N = \{ \cst{p}(x) \cor \neglit{\cst{p}(\cst{f}(x))}{,}\;
    \cst{p}(\cst{f}(\cst{f}(x))) \cor \eqlit{\cst{a}}{\cst{b}} \}$ and the clause
@@ -2663,7 +2663,7 @@ therefore entailed by $N.$ For \infname{FLE}, the condition $L',
    \bigfimpl{N}^\ast  \cst{p}(x)$---that is,
    $\neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})} \in \HL(\cst{p}(x), N)$. This
    allows us to remove $C$'s first literal using \infname{HLE}.
-\end{examplex}
+\end{exa}
 
 Two special cases of \infname{HLE} exploit equality congruence as embodied by
 conditions (2)~and~(3) of Definition~\ref{def:hl-fo} without requiring to
@@ -2688,7 +2688,7 @@ $N \models L'\sigma \impl \neglit{L}$. As a result, we have $N \models
 % and a clause set $N$ if there exists a clause $D \cor \neglit{L} \in N \setminus
 % \{C \}$ such that $D\sigma \subseteq C$ for some substitution $\sigma$. 
 
-\begin{examplex}
+\begin{exa}
    \label{example:unithle}
    \looseness=-1
    Consider the clause set $N = \{\cst{p}(x) \cor \cst{q}(\cst{f}(x)){,}\;
@@ -2702,17 +2702,17 @@ $N \models L'\sigma \impl \neglit{L}$. As a result, we have $N \models
    \HL(\cst{p}(\cst{a}), N)$. By applying the substitution $\{x \mapsto \cst{b}{,}\allowbreak\; y
    \mapsto \cst{c}\}$ to the third clause in $N$, we can fulfill the conditions of
    \infname{UnitHLE} and remove $C$'s first literal.
-\end{examplex}
+\end{exa}
 
 Next, we generalize hidden tautologies to first-order logic.
 
-\begin{definitionx}
+\begin{defi}
    A clause $C$ is a \emph{hidden tautology} for a clause set $N$ if there
    exists a finite set $\{L_1,\dots,L_n\} \subseteq \HL(C,N)$ such that
    $C \cor L_1 \cor \cdots \cor L_n$ is a tautology.
-\end{definitionx}
-\removemyskip
-\begin{examplex}
+\end{defi}
+
+\begin{exa}
    \label{example:hidden-tautologies-completeness}
    \looseness=-1
    In general, hidden tautologies are not redundant and cannot be deleted during saturation.
@@ -2729,7 +2729,7 @@ Next, we generalize hidden tautologies to first-order logic.
    the prover could enter an infinite loop, forever generating and deleting the
    hidden tautology\confrep{}{ and never getting the opportunity to derive the
    empty clause}.
-\end{examplex}
+\end{exa}
 
 \begin{rep}
    \newcommand{\aset}{\mathcalx{A}}
@@ -2806,11 +2806,11 @@ $L'\sigma \succ L\sigma$. We want to investigate this~further.
 % allows to use all passive clauses for simplification, strengthening DISCOUNT
 % loop simplification machinery.
 
-\begin{theoremx}
+\begin{theorem}
 The rules \infname{HLE}, \infname{FLE}, \infname{CongHLE$^+$},
 \infname{Cong\allowbreak HLE$^-$}, \infname{UnitHLE}, \infname{HTR},
 \infname{FLR}, and \infname{UnitHTR} are sound simplification rules.
-\end{theoremx}
+\end{theorem}
 
 \begin{rep}
 \begin{proof}
@@ -2897,19 +2897,19 @@ Khasidashvili and Korovin's preprocessing technique removes singular predicates
 (which they call ``non-self-referential predicates'') from the problem using
 so-called flat resolution.
 
-\begin{definitionx}
+\begin{defi}
    A predicate symbol is called \emph{singular}\confrep{ (or ``non-self-referential'')}{}
    for a clause set $N$ if it occurs at most once in every clause contained in
    $N.$
-\end{definitionx}
-\removemyskip
-\begin{definitionx}
+\end{defi}
+
+\begin{defi}
    \label{def:flat-res}
    Let $C = \pospredlit{\cst{p}(\tuplen{s})} \cor C'$ and $D =
    \negpredlit{\cst{p}(\tuplen{t})} \cor D'$ be clauses with no variables in
    common. The clause $\neqlit{s_1}{t_1} \cor \cdots \cor \neqlit{s_n}{t_n}
    \cor C' \cor D'$ is a \emph{flat resolvent} of $C$ and $D$ on $\cst{p}$.
-\end{definitionx}
+\end{defi}
 
 % Predicate elimination saturates with respect to flat resolvents, removing all
 % clauses containing $\cst{p}$. Given two (possibly identical) clause sets $M, N$,
@@ -2922,7 +2922,7 @@ resolvents against clauses in $M$. Eventually, it yields a
 set with no occurrences of $\cst{p}$.
 
 
-\begin{definitionx}
+\begin{defi}
 \label{def:flat-res-set}
    Let $M, N$ be clause sets and $\cst{p}$ be a singular predicate for
    $M$. Let $\flatresiter$ be the following relation on clause set pairs and clause sets:
@@ -2942,7 +2942,7 @@ set with no occurrences of $\cst{p}$.
    % partners from $M$, renaming variables apart, and (3)~replace $D$ with these
    % flat resolvents in $N'$. Stop when $N'$ contains no more occurrence of
    % $\cst{p}$.
-\end{definitionx}
+\end{defi}
 
 \pagebreak[2]
 
@@ -3003,21 +3003,21 @@ Next, it is useful to partition
 clause sets into subsets based on the presence and polarity of a singular
 predicate.
 
-\begin{definitionx}
+\begin{defi}
    Let $N$ be a clause set and $\cst{p}$ be a singular predicate for
    $N.$ Let $\withpredpos{N}{\cst{p}}$ consist of all clauses of the form $\pospredlit{\cst{p}(\tuple{s}{})} \cor C' \in N$,
    let $\withpredneg{N}{\cst{p}}$ consist of all clauses of the form $\negpredlit{\cst{p}(\tuple{s}{})} \cor C' \in N$,
    let $\withpred{N}{\cst{p}} = \withpredpos{N}{\cst{p}} \cup \withpredneg{N}{\cst{p}}$,
    and let $\withoutpred{N}{\cst{p}} = N \setminus \withpred{N}{\cst{p}}$.
-\end{definitionx}
-\removemyskip
-\begin{definitionx}
+\end{defi}
+
+\begin{defi}
    \label{def:pred-elim}
    Let $N$ be a clause set and $\cst{p}$ be a singular predicate for
    $N.$
    \emph{Singular predicate elimination} (SPE) of $\cst{p}$ in $N$ replaces $N$ by
    $\withoutpred{N}{\cst{p}} \cup (\withpredpos{N}{\cst{p}} \flatres_{\!\cst{p}} \withpredneg{N}{\cst{p}})$.
-\end{definitionx}
+\end{defi}
 
 The result of SPE is satisfiable if and only if $N$ is satisfiable
 \cite[Theorem~1]{kk-2016-pe-fol}, justifying SPE's use in a preprocessor.
@@ -3059,7 +3059,7 @@ Crucially, we do not need to resolve pairs of clauses from $G$
 or pairs of clauses from $R$.
 We generalize this idea to first-order logic.
 
-\begin{definitionx}
+\begin{defi}
    \label{def:definition}
    \looseness=-1
    Let $G$ be a clause set, $\cst{p}$ be a predicate symbol, and
@@ -3075,7 +3075,7 @@ We generalize this idea to first-order logic.
    $\arbpredlit{\cst{p}(\tupleempty{x})} \mathbin{\cor} C' \in G$ and
    $\tupleempty{\cst{c}}$ is a tuple of distinct fresh constants substituted
    in for $\tupleempty{x}$.
-\end{definitionx}
+\end{defi}
 
 A definition set $G$ corresponds intuitively to a definition by
 cases in mathematics---e.g.,
@@ -3092,7 +3092,7 @@ Given a quantifier-free formula $\cst{p}(\tuple{x}{}) \medleftrightarrow
 $\varphi(\tuple{x}{})$ does not contain $\cst{p}$, any reasonable
 clausification algorithm would produce a definition set for $\cst{p}$.
 
-\begin{examplex}
+\begin{exa}
    \label{example:tautologies}
    Given the formula $\cst{p}(x) \medleftrightarrow \cst{q}(x) \mathrel\land
    (\cst{r}(x) \cor \cst{s}(x))$, a standard clausification algorithm
@@ -3103,7 +3103,7 @@ clausification algorithm would produce a definition set for $\cst{p}$.
    \negpredlit{\cst{r}(x)}{,}\; \pospredlit{\cst{p}(x)} \cor
    \negpredlit{\cst{q}(x)} \cor \negpredlit{\cst{s}(x)}\}$, which qualifies
    as a definition set for $\cst{p}$.
-\end{examplex}
+\end{exa}
 
 Definition sets generalize E{\'{e}}n and Biere's
 gates. They can be recognized syntactically for formulas such as
@@ -3115,7 +3115,7 @@ a propositional unsatisfiability check.
 
 The key result about propositional gates carries over to definition sets.
 
-\begin{definitionx}
+\begin{defi}
    \looseness=-1
    Let $N$ be a clause set, $\cst{p}$ be a predicate symbol,
    $G \subseteq N$ be a definition set
@@ -3124,7 +3124,7 @@ The key result about propositional gates carries over to definition sets.
    $\withoutpred{N}{\cst{p}} \cup
 %%% @PETAR: Double-check the supression of _p below. --JB
    (\confrep{\withpred{G}{\cst{p}}}{G} \flatres_{\!\cst{p}} \confrep{\withpred{R}{\cst{p}}}{R})$.
-\end{definitionx}
+\end{defi}
 
 \newcommand{\mm}{\ourmodel}
 \begin{rep}
@@ -3230,13 +3230,13 @@ The key result about propositional gates carries over to definition sets.
    \end{proof}
 \end{rep}
 \begin{conf}
-\removemyskip
+
 \end{conf}
-\begin{theoremx}
+\begin{theorem}
 \label{thm:pes-sat-equiv}
    The result of applying DPE to a clause set $N$ is
    satisfiable if and only if $N$ is satisfiable.
-\end{theoremx}
+\end{theorem}
 \begin{rep}
 \begin{proof}
    Let $\cst{p}$ be a predicate symbol and $G \subseteq N$ be the
@@ -3261,7 +3261,7 @@ The key result about propositional gates carries over to definition sets.
 Since there will typically be at most only a few defined predicates in the
 problem, it makes sense to fall back on SPE when no definition is found.
 
-\begin{definitionx}
+\begin{defi}
    \looseness=-1
    Let $N$ be a clause set and $\cst{p}$ be a predicate symbol. If there exists a
    definition set $G \subseteq N$ for $\cst{p}$, \emph{portfolio predicate
@@ -3272,7 +3272,7 @@ problem, it makes sense to fall back on SPE when no definition is found.
    Otherwise, if $\cst{p}$ is singular in $N$, it results in $\withoutpred{N}{\cst{p}}
    \cup (\withpredpos{N}{\cst{p}} \flatres_{\!\cst{p}} \withpredneg{N}{\cst{p}})$.
    In all other cases, it is not applicable.
-\end{definitionx}
+\end{defi}
 
 
 \maybesubsection{Refutational Completeness}
@@ -3418,7 +3418,7 @@ derivation at $N_k$. This works at the abstract level of derivations on single
 clause sets. It fails, however, for an actual saturation prover that
 distinguishes between passive and active clauses.
 
-\begin{examplex}
+\begin{exa}
 \label{ex:cex-predelim-sat}
 The counterexample below is based on the given clause prover \textsf{GC}
 from the saturation framework. It shows how predicate elimination can break
@@ -3457,9 +3457,9 @@ Either clause is subsumed by an active clause, so the prover deletes it.
 It stops with the active set
 $\{\cst{c} \cor \cst{d}{,}\; \cst{b} \cor \neglit{\cst{d}}\}$, which is
 unsaturated because $\iota$ is no longer redundant. The invariant is broken.
-\end{examplex}
+\end{exa}
 
-\begin{examplex}
+\begin{exa}
 \label{ex:cex-predelim-unsat}
 In Example~\ref{ex:cex-predelim-sat}, the initial clause set was satisfiable.
 If it is unsatisfiable, we can even lose refutational
@@ -3472,7 +3472,7 @@ the active set $\{\cst{c} \cor \MAX{\cst{d}}{,}\; \cst{b} \cor \MAX{\neglit{\cst
 making $\neglit{\cst{b}}$ and $\neglit{\cst{c}}$ active triggers no
 inferences. The prover stops with an
 unsatisfiable four-clause active set that does not contain the empty clause.
-\end{examplex}
+\end{exa}
 
 A solution could be to move all active clauses to the passive set at step~$k$
 or later, but this would be costly, since it would force the prover to redo
@@ -3502,7 +3502,7 @@ distinguished predicate symbol $\false$ that is interpreted differently
 from~$\top$. For $\mathrm{\Sigma}\Wksup$, the Boolean type $\prop$ may be
 interpreted as any set of cardinality at least 2.
 
-\begin{definitionx}
+\begin{defi}
 The operator $\Wk{}$ translates $\mathrm{\Sigma}$-literals to
 $\mathrm{\Sigma}\Wksup$-literals as follows, where $\cst{p} \in \mathbf{P}$,
 $\cst{q} \notin \mathbf{P}$, and $s, t$ are non-Boolean terms:
@@ -3525,7 +3525,7 @@ is defined via an encoding into $\mathrm{\Sigma}\Wksup$-clauses:
 $M \modelsWk N$ if and only if $\Wk{M} \models \Wk{N}$.
 The lifting to $\mathbf{F}$-clauses and $\mathbf{F}$-clause set is achieved
 in the standard way via grounding.
-\end{definitionx}
+\end{defi}
 
 The following property of weak entailment will allow us to eliminate
 $\mathbf{P}$-predicates without losing completeness:
@@ -3794,7 +3794,7 @@ $\FLInf(\mathcalx{N}{}_\infty) \subseteq
 \end{proof}
 \end{sloppypar}
 
-\begin{theoremx}
+\begin{theorem}
 \label{thm:gcp-complete}
 Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation
 with
@@ -3806,7 +3806,7 @@ If $\lfloor \mathcalx{N}{}_0\rfloor$ is unsatisfiable,
 then
 some $\mathcalx{N}{}_i$
 contains the empty clause with some arbitrary label.
-\end{theoremx}
+\end{theorem}
 
 \begin{proof}
 By Lemma~\ref{lem:fair-gcp-derivations},
@@ -3842,7 +3842,7 @@ PLE's generalization to first-order logic considers predicate literals
 $\arbpredlit{\cst{p}(\tuple{s}{})}$, where the arguments $\tuple{s}{}$ are
 ignored by the analysis; only the polarity matters.
 
-\begin{examplex}
+\begin{exa}
    \label{example:ple}
    Consider the clause set $N = \{ \cst{p}(x) \cor \cst{q}(\cst{a}, x){,}\allowbreak\;
    \cst{p}(\cst{f}(x)){,}\allowbreak\; \neglit{\cst{q}(\cst{a}, \cst{a})} \}$.
@@ -3852,9 +3852,9 @@ ignored by the analysis; only the polarity matters.
    which is obviously satisfiable, indicating that $N$ is satisfiable.
    As model of $N$, we can take $\ourmodel$ such that $\ourmodel$ makes all
    atoms $\cst{p}(\ldots)$ true and all atoms $\cst{q}(\ldots)$ false.
-\end{examplex}
+\end{exa}
 
-\begin{examplex}
+\begin{exa}
    \label{example:qle-i}
    Consider the clause set $N' = \{
    \cst{p}(\cst{a}){,}\allowbreak\;
@@ -3863,9 +3863,9 @@ ignored by the analysis; only the polarity matters.
     polarities. Yet we notice that $\cst{p}$ occurs positively in
     both clauses, and hence that the same reasoning as in the previous
     example applies. In particular, $\ourmodel \models N'$.
-\end{examplex}
+\end{exa}
 
-\begin{examplex}
+\begin{exa}
    \label{example:qle-ii}
    Consider the clause set $N'' = \{
    \cst{p}(\cst{a}){,}\allowbreak\;
@@ -3876,13 +3876,13 @@ ignored by the analysis; only the polarity matters.
    a positive $\cst{p}$ literal or a negative $\cst{q}$ literal---any
    extraneous, wrong-polarity literals are harmless. Thus $\ourmodel \models
    N''$.
-\end{examplex}
+\end{exa}
 
 Examples \ref{example:qle-i} and \ref{example:qle-ii} suggest that PLE is
 needlessly restrained, presumably due to its origins in propositional logic. We
 propose a generalization to ``quasipure'' predicates.
 
-\begin{definitionx}
+\begin{defi}
 \label{def:quasipure-set}
 A set $P$ of predicate symbols is \emph{quasipure} with a polarity map $s$ in a
 clause set $N$ if for every symbol $\cst{p} \in P$, every clause in $N$ that
@@ -3891,7 +3891,7 @@ P$ with polarity $s_\cst{q} \in \{+, -\}$.
 %
 The set $P$ is \emph{quasipure} in $N$ if there exists a polarity map $s$
 such that $P$ is quasipure with $s$ in $N$.
-\end{definitionx}
+\end{defi}
 
 In Example~\ref{example:qle-i}, $\{\cst{p}\}$ is quasipure with $s_\cst{p} =
 {+}$. In Example~\ref{example:qle-ii}, $\{\cst{p}, \cst{q}\}$ is quasipure with
@@ -3899,7 +3899,7 @@ $s_\cst{p} = {+}$ and $s_\cst{q} = {-}$. For this example, it is crucial to
 consider $\cst{p}$ and $\cst{q}$ together; neither of the singletons
 $\{\cst{p}\}$ and $\{\cst{q}\}$ is quasipure.
 
-\begin{definitionx}
+\begin{defi}
 \label{def:quasipure-sym}
 A predicate symbol $\cst{p}$ is \emph{quasipure} with polarity $s_\cst{p} \in
 \{+, -\}$ in a clause set $N$ if there exists a set $P \ni \cst{p}$ of predicate
@@ -3911,19 +3911,19 @@ $N$.
 %
 A literal $L = \arbpredlit{\cst{p}(\ldots)}$ is \emph{quasipure} in $N$ if
 $\cst{p}$ is quasipure with $L$'s polarity in $N$.
-\end{definitionx}
+\end{defi}
 
 Deleting a clause containing a quasipure literal is monotonic in the sense that
 it might create new opportunities for quasipure literal elimination but never
 ruin existing ones. Therefore, the following nondeterministic procedure yields a
 well-defined result:
 
-\begin{definitionx}
+\begin{defi}
 \label{def:qle}
 Given a clause set, \emph{quasipure literal elimination} (QLE) iteratively
 deletes clauses containing quasipure predicate symbols until no such clauses
 remain.
-\end{definitionx}
+\end{defi}
 
 The key property of QLE is that it preserves unsatisfiability:
 
@@ -3984,7 +3984,7 @@ elimination to first-order logic. Their generalization uses flat
 $L$-resolvents, an extension of flat resolvents that resolves a single
 literal~$L$ against $m$~literals of the other clause.
 
-\begin{definitionx}
+\begin{defi}
    Let $C = L \cor C'$ and $D = L_1 \cor \cdots \cor L_m \cor D'$, where
    (1)~$m \ge\nobreak 1$,
    (2) the literals $L_i$ are of opposite polarity to $L$,
@@ -3995,9 +3995,9 @@ literal~$L$ against $m$~literals of the other clause.
    $\bigl(\bigvee_{i=1}^m \bigvee_{j=1}^n
      \neqlit{s_j}{t_{ij}}\bigr) \cor C' \cor D'$
    is a \emph{flat $L$-resolvent} of $C$~and~$D$.
-\end{definitionx}
-\removemyskip
-\begin{definitionx}
+\end{defi}
+
+\begin{defi}
 \label{def:equality-blocked}
 \begin{conf}%
    A clause $C = L \cor C'$ is (\emph{equality-})\emph{blocked} by $L$ in a clause
@@ -4011,7 +4011,7 @@ literal~$L$ against $m$~literals of the other clause.
    The clause $C$ is (\emph{equality-})\emph{blocked} by $L$ in the set $N$ if
    all flat $L$-resolvents between $C$ and clauses in $N'$ are tautologies.
 \end{rep}
-\end{definitionx}
+\end{defi}
 
 Removing a blocked clause from a set preserves unsatisfiability
 \cite{ksstb-2017-blockedfol}. Kiesl et al.\ evaluated the effect of removing all
@@ -4022,7 +4022,7 @@ In fact, there exist satisfiable problems that cannot be saturated in finitely
 many steps regardless of the calculus's parameters but that can be reduced to
 an empty, vacuously satisfiable problem through blocked clause elimination.
 
-\begin{examplex}
+\begin{exa}
    \label{example:infinite-blocked-set}
    \looseness=-1
    Consider the clause set $N$ consisting of $C = \pospredlit{\cst{p}(x,x)}$ and
@@ -4040,7 +4040,7 @@ an empty, vacuously satisfiable problem through blocked clause elimination.
    \pospredlit{\cst{p}(z_1,z_2)} \cor \cdots \cor
    \pospredlit{\cst{p}(z_i,z_{i+1})} \cor \pospredlit{\cst{p}(z_{i+1},z_1)}$
    that cannot be eliminated using standard redu\-ndancy-based techniques.
-\end{examplex}
+\end{exa}
 
 In the example above, the clause $D$ is blocked by its second or third
 literal. If we delete $D$, $C$ becomes blocked in turn. Deleting
@@ -4050,7 +4050,7 @@ Indeed, Kiesl et al.\ ended their investigations by asking whether BCE can be
 used as an inprocessing technique in a saturation prover. Unfortunately,
 in general the answer is no\confrep{.}{:}
 
-\begin{examplex}
+\begin{exa}
    \label{example:bce-completeness}
    Consider the unsatisfiable set $N=\{ C_1, \ldots,\allowbreak C_6 \}$, where
 %   \begin{linenomath*}
@@ -4076,7 +4076,7 @@ in general the answer is no\confrep{.}{:}
    allow removing blocked clauses, the prover enters a loop: $C_{8}$ is repeatedly generated and 
    deleted. Thus, the prover will never generate the
    empty clause for this unsatisfiable set.
-\end{examplex}
+\end{exa}
 
    \newcommand{\aset}{\mathcalx{A}}
    \newcommand{\pset}{\mathcalx{P}}
@@ -4133,31 +4133,31 @@ For the rest of this section, we work with clausal first-order logic
 representatives of first-order models, recalling that every
 satisfiable set has a Herbrand model \cite[Sect.~5.4]{mf-1996-fol}.
 
-\begin{definitionx}
+\begin{defi}
    \looseness=-1
    A literal $L$ is a \emph{global asymmetric literal} (GAL) for a clause $C$
    and a clause set $N$ if for every ground instance $C\sigma$ of $C$, there
    exists a ground instance $D\varrho \cor L'\varrho$ of $D \cor L' \in N \setminus \{C\}$ such that $D\varrho
    \subseteq C\sigma$ and $\neglit L'\varrho = L\sigma$.
- \end{definitionx}
-\confrep{\removemyskip}{}
+ \end{defi}
+\confrep{}{}
 
 Every asymmetric literal is GAL, but the converse does not hold:
 
-\begin{examplex}
+\begin{exa}
    \looseness=-1
    Consider a clause $C = \pospredlit{\cst{p}(x,y)}$ and a clause set $N = \{\pospredlit{\cst{q}} \cor
   \pospredlit{\cst{p}(\cst{a},\cst{a})}\}$. Then, $\negpredlit{\cst{q}}$ is not an asymmetric literal
   for $C$ and $N$, but it is a GAL for $C$ and $N$.
-\end{examplex}
+\end{exa}
 
 Adding and removing GALs preserves and reflects satisfiability:
 
-\begin{theoremx}
+\begin{theorem}
    \label{thm:gal}
    If $L$ is a GAL for the clause $C$ and the clause set $N$, then the set $(N \setminus
    \{C\}) \cup\allowbreak \{ C \cor\nobreak L \}$ is satisfiable if and only if $N$ is satisfiable.
-\end{theoremx}
+\end{theorem}
 \begin{rep}%
 \begin{proof}
    \looseness=-1
@@ -4225,7 +4225,7 @@ procedure also terminates only for finite Herbrand models.
 
 % \begin{rep}
 
-\begin{examplex}
+\begin{exa}
    Consider the satisfiable clause set $N = \{\pospredlit{\cst{r}(x)} \cor
    \pospredlit{\cst{s}(x)}{,}\; \negpredlit{\cst{r}(\cst{a})}{,}\allowbreak\;
    \negpredlit{\cst{s}(\cst{b})}\}$ and a Herbrand model $\ourmodel$ over
@@ -4248,7 +4248,7 @@ procedure also terminates only for finite Herbrand models.
    Clearly, all clauses in $N_{\ourmodel}$ are blocked, so we set $N \gets N \setminus
    N_{\ourmodel}$. All clauses remaining in $N$ have a literal $\negpredlit{\cst{q}}$
    and can be removed, leaving $N$ empty as desired.
-\end{examplex}
+\end{exa}
 
 % The procedure works only for first-order logic without equality, because it
 % relies on adding and removing blocked clauses. In step~\ref{item:step3}, binary
