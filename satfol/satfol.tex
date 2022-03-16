@@ -132,7 +132,10 @@ distinguished type (or sort) $o$. We introduced this logic in
 Sect.~\ref{sec:pre:fol} and we use the same notation introduced in this section.
 We write $\cst{f}^i(s)$ for the $i$-fold application of an unary symbol
 $\cst{f}$ (e.g., $\cst{f}^3(x) = \cst{f}(\cst{f}(\cst{f}(x)))$) and call nullary
-function symbols \emph{constants}. 
+function symbols \emph{constants}. In this chapter, propositional variables
+(corresponding to predicate constants in first-order logic) are written as
+$\cst{x}, \cst{y}, \cst{p}, \cst{q}, \ldots$, while first-order free variables
+are written in lowercase as $x,y,z,\ldots$.
 
 We assume the same notion of substitution introduced in Sect.~\ref{sec:pre:fol}.
 We extend the notation by writing a substitution $\{x_1 \mapsto t_1,
@@ -498,3 +501,403 @@ as desired.
 \qedhere
 \end{proof}
 \end{rep}
+
+\section{Predicate Elimination}
+\label{sec:satfol:predicate-elimination}
+
+For propositional logic, variable elimination \cite{eb-2005-satpreprocess} is
+one of the main preprocessing and inprocessing techniques. Following Gabbay and Ohlbach's ideas
+\cite{go-1992-so-pred-elim}, Khasidashvili and Korovin \cite{kk-2016-pe-fol}
+generalized variable elimination to first-order logic with equality and
+demonstrated that it is effective as a preprocessor. We propose an improvement
+that makes this applicable in more cases and show that, with a minor
+restriction, it can be integrated in a superposition prover
+without compromising its refutational completeness.
+
+\subsection{Singular Predicates}
+
+Khasidashvili and Korovin's preprocessing technique removes singular predicates
+(which they call ``non-self-referential predicates'') from the problem using
+so-called flat resolution.
+
+\begin{defi}
+   A predicate symbol is called \emph{singular}\confrep{ (or ``non-self-referential'')}{}
+   for a clause set $N$ if it occurs at most once in every clause contained in
+   $N.$
+\end{defi}
+
+\begin{defi}
+   \label{def:flat-res}
+   Let $C = \pospredlit{\cst{p}(\tuplen{s})} \cor C'$ and $D =
+   \negpredlit{\cst{p}(\tuplen{t})} \cor D'$ be clauses with no variables in
+   common. The clause $\neqlit{s_1}{t_1} \cor \cdots \cor \neqlit{s_n}{t_n}
+   \cor C' \cor D'$ is a \emph{flat resolvent} of $C$ and $D$ on $\cst{p}$.
+\end{defi}
+
+% Predicate elimination saturates with respect to flat resolvents, removing all
+% clauses containing $\cst{p}$. Given two (possibly identical) clause sets $M, N$,
+% the resolved set $M \flatres_{\!\cst{p}} N$, defined below, repeatedly draws
+% one inference partner from $M$ and the other one from $N$.
+
+Given two (possibly identical) clause sets $M, N$, predicate elimination
+iteratively replaces clauses from $N$ containing the symbol $\cst{p}$ with all flat
+resolvents against clauses in $M$. Eventually, it yields a
+set with no occurrences of $\cst{p}$.
+
+
+\begin{defi}
+\label{def:flat-res-set}
+   Let $M, N$ be clause sets and $\cst{p}$ be a singular predicate for
+   $M$. Let $\flatresiter$ be the following relation on clause set pairs and clause sets:
+   \begin{enumerate}
+   \item $(M{,}\> \{\arbpredlit{\cst{p}(\tupleempty{s})} \cor C'\} \uplus N) \flatresiter (M{,}\; N' \cup N)$ if
+   $N'$ is the set that consists of all clauses (up to variable renaming) that are flat resolvents
+   with $\arbpredlit{\cst{p}(\tupleempty{s})} \cor C'$ on $\cst{p}$ and a clause from $M$ as premises.
+   The premises' variables are renamed apart.
+
+   \smallskip
+   \item $(M, N) \flatresiter N$ if $N$ has no occurrences of $\cst{p}$.
+   \end{enumerate}
+   \noindent  The \emph{resolved set} $M \flatres_{\!\cst{p}} N$ is the clause set $N'$ such that $(M,N) \flatresiter^* N'$.
+   % obtained by the following
+   % procedure: Set $N' = N$. Then repeatedly (1)~choose a clause $D \in N'$
+   % containing $\cst{p}$, (2)~compute all flat resolvents involving $D$ and
+   % partners from $M$, renaming variables apart, and (3)~replace $D$ with these
+   % flat resolvents in $N'$. Stop when $N'$ contains no more occurrence of
+   % $\cst{p}$.
+\end{defi}
+
+\pagebreak[2]
+
+\begin{rep}
+\begin{lemma}
+   \label{lem:flat-res-set-termination-confluence}
+   Let $M, N$ be clause sets and $\cst{p}$ be a singular predicate for
+   $M$. The resolved set $N'$ is reached in a finite number of $\flatresiter$ steps,
+   and it is unique up to variable renaming.
+\end{lemma}
+\begin{proof}
+   To show $\flatresiter$ is terminating we use the following ordinal measure on
+   clause sets: $\nu(\{D_1,\dotsc,\allowbreak D_n\}) = \omega^{\nu(D_1)} \oplus
+   \cdots \oplus \omega^{\nu(D_n)}$, where $\nu(D)$ is the number of
+   occurrences of $\cst{p}$ in $D$, $\omega$ is the first infinite ordinal, and
+   $\oplus$ is the Hessenberg, or natural, sum, which is commutative.
+   For every transition
+   $(M, \{C\} \cup N) \flatresiter (M, N' \cup N)$, we have $\nu(\{C\} \cup N) > \nu(N' \cup N)$
+   because $\omega^{\nu(C)} > \omega^{\nu(C)-1} \cdot |N'|$.
+   Eventually, a state $(M,N')$ with $\nu(N')=\omega^0\cdot n$ is reached.
+   Then, we apply the second rule of Definition \ref{def:flat-res-set} to obtain the resolved set $N'$.
+
+   To show that $N'$ is unique, i.e., $\flatresiter$ is confluent, it suffices
+   to show (since $\flatresiter$ is terminating and Newmann's lemma applies
+   \cite{bn-98-tr-and-all-that}) that $\flatresiter$ is locally confluent. In
+   other words, whenever $(M,N) \flatresiter (M, N_1)$ and $(M,N) \flatresiter
+   (M, N_2)$ there exists $N'$ such that $(M, N_1) \flatresiter (M, N')$ and
+   $(M, N_2) \flatresiter (M,N')$. 
+   
+   There are two main sources of nondeterminism of $\flatresiter$: The choice of $C
+   \in N$ and the choice of the literal in $C$ to act on. Let us focus on the choice of
+   $C$ in $N$; the same discussion applies for the choice of literal in $C$.
+
+   Let $N = \{C_1\} \uplus \{C_2\} \uplus N'$, where $C_1$ and $C_2$ are
+   clauses with occurrences of $\cst{p}$. Then, $(M, \{C_1\} \uplus \{ C_2 \cup
+   N' \}) \flatresiter (M, N'_1 \cup \{ C_2 \cup N'\})$ and $(M, \{C_2\} \uplus
+   \{C_1 \cup N' \}) \flatresiter (M, N'_2 \cup \{ C_1 \cup N' \})$ where $N'_1$ and
+   $N'_2$ are sets of corresponding resolvents. Both of $\flatresiter$ steps can
+   be joined (up to variable renaming) to $(M, N'_1 \cup N'_2 \cup N')$, showing
+   that $\flatresiter$ is locally confluent.
+\end{proof}
+\end{rep}
+
+\begin{conf}
+The relation $\flatresiter$ is confluent up to variable renaming. Thanks to
+the singularity constraint on $M$, it
+also terminates on finite sets because the following ordinal measure decreases:
+$\nu(\{D_1,\allowbreak\dotsc,\allowbreak D_n\}) = \omega^{\nu(D_1)} \oplus \cdots \oplus
+\omega^{\nu(D_n)}$, where $\nu(D)$ counts the occurrences of $\cst{p}$ in
+$D$, $\omega$ is the first infinite ordinal,
+and $\oplus$ is the Hessenberg, or natural, sum, which is commutative.
+For every transition
+$(M, \{C\} \cup N) \flatresiter (M, N' \cup N)$, we have
+$\nu(\{C\}) = \omega^{\nu(C)} > \omega^{\nu(C)-1} \cdot |N'| = \nu(N')$.
+\end{conf}
+
+Next, it is useful to partition
+clause sets into subsets based on the presence and polarity of a singular
+predicate.
+
+\begin{defi}
+   Let $N$ be a clause set and $\cst{p}$ be a singular predicate for
+   $N.$ Let $\withpredpos{N}{\cst{p}}$ consist of all clauses of the form $\pospredlit{\cst{p}(\tuple{s}{})} \cor C' \in N$,
+   let $\withpredneg{N}{\cst{p}}$ consist of all clauses of the form $\negpredlit{\cst{p}(\tuple{s}{})} \cor C' \in N$,
+   let $\withpred{N}{\cst{p}} = \withpredpos{N}{\cst{p}} \cup \withpredneg{N}{\cst{p}}$,
+   and let $\withoutpred{N}{\cst{p}} = N \setminus \withpred{N}{\cst{p}}$.
+\end{defi}
+
+\begin{defi}
+   \label{def:pred-elim}
+   Let $N$ be a clause set and $\cst{p}$ be a singular predicate for
+   $N.$
+   \emph{Singular predicate elimination} (SPE) of $\cst{p}$ in $N$ replaces $N$ by
+   $\withoutpred{N}{\cst{p}} \cup (\withpredpos{N}{\cst{p}} \flatres_{\!\cst{p}} \withpredneg{N}{\cst{p}})$.
+\end{defi}
+
+The result of SPE is satisfiable if and only if $N$ is satisfiable
+\cite[Theorem~1]{kk-2016-pe-fol}, justifying SPE's use in a preprocessor.
+However, eliminating singular predicates aggressively can dramatically increase
+the number of clauses. To prevent this, Khasidashvili and Korovin suggested to
+replace $N$ by $N'$ only if $\lambda(N') \leq \lambda(N)$
+and $\mu(N') \leq \mu(N)$, where
+$\lambda(N)$ is the number of literals in~$N$ and
+$\mu(N)$ is the sum for all clauses $C \in
+N$ of the square of the number of distinct variables in $C$.
+
+Compared with what modern SAT solvers use, this
+criterion is fairly restrictive. We relax it to make it possible to
+eliminate more predicates, within reason. Let $K_\mathrm{tol} \in \mathbb{N}$ be a tolerance
+parameter. A predicate elimination
+step from $N$ to $N'$ is allowed if
+$\lambda(N') < \lambda(N) + K_\mathrm{tol}$ or
+$\mu(N') < \mu(N)$ or
+$|N'| < |N| + K_\mathrm{tol}$.
+\confrep{}{A refinement, which we want to try out in future work, would be to gradually
+increment the tolerance $K_\mathrm{tol}$, as is done in some SAT solvers.}
+
+
+\subsection{Defined Predicates}
+
+SPE is effective, but an important refinement has not yet been adapted to
+first-order logic:\ variable elimination by substitution. E{\'{e}}n and Biere
+\cite{eb-2005-satpreprocess} discovered that a propositional variable~$\cst{x}$ can be
+eliminated without computing all resolvents if it is expressible as an
+equivalence $\cst{x} \medleftrightarrow \varphi$, where $\varphi$, the ``gate,''
+is an arbitrary formula that does not reference~$\cst{x}$.
+They partition a set $N$
+\confrep{}{of propositional clauses }into a definition set $G$, essentially the
+clausification of $\cst{x} \medleftrightarrow \varphi$, and
+$R = \withpred{N}{\cst{p}} \setminus G$, the remaining
+clauses containing~$\cst{p}$. To eliminate $\cst{x}$ from $N$ while
+preserving satisfiability, it suffices to resolve clauses from $G$ against
+clauses from $R$, effectively substituting $\varphi$ for $\cst{x}$ in $R$.
+Crucially, we do not need to resolve pairs of clauses from $G$
+or pairs of clauses from $R$.
+We generalize this idea to first-order logic.
+
+\begin{defi}
+   \label{def:definition}
+   \looseness=-1
+   Let $G$ be a clause set, $\cst{p}$ be a predicate symbol, and
+   $\tupleempty{x}$ be distinct variables.
+%
+   The set $G$ is a \emph{definition set} for $\cst{p}$ if
+   \begin{enumerate}
+      \item $\cst{p}$ is singular for $G$
+      \item $G$ consists of clauses of the form $\arbpredlit{\cst{p}(\tupleempty{x})} \cor C'$ (up to variable renaming)
+      \item the variables in $C'$ are all among $\tupleempty{x}$
+      \item all clauses in $\withpredpos{G}{\cst{p}}
+      \flatres_{\!\cst{p}} \withpredneg{G}{\cst{p}}$ are tautologies
+      \item $E(\tupleempty{\cst{c}})$ is unsatisfiable, where
+      the \emph{environment} $E(\tupleempty{x})$ consists of all subclauses $C'$ of any
+      $\arbpredlit{\cst{p}(\tupleempty{x})} \mathbin{\cor} C' \in G$ and
+      $\tupleempty{\cst{c}}$ is a tuple of distinct fresh constants substituted
+      in for $\tupleempty{x}$
+   \end{enumerate}
+\end{defi}
+
+A definition set $G$ corresponds intuitively to a definition by
+cases in mathematics---e.g.,
+\[\cst{p}(\tuple{x}{}) =
+\begin{cases} \top & \mathrm{if}~\varphi(\tuple{x}{}{}) \\[-\jot]
+\bot & \mathrm{if}~\psi(\tuple{x}{})\end{cases}\]
+Part~4 states that the case conditions are mutually exclusive
+(e.g., $\neglit{\varphi(\tuple{x}{})} \lor \neglit{\psi(\tuple{x}{})}$),
+and part~5 states that they are exhaustive
+(e.g., $\nexists\tuple{\cst{c}}{} .\; \neglit{\varphi(\tuple{\cst{c}}{})} \land \neglit{\psi(\tuple{\cst{c}}{})}$).
+%
+Given a quantifier-free formula $\cst{p}(\tuple{x}{}) \medleftrightarrow
+\varphi(\tuple{x}{})$ with distinct variables $\tuple{x}{}$ such that
+$\varphi(\tuple{x}{})$ does not contain $\cst{p}$, any reasonable
+clausification algorithm would produce a definition set for $\cst{p}$.
+
+\begin{exa}
+   \label{example:tautologies}
+   Given the formula $\cst{p}(x) \medleftrightarrow \cst{q}(x) \mathrel\land
+   (\cst{r}(x) \cor \cst{s}(x))$, a standard clausification algorithm
+   \cite{nw-01-small-cnf} produces $\{ \negpredlit{\cst{p}(x)} \cor
+   \pospredlit{\cst{q}(x)}{,}\; \negpredlit{\cst{p}(x)} \cor
+   \pospredlit{\cst{r}(x)} \cor \pospredlit{\cst{s}(x)}{,}\;
+   \pospredlit{\cst{p}(x)} \cor \negpredlit{\cst{q}(x)} \cor
+   \negpredlit{\cst{r}(x)}{,}\; \pospredlit{\cst{p}(x)} \cor
+   \negpredlit{\cst{q}(x)} \cor \negpredlit{\cst{s}(x)}\}$, which qualifies
+   as a definition set for $\cst{p}$.
+\end{exa}
+
+Definition sets generalize E{\'{e}}n and Biere's
+gates. They can be recognized syntactically for formulas such as
+$\cst{p}(\tuple{x}{}) \medleftrightarrow \bigvee_{\!i} \cst{q}_i(\tuple{s_i}{})$ or
+$\cst{p}(\tuple{x}{}) \medleftrightarrow \bigwedge_i \cst{q}_i(\tuple{s_i}{})$,
+or semantically: Condition~4 can be checked
+using the congruence closure algorithm, and condition~5 amounts to
+a propositional unsatisfiability check.
+
+The key result about propositional gates carries over to definition sets.
+
+\begin{defi}
+   \looseness=-1
+   Let $N$ be a clause set, $\cst{p}$ be a predicate symbol,
+   $G \subseteq N$ be a definition set
+   for $\cst{p}$, and $R = \withpred{N}{\cst{p}}
+   \setminus G$. \emph{Defined predicate elimination} (DPE) of $\cst{p}$ in $N$ replaces $N$ by
+   $\withoutpred{N}{\cst{p}} \cup
+%%% @PETAR: Double-check the supression of _p below. --JB
+   (\confrep{\withpred{G}{\cst{p}}}{G} \flatres_{\!\cst{p}} \confrep{\withpred{R}{\cst{p}}}{R})$.
+\end{defi}
+
+\newcommand{\mm}{\ourmodel}
+\newcommand{\notmodels}{\nvDash}
+\begin{rep}
+   \begin{lemma}
+   \label{lem:unsat-fresh-consts}
+   Let $N(\tupleempty{x})$ be a clause set such that the variables of all
+   clauses in it are among the argument $n$-tuple $\tupleempty{x}$, and let
+   $\tupleempty{\cst{c}}$ be an $n$-tuple of distinct fresh constants. If
+   $N(\tupleempty{\cst{c}})$ {\upshape(}i.e.,
+   $\substterm{\{\tupleempty{x}\mapsto\tupleempty{\cst{c}}\}}{N(\tupleempty{x})}${\upshape)} is
+   unsatisfiable, then for every interpretation $\mm$ and valuation $\xi$,
+   $\mm \notmodels_\xi N$.
+   \end{lemma}
+   \begin{proof}
+      We show the contrapositive. Assume that for some $\mm$ and $\xi$,  $\mm \models_\xi N(\tupleempty{x})$.
+      Then let $\ourmodel'$
+      be a model that assigns each $\cst{c}_i$ the interpretation of $x_i$ under $\mm$ and $\xi$, and otherwise
+      coincides with $\ourmodel$. We obtain $\ourmodel' \models N(\tupleempty{\cst{c}})$.
+   \end{proof}
+
+   \begin{lemma}
+      \label{lem:flat-res-set-step-satisfiability}
+      Let $G$ be a definition set for $\cst{p}$\confrep{,}{} and $N$ \confrep{}{be }an arbitrary clause
+      set. If $(G, N) \flatresiter (G, N')$ then $G \cup N$ and $G \cup N'$ are
+      equivalent.
+   \end{lemma}
+   \begin{proof}
+      Since flat resolution is sound, the nontrivial direction is to show that a
+      model $\mm$ of the set $G \cup N'$ is also a model of $G \cup N$. As the only clause in $N
+      \setminus N'$ is $C = \arbpredlit{\cst{p}(\tuple{s}{n})} \cor C'$ on which
+      the $\flatresiter$ step is performed, we must show $\mm \models C$.
+      % Without 
+
+      % Let $\mm$ be canonical model of $G \cup N'$ \cite[Theorem~9.5.2]{mf-1996-fol} and let $C
+      % \in N \setminus N'$. We need to show that $\mm \models C$---which is to say,
+      % for all variable interpretation $\xi$, we have $\mm \models_\xi C$. To
+      % lighten notations, we will assume $C$ is ground and ignore $\xi$. Canonical
+      % models make this step possible.
+
+      % First, $C$ must have the form $\arbpredlit{\cst{p}(\tuple{s}{})} \cor C'$,
+      % where $\tuple{s}{}$ is a tuple of ground terms. 
+      Without loss of generality,
+      we assume that the leading literal of $C$ is positive.
+      Towards a contradiction, assume $\xi$ is a valuation such that $\mm \notmodels_\xi C$. Then, $\mm \notmodels_\xi
+      \pospredlit{\cst{p}(\tuple{s}{n})}$. 
+      % Let $\xi'$ be a valuation that
+      % assigns every instance $D = \pospredlit{\cst{p}(\tupleempty{s})} \cor D'$ of a clause in
+      % $G$, since $\mm \notmodels \pospredlit{\cst{p}(\tuple{s}{})}$, we have $\mm
+      % \models D'$.
+      Consider an arbitrary clause $D = \pospredlit{\cst{p}}(\tuplen{x}) \cor D'
+      \in \withpredpos{G}{\cst{p}}$ and a valuation $\xi'$, which assigns each $x_i$ the
+      interpretation of $s_i$ under $\mm$ and $\xi$. As $\mm \notmodels_{\xi'}
+      \pospredlit{\cst{p}}(\tuple{x}{n})$ and $\mm \models G$, then $\mm \models_{\xi'} D'$ for every
+      such clause $D$.
+   %
+      However, by part 5 of Definition~\ref{def:definition} and by Lemma
+      \ref{lem:unsat-fresh-consts}, $\mm \notmodels_{\xi'} E(\tuplen{x})$, where $E(\tuplen{x})$
+      is the environment associated with the definition set $G$.
+      Therefore, there must exist a clause $D =
+      \negpredlit{\relax{\cst{p}(\tuplen{x})}} \cor D'$ in $\withpredneg{G}{\cst{p}}$ such
+      that $\mm \notmodels_\xi D'$.
+
+
+      Now consider the flat resolvent of $C$ and $D$ on~$\cst{p}$: $R =
+      \neqlit{x_1}{s_1} \cor \cdots \cor \neqlit{x_n}{s_n} \cor C' \cor D'$.
+      Let $\zeta$ be a valuation coinciding with $\xi$ on variables of $C$
+      and with $\xi'$ on $\tuplen{x}$.
+      Clearly, $\mm \notmodels_\zeta R$. Yet, $R \in N'$, and as $\mm \models N'$, we reach a contradiction.
+   \end{proof}
+
+   \begin{lemma}
+      \label{lem:flat-res-set-last-step-satisfiability}
+      Let $G$ be a definition set for $\cst{p}$\confrep{,}{} and $N$ \confrep{}{be }a clause set with no occurrences of $\cst{p}$.
+      Then $G \cup N$ is satisfiable if and only if $N$ is satisfiable.
+   \end{lemma}
+   \begin{proof}
+      The nontrivial direction is to show that if $N$ is satisfiable, $G \cup N$ is as well.
+      %
+      Let $\mm$ be a model of $N$. We construct a model $\mm'$ of $G$ over
+      the same universe as $\mm$. For any atom $A$ such that $\cst{p}$ does not
+      occur in $A$ and for every $\xi$, we set $\mm' \models_\xi A$ if and only if
+      $\mm \models_\xi A$. For any clause $\pospredlit{\cst{p}(\tuplen{x})} \cor
+      C' \in G$ and any assignment $\xi$ such that $\mm \notmodels_\xi C'$, we
+      define $\mm'$ so that $\mm'\models_\xi \cst{p}(\tuplen{x})$. By
+      construction, $\mm' \models \withpredpos{G}{\cst{p}} \cup N$. It remains to show that $\mm' \models
+      \withpredneg{G}{}$.
+
+      Let $C = \negpredlit{\cst{p}(\tuplen{x})} \cor C' \in G$ and let $\xi$ be
+      an arbitrary assignment. Towards a contradiction, assume
+      $\mm'\notmodels_\xi C$, and consequently $\mm' \models_\xi
+      \cst{p}(\tuplen{x})$. By construction of $\mm'$, there exists a clause
+      $\pospredlit{\cst{p}(\tuplen{y})} \cor D' \in G$ and an assignment $\xi'$
+      which assigns each $y_i$ value of $\xi(x_i)$ such that $\mm
+      \notmodels_{\xi'} D'$. The resolvent $R = \neqlit{x_1}{y_1} \lor \cdots \lor
+      \neqlit{x_n}{y_n} \lor C' \lor D'$ is a tautology, according to condition
+      4 of Definition \ref{def:definition}. However, for a valuation that
+      behaves like $\xi$ on $\tupleempty{x}$ and $\xi'$ on $\tupleempty{y}$,
+      $\mm'$ does not satisfy $R \in N$, contradicting our assumption.
+      % @Jasmin: Your trick with var renaming does not work as flat resolvent is
+      % defined on
+      % variable-disjoint clauses.
+   \qedhere
+   \end{proof}
+\end{rep}
+\begin{conf}
+
+\end{conf}
+\begin{theorem}
+\label{thm:pes-sat-equiv}
+   The result of applying DPE to a clause set $N$ is
+   satisfiable if and only if $N$ is satisfiable.
+\end{theorem}
+\begin{rep}
+\begin{proof}
+   Let $\cst{p}$ be a predicate symbol and $G \subseteq N$ be the
+   definition set used by DPE, and let $R = \withpred{N}{\cst{p}} \setminus G$.
+%
+   % First, using Lemmas \ref{lem:flat-res-set-termination-confluence} and \ref{lem:flat-res-set-step-satisfiability}
+   % we show that we will eventually obtain a set $R'$
+   % that contains no occurrences of $\cst{p}$ and that preserves satisfiability
+   % of the original $R$. Finally, we will show that we can
+   % omit $G$ in the result without affecting satisfiability.
+
+   Using Lemma
+   \ref{lem:flat-res-set-termination-confluence}, we get that there is a
+   derivation $(G,R) \flatresiter^n (G,R') \flatresiter R'$. Applying Lemma
+   \ref{lem:flat-res-set-step-satisfiability} $n$ times, we get that $G \cup R$
+   is equivalent to $G \cup R'$. Finally, Lemma \ref{lem:flat-res-set-last-step-satisfiability}
+   gives us the desired result.
+\end{proof}
+\end{rep}
+
+Since there will typically be at most only a few defined predicates in the
+problem, it makes sense to fall back on SPE when no definition is found.
+
+\begin{defi}
+   \looseness=-1
+   Let $N$ be a clause set and $\cst{p}$ be a predicate symbol. If there exists a
+   definition set $G \subseteq N$ for $\cst{p}$, \emph{portfolio predicate
+   elimination} (PPE) on $\cst{p}$ in $N$ replaces $N$ with
+%%% @PETAR: Double-check the supression of _p below. --JB
+   $\withoutpred{N}{\cst{p}} \cup (\confrep{\withpred{G}{\cst{p}}}{G} \flatres_{\!\cst{p}}
+   \confrep{\withpred{R}{\cst{p}}}{R})$, where $R = \withpred{N}{\cst{p}} \setminus G$.
+   Otherwise, if $\cst{p}$ is singular in $N$, it results in $\withoutpred{N}{\cst{p}}
+   \cup (\withpredpos{N}{\cst{p}} \flatres_{\!\cst{p}} \withpredneg{N}{\cst{p}})$.
+   In all other cases, it is not applicable.
+\end{defi}
+

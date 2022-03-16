@@ -2272,7 +2272,7 @@ Marijn J.H. Heule\textsuperscript{3}\orcid{0000-0002-5587-8801}}\\
  {\end{definition}
   \vspace{\myskip}}% end code
 
-\newenvironment{lemmax}% environment name
+\newenvironment{lemma}% environment name
 {% begin code
 \vspace{\myskip}
 \begin{lemma}
@@ -2891,7 +2891,7 @@ that makes this applicable in more cases and show that, with a minor
 restriction, it can be integrated in a superposition prover
 without compromising its refutational completeness.
 
-\maybesubsection{Singular Predicates}
+\subsection{Singular Predicates}
 
 Khasidashvili and Korovin's preprocessing technique removes singular predicates
 (which they call ``non-self-referential predicates'') from the problem using
@@ -2947,12 +2947,12 @@ set with no occurrences of $\cst{p}$.
 \pagebreak[2]
 
 \begin{rep}
-\begin{lemmax}
+\begin{lemma}
    \label{lem:flat-res-set-termination-confluence}
    Let $M, N$ be clause sets and $\cst{p}$ be a singular predicate for
    $M$. The resolved set $N'$ is reached in a finite number of $\flatresiter$ steps,
    and it is unique up to variable renaming.
-\end{lemmax}
+\end{lemma}
 \begin{proof}
    To show $\flatresiter$ is terminating we use the following ordinal measure on
    clause sets: $\nu(\{D_1,\dotsc,\allowbreak D_n\}) = \omega^{\nu(D_1)} \oplus
@@ -3040,7 +3040,7 @@ $|N'| < |N| + K_\mathrm{tol}$.
 \confrep{}{(A refinement, which we want to try out in future work, would be to gradually
 increment the tolerance $K_\mathrm{tol}$, as is done in some SAT solvers.)}
 
-\maybesubsection{Defined Predicates}
+\subsection{Defined Predicates}
 
 SPE is effective, but an important refinement has not yet been adapted to
 first-order logic:\ variable elimination by substitution. E{\'{e}}n and Biere
@@ -3128,7 +3128,7 @@ The key result about propositional gates carries over to definition sets.
 
 \newcommand{\mm}{\ourmodel}
 \begin{rep}
-   \begin{lemmax}
+   \begin{lemma}
    \label{lem:unsat-fresh-consts}
    Let $N(\tupleempty{x})$ be a clause set such that the variables of all
    clauses in it are among the argument $n$-tuple $\tupleempty{x}$, and let
@@ -3136,8 +3136,8 @@ The key result about propositional gates carries over to definition sets.
    $N(\tupleempty{\cst{c}})$ {\upshape(}i.e.,
    $N(\tupleempty{x})\{\tupleempty{x}\mapsto\tupleempty{\cst{c}}\}${\upshape)} is
    unsatisfiable, then for every interpretation $\mm$ and valuation $\xi$,
-   $\mm \not\models_\xi N$.
-   \end{lemmax}
+   $\mm \notmodels_\xi N$.
+   \end{lemma}
    \begin{proof}
       We show the contrapositive. Assume that for some $\mm$ and $\xi$,  $\mm \models_\xi N(\tupleempty{x})$.
       Then let $\ourmodel'$
@@ -3145,12 +3145,12 @@ The key result about propositional gates carries over to definition sets.
       coincides with $\ourmodel$. We obtain $\ourmodel' \models N(\tupleempty{\cst{c}})$.\qed
    \end{proof}
 
-   \begin{lemmax}
+   \begin{lemma}
       \label{lem:flat-res-set-step-satisfiability}
       Let $G$ be a definition set for $\cst{p}$\confrep{,}{} and $N$ \confrep{}{be }an arbitrary clause
       set. If $(G, N) \flatresiter (G, N')$ then $G \cup N$ and $G \cup N'$ are
       equivalent.
-   \end{lemmax}
+   \end{lemma}
    \begin{proof}
       Since flat resolution is sound, the nontrivial direction is to show that a
       model $\mm$ of the set $G \cup N'$ is also a model of $G \cup N$. As the only clause in $N
@@ -3168,38 +3168,38 @@ The key result about propositional gates carries over to definition sets.
       % where $\tuple{s}{}$ is a tuple of ground terms. 
       Without loss of generality,
       we assume that the leading literal of $C$ is positive.
-      Towards a contradiction, assume $\xi$ is a valuation such that $\mm \not\models_\xi C$. Then, $\mm \not\models_\xi
+      Towards a contradiction, assume $\xi$ is a valuation such that $\mm \notmodels_\xi C$. Then, $\mm \notmodels_\xi
       \pospredlit{\cst{p}(\tuple{s}{n})}$. 
       % Let $\xi'$ be a valuation that
       % assigns every instance $D = \pospredlit{\cst{p}(\tupleempty{s})} \cor D'$ of a clause in
-      % $G$, since $\mm \not\models \pospredlit{\cst{p}(\tuple{s}{})}$, we have $\mm
+      % $G$, since $\mm \notmodels \pospredlit{\cst{p}(\tuple{s}{})}$, we have $\mm
       % \models D'$.
       Consider an arbitrary clause $D = \pospredlit{\cst{p}}(\tuplen{x}) \cor D'
       \in \withpredpos{G}{\cst{p}}$ and a valuation $\xi'$, which assigns each $x_i$ the
-      interpretation of $s_i$ under $\mm$ and $\xi$. As $\mm \not\models_{\xi'}
+      interpretation of $s_i$ under $\mm$ and $\xi$. As $\mm \notmodels_{\xi'}
       \pospredlit{\cst{p}}(\tuple{x}{n})$ and $\mm \models G$, then $\mm \models_{\xi'} D'$ for every
       such clause $D$.
    %
       However, by part (5) of Definition~\ref{def:definition} and by Lemma
-      \ref{lem:unsat-fresh-consts}, $\mm \not\models_{\xi'} E(\tuplen{x})$, where $E(\tuplen{x})$
+      \ref{lem:unsat-fresh-consts}, $\mm \notmodels_{\xi'} E(\tuplen{x})$, where $E(\tuplen{x})$
       is the environment associated with the definition set $G$.
       Therefore, there must exist a clause $D =
       \negpredlit{\relax{\cst{p}(\tuplen{x})}} \cor D'$ in $\withpredneg{G}{\cst{p}}$ such
-      that $\mm \not\models_\xi D'$.
+      that $\mm \notmodels_\xi D'$.
 
 
       Now consider the flat resolvent of $C$ and $D$ on~$\cst{p}$: $R =
       \neqlit{x_1}{s_1} \cor \cdots \cor \neqlit{x_n}{s_n} \cor C' \cor D'$.
       Let $\zeta$ be a valuation coinciding with $\xi$ on variables of $C$
       and with $\xi'$ on $\tuplen{x}$.
-      Clearly, $\mm \not\models_\zeta R$. Yet, $R \in N'$, and as $\mm \models N'$, we reach a contradiction.\qed
+      Clearly, $\mm \notmodels_\zeta R$. Yet, $R \in N'$, and as $\mm \models N'$, we reach a contradiction.\qed
    \end{proof}
 
-   \begin{lemmax}
+   \begin{lemma}
       \label{lem:flat-res-set-last-step-satisfiability}
       Let $G$ be a definition set for $\cst{p}$\confrep{,}{} and $N$ \confrep{}{be }a clause set with no occurrences of $\cst{p}$.
       Then $G \cup N$ is satisfiable if and only if $N$ is satisfiable.
-   \end{lemmax}
+   \end{lemma}
    \begin{proof}
       The nontrivial direction is to show that if $N$ is satisfiable, $G \cup N$ is as well.
       %
@@ -3207,18 +3207,18 @@ The key result about propositional gates carries over to definition sets.
       the same universe as $\mm$. For any atom $A$ such that $\cst{p}$ does not
       occur in $A$ and for every $\xi$, we set $\mm' \models_\xi A$ if and only if
       $\mm \models_\xi A$. For any clause $\pospredlit{\cst{p}(\tuplen{x})} \cor
-      C' \in G$ and any assignment $\xi$ such that $\mm \not\models_\xi C'$, we
+      C' \in G$ and any assignment $\xi$ such that $\mm \notmodels_\xi C'$, we
       define $\mm'$ so that $\mm'\models_\xi \cst{p}(\tuplen{x})$. By
       construction, $\mm' \models \withpredpos{G}{\cst{p}} \cup N$. It remains to show that $\mm' \models
       \withpredneg{G}{}$.
 
       Let $C = \negpredlit{\cst{p}(\tuplen{x})} \cor C' \in G$ and let $\xi$ be
       an arbitrary assignment. Towards a contradiction, assume
-      $\mm'\not\models_\xi C$, and consequently $\mm' \models_\xi
+      $\mm'\notmodels_\xi C$, and consequently $\mm' \models_\xi
       \cst{p}(\tuplen{x})$. By construction of $\mm'$, there exists a clause
       $\pospredlit{\cst{p}(\tuplen{y})} \cor D' \in G$ and an assignment $\xi'$
       which assigns each $y_i$ value of $\xi(x_i)$ such that $\mm
-      \not\models_{\xi'} D'$. The resolvent $R = \neqlit{x_1}{y_1} \lor \cdots \lor
+      \notmodels_{\xi'} D'$. The resolvent $R = \neqlit{x_1}{y_1} \lor \cdots \lor
       \neqlit{x_n}{y_n} \lor C' \lor D'$ is a tautology, according to condition
       (4) of Definition \ref{def:definition}. However, for a valuation that
       behaves like $\xi$ on $\tupleempty{x}$ and $\xi'$ on $\tupleempty{y}$,
@@ -3275,7 +3275,7 @@ problem, it makes sense to fall back on SPE when no definition is found.
 \end{defi}
 
 
-\maybesubsection{Refutational Completeness}
+\subsection{Refutational Completeness}
 \label{ssec:predicate-elimination-refutational-completeness}
 
 \newcommand\FInf{\mathit{FInf}}
@@ -3339,7 +3339,7 @@ This breaks completeness.
 Our solution is to curtail the entailment relation used by the redundancy
 criterion to disallow splitting-like simplifications. Weak entailment $\modelsWk$
 is defined via an ad hoc nonclassical logic so that $\{\cst{p} \cor C{,}\;
-\neglit{\cst{p}} \cor C\} \not\modelsWk \{C\}$ and yet $\modelsWk \{\cst{p} \cor
+\neglit{\cst{p}} \cor C\} \notmodelsWk \{C\}$ and yet $\modelsWk \{\cst{p} \cor
 \neglit{\cst{p}}\}$.
 %
 More precisely, this logic is defined via an
@@ -3530,12 +3530,12 @@ in the standard way via grounding.
 The following property of weak entailment will allow us to eliminate
 $\mathbf{P}$-predicates without losing completeness:
 
-\begin{lemmax}
+\begin{lemma}
 \label{lem:p-Wk-entail}
 Let $C$ be a clause that contains the predicate symbol $\cst{p} \in
 \mathbf{P}$ and $D$ be a clause that does not contain $\cst{p}$. If $N
 \cup \{C\} \modelsWk \{D\}$, then $N \modelsWk \{D\}$.
-\end{lemmax}
+\end{lemma}
 
 \begin{proof}
 Suppose $\mathscr{J} \models \Wk{N}$. We will define $\mathscr{J}'$ so that
@@ -3653,10 +3653,10 @@ The completeness proof follows the invariance-based argument found the
 forthcoming journal submission \cite{waldmann-et-al-202x-article}
 by Waldmann et al.
 
-\begin{lemmax}
+\begin{lemma}
 \label{lem:gcp-derivations-are-red-black-derivations}
 Every $\Longrightarrow_\mathsf{GCP}$-derivation is a mixed derivation.
-\end{lemmax}
+\end{lemma}
 
 \begin{proof}
 The cases for \textsc{Process} and \textsc{Infer} are almost as in Waldmann et
@@ -3674,14 +3674,14 @@ big union ${\bigcup}$ starting at $i = 0$ because we will need to truncate a
 sequence prefix of an a priori unknown length. The argument will still work
 thanks to monotonicity properties of redundancy criteria.
 
-\begin{lemmax}
+\begin{lemma}
 \label{lem:gcp-invar-gcp}
 Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation.
 If
 $\mathcalx{N}{}_0{\downarrow}_\mathsf{active} = \emptyset$,
 then
 $\Inv\Wksup_\mathcalx{N}(k)$ holds for all indices~$k$.
-\end{lemmax}
+\end{lemma}
 
 \begin{proof}
 The base case is as in Waldmann et al.
@@ -3742,7 +3742,7 @@ redundancy criteria, we have the desired result: $\iota \in
 \LRedIWk(\mathcalx{N} \cup \mathcalx{M}')$.\qed
 \end{proof}
 
-\begin{lemmax}
+\begin{lemma}
 \label{lem:gcp-invar-infinity}
 Let $(\mathcalx{N}{}_i)_i$ be a
 $\rhd_{\LRedWksub}$-derivation.
@@ -3750,7 +3750,7 @@ If $\Inv\Wksup_\mathcalx{N}(i)$ holds for all indices~$i$, then
 $\FLInf(\mathcalx{N}{}_\infty{\downarrow}_\mathsf{active}) \subseteq
 \bigcup_i \LRedIWk(\mathcalx{N}{}_i)$
 holds.
-\end{lemmax}
+\end{lemma}
 
 \begin{proof}
 We assume $\iota \in \FLInf(\mathcalx{N}{}_\infty {\downarrow}_\mathsf{active})$
@@ -3766,7 +3766,7 @@ holds, $\iota \in \LRedIWk(\mathcalx{N}{}_k)$.
 Hence, $\iota \in \bigcup_i \LRedIWk(\mathcalx{N}{}_i)$.\qed
 \end{proof}
 
-\begin{lemmax}
+\begin{lemma}
 \label{lem:fair-gcp-derivations}
 Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation.
 If
@@ -3776,7 +3776,7 @@ $\mathcalx{N}{}_\infty{\downarrow}_l = \emptyset$ for every label
 $l \not= \ensuremath{\mathsf{active}}$,
 then there exists an index $k$ such that
 $(\mathcalx{N}{}_{k+i})_i$ is a fair $\rhd_{\LRedWksub}$-derivation.
-\end{lemmax}
+\end{lemma}
 
 \begin{sloppypar}
 \begin{proof}
@@ -3927,10 +3927,10 @@ remain.
 
 The key property of QLE is that it preserves unsatisfiability:
 
-\begin{lemmax}
+\begin{lemma}
 Let $C \in N$ be a clause containing a quasipure literal. If $N \setminus \{C\}$
 is satisfiable, then $N$ is satisfiable.
-\end{lemmax}
+\end{lemma}
 
 \begin{proof}
 Let $\ourmodel$ be a model of $N \setminus \{C\}$.
@@ -4171,7 +4171,7 @@ Adding and removing GALs preserves and reflects satisfiability:
    L\sigma$. If $\ourmodel \models
    L'\tau$, for $C\sigma \cor L\sigma$ to be satisfied by $\ourmodel$, some
    literal in $C\sigma$ must be satisfied by $\ourmodel$, contradicting that
-   $C\sigma$ is falsified by $\ourmodel$. If $\ourmodel \not\models L'\tau$
+   $C\sigma$ is falsified by $\ourmodel$. If $\ourmodel \notmodels L'\tau$
    then some literal in $D\tau$ must be satisfied. As $D\tau \subseteq C\sigma$,
    we again get the same contradiction. Therefore, $\ourmodel$ satisfies $N$,
    as needed.\qed
