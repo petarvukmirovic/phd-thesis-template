@@ -482,6 +482,7 @@ $\mathcal{P}$. At each iteration of the procedure's main loop, the prover
 chooses a clause $C$ from $\mathcal{P}$, simplifies it, and moves it to
 $\mathcal{A}$ (i.e., it \emph{activates} it). Then all inferences between $C$ and active clauses are performed.
 The resulting clauses are again simplified and put in $\mathcal{P}$.
+With \emph{proof state} we assume the pair $(\mathcal{P}, \mathcal{A})$.
 The provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
@@ -515,3 +516,33 @@ calculus using the same roadmap:
 %
 Note that we use the name $\lambda$-superposition interchangeably for \lsup{}
 and \osup{} where the context gives enough information to disambiguate this name.
+
+\subsection{Theorem Provers}
+\label{sec:pre:theorem-provers}
+
+All the techniques described in this thesis are implemented in two superposition
+theorem provers: E \cite{ss-02-brainiac} and Zipperposition
+\cite{sc-15-simon-phd,bbtvw-21-sup-lam}. The latter was used as a testbed for
+prototyping ideas, while the former is the main target of our work as it is more
+efficient.
+
+\ourpara{E} E is a state-of-the-art first-order prover based on superposition.
+In the last decade, together with its derivatives, it has revolved around the
+second place at the first-order division of CASC theorem prover
+competition \cite{ss-96-casc}. It is open-source, written in C (without using any
+external libraries), and designed around efficient algorithms and data structures
+rather than highly optimized codebase. This makes it a good target for implementing
+successful higher-order techniques.
+
+
+\ourpara{Zipperposition}
+Zipperposition is a higher-order theorem prover that implements \lfsup{},
+\lsup{}, \osup{}, and other superposition-like calculi (including Bhayat and
+Reger's combinatory superposition \cite{br-20-full-sup-w-combs}). The prover was
+conceived as a testbed for rapidly experimenting with extensions of first-order
+superposition, but over time it has assimilated many of E's techniques and
+heuristics and become quite powerful. Still, its first-order performance is a
+far cry from E's. Zipperposition is written in OCaml, and features a modular
+system for adding new rules and techniques to implemented calculi.
+This makes it attractive for fast evaluation of various extensions of
+superposition.

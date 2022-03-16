@@ -11,11 +11,11 @@
 }
 
 \blfootnote{In this work I was the main designer of all presented techniques,
-with the exception of inference streams which were designed by Sophie Tourret
-and Alexander Bentkamp. Alexander Bentkamp and Jasmin Blanchette also discussed many
-of the techniques with me and suggested important updates. Visa Nummelin worked on
-implementation of FOOL preprocessing. Simon Cruanes is the original developer
-of Zipperposition and provided us with invaluable knowledge.
+with the exception of inference streams which were designed by Alexander
+Bentkamp and Sophie Tourret. Alexander Bentkamp and Jasmin Blanchette also
+discussed many of the techniques with me and suggested important updates. Visa
+Nummelin worked on implementation of FOOL preprocessing. Simon Cruanes is the
+original developer of Zipperposition and provided us with invaluable knowledge.
 }
 
 
@@ -26,7 +26,7 @@ of Zipperposition and provided us with invaluable knowledge.
     Booleans, and the need to curb the explosion of specific higher-order rules. We
     describe techniques that address these issues and extensively evaluate their
     implementation in the Zipperposition theorem prover. Largely thanks to their use,
-    Zipperposition won the higher-order division of the CASC competition in 2020.  
+    Zipperposition won the higher-order division of the CASC competition in 2020 and 2021.  
   \end{abstract}
 \newpage
 
@@ -61,20 +61,21 @@ of Zipperposition and provided us with invaluable knowledge.
 % in the higher-order theorem division of CASC-27 \cite{gs-19-casc27},
 % 12~percentage points behind the winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
 
-The landscape of higher-order proving techniques based on extension of efficient
+The landscape of higher-order proving techniques based on the extension of efficient
 first-order ones has tremendously expanded in the late 2010s and early 2020s. As
-mentioned is Sect.~\ref{sec:pre:ho-sup-calculi} we have implemented three
+mentioned in Sect.~\ref{sec:pre:ho-sup-calculi} we have implemented three
 higher-order calculi---\lfsup{}, \lsup{}, and \osup{}---which extend first-order superposition in a graceful way.
 Bhayat and Reger also gracefully extended superposition to higher-order logic using
-\textsf{SKBCI} combinators \cite{br-20-full-sup-w-combs}. Significant progress has been
+\textsf{SKBCI} combinators \cite{br-20-full-sup-w-combs}, resulting in a calculus called combinatory superposition. Significant progress has been
 made on SMT front as well \cite{brotb-19-ho-smt}.
 
 In 2019 we tested if the idea of gracefully extending first-order provers to
-higher-order logic really improves the state of the art for the first time. We implemented \lsup{} \cite{bbtvw-21-sup-lam} in
-Zipperposition~1.5 with basic heuristics and rudimentary extensions of the
-calculus to deal with Booleans. It finished third at that year's higher-order
-division of CASC competition \cite{gs-19-casc27}, 12~percentage points behind the
-winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
+higher-order logic really improves the state of the art for the first time. We
+implemented \lsup{} \cite{bbtvw-21-sup-lam} in Zipperposition~1.5 with basic
+heuristics and rudimentary extensions of the calculus to deal with Booleans. It
+finished third at that year's higher-order division of CASC competition
+\cite{gs-19-casc27}, 12~percentage points behind the winner, the tableau prover
+Satallax 3.4 \cite{cb-2013-satallax}.
 
 Studying the competition results, we found that higher-order tableaux have some
 advantages over higher-order superposition. To bridge the gap, we developed
@@ -112,7 +113,7 @@ We implemented some Boolean selection functions and
 evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
 
 \looseness=-1
-The main drawback of both $\lambda$-superposition variants compared with
+The main implementation challenge of both $\lambda$-superposition variants compared with
 combinatory superposition is that they rely on rules that enumerate possibly
 infinite sets of unifiers. We describe a mechanism that interleaves infinitely
 branching inferences with the standard saturation process
@@ -145,10 +146,12 @@ axiom of at least two individuals \cite{bm-14-automation-ho}. However, the
 techniques can easily be extended with polymorphism. Indeed, Zipperposition
 already supports some of them polymorphically. Further, we use exactly the same
 notation for this logic as introduced in Chapter \ref{ch:pre}. Since we are
-working with extensions of superposition, we assume the clausal structure
+working with extensions of superposition, we assume a clausal structure
 (Sect.~\ref{sec:pre:clauses}). Like in the previous chapter, literals
 of clauses can contain arbitrary higher-order terms, including formulas.  
-
+At CASC, most theorem provers, including Zipperposition, are invoked using a
+sequence of different configurations (possibly in parallel) until either the
+time limit is reached or a proof is found. We call this sequence a \emph{portfolio}.
 
 \ourpara{Higher-Order Calculi}
 \looseness=-1
@@ -198,17 +201,6 @@ that superposition would likely provide a stronger basis for higher-order
 reasoning.
 Other competing higher-order calculi include SMT (implemented in CVC4
 \cite{brotb-19-ho-smt, cbetal-11-cvc4}) and extensional paramodulation (implemented in Leo-III \cite{sb-21-leo3}).
-
-
-\ourpara{Zipperposition}
-Zipperposition \cite{sc-15-simon-phd,bbtvw-21-sup-lam} is a higher-order
-theorem prover that implements both $\lambda$-superposition variants, combinatory
-superposition, and other superposition-like calculi.
-The prover was conceived as a testbed for rapidly
-experimenting with extensions of first-order superposition, but over time it
-has assimilated many of E's techniques and heuristics and become quite powerful.
-Several of our techniques extend the \emph{given clause procedure}, the standard
-saturation procedure described in Sect.~\ref{sec:pre:saturation}.
 
 \ourpara{Experimental Setup}
 To assess our techniques, we carried out experiments with Zipperposition~2. We
@@ -291,10 +283,10 @@ the other hand, superposition's reasoning with equivalences is often inadequate
 \cite{bbtv-21-full-ho-sup, gs-05-boolsup}. Thus, it makes sense to treat only
 predicate definitions as rewrite rules.
 
-The second technique aims at preserving completeness: We can try to force the term order that
-parameterizes superposition to orient as many definitions as possible and rely on
-demodulation to simplify the proof state. Usually, the Knuth--Bendix order (KBO)
-\cite{db-1970-kbo} is used. It compares terms by first comparing their weights,
+The second technique aims at preserving completeness: We can try to choose, as the term order that
+parameterizes superposition, one that orients as many definitions as possible and rely on
+demodulation to simplify the proof state. Usually, an instance of the Knuth--Bendix order (KBO)
+\cite{db-1970-kbo} is used. KBO compares terms by first comparing their weights,
 which is the sum of all the weights assigned to the symbols it contains. Given a
 symbol weight assignment $\mathcal{W}$, we can update it so that it orients
 acyclic definitions from left to right assuming that they are of the form $
@@ -360,7 +352,7 @@ We designed and evaluated the following strategies for handling
   \item[\rm no-RW$+$KBO~] like $no$-RW but adjusting KBO weights for all definitions.
 \end{description}
 
-The results are given in Fig.~\ref{fig:rewrite}. In all the figures, each
+The results are given in Fig.~\ref{fig:rewrite}. In all the figures in this chapter, each
 cell gives the number of proved problems, and cells marked with $\star$
 correspond to the base configuration. The highest number in a category is typeset in
 \relax{bold}. SH benchmarks are not
@@ -438,7 +430,7 @@ described in the previous chapter. For example, a clause $C \llor
 \llor \neglit{\cst q}$. The calculus also supports \emph{inner} delayed
 clausification, which uses only the core calculus rules to clausify problems.
 Even though this is the laziest approach to clausification, the earlier
-evaluation by Bentkamp et al. \cite{bbtv-21-full-ho-sup} showed that this
+evaluation \cite{bbtv-21-full-ho-sup} showed that this
 approach is inefficient. Thus, we focus only on the outer rules.
 
 \looseness=-1
@@ -612,8 +604,9 @@ configuration from Fig.~\ref{fig:avatar-clause} can prove. Among these is
 \relax{DCS}$-$\relax{LA}. For all these problems, Boolean instantiation does not
 appear in the proof, suggesting that this result is due to the randomness in the
 evaluation environment. The fact that \relax{BI} has no effect on SH benchmarks
-is to be expected because Sledgehammer does
-not include lemmas whose name contains the substring \texttt{.induct} and that
+is to be expected because 
+Sledgehammer deliberately tries to exclude induction rules from the problem by
+excluding lemmas whose name contains the substring \texttt{.induct} and that
 contain predicate variables. Therefore, \relax{BI} applies to fewer clauses.
 
 \section{Exploring Boolean Selection Functions}
@@ -628,12 +621,13 @@ respect to the term order. To further restrict which terms can be targeted by
 an inference, the \osup{} calculus introduces \emph{Boolean selection
 functions}. 
 
-A Boolean selection function chooses \emph{green subterms} of Boolean type
-(different than $\itrue$ or $\ifalse$ and not occurring at either side of a positive
-literal) in a clause and gives rise to a notion of eligibility that considers
-the formula structure. Green subterms correspond to the first-order skeleton of
-a higher-order term; that is, they do not occur in positions under applied
-variables, quantifiers, or $\lambda$-abstractions.
+A Boolean selection function chooses \emph{green subterms} of Boolean type,
+which are different than $\itrue$ or $\ifalse$ and not occurring at either side
+of a positive literal in a clause. It gives rise to a notion of eligibility that
+considers the formula structure. We call terms that can be selected
+\emph{selectable subterms}. Green subterms correspond to the first-order
+skeleton of a higher-order term; that is, they do not occur in positions under
+applied variables, quantifiers, or $\lambda$-abstractions. 
 
 %In particular, green
 %subterms are subterms arising inside first-order-like contexts, and for first
@@ -681,6 +675,18 @@ maximal term of the clause, $s$ cannot be selected.
   \ieq v$ or $u \ineq v$, then $u$ is eligible if $\sigmaterm{v} \not\succ \sigmaterm{u}$
   and $v$ is eligible if $\sigmaterm{u} \not\succ \sigmaterm{v}$.
 \end{defi}
+
+\begin{exa}
+  Consider a clause $\poslit{\cst{p}} \llor \poslit{\cst{q} \, (\cst{p} \ior \cst{a}
+  \ieq \cst{b})}$, literal and Boolean selection functions that select no
+  literals and terms, respectively, and the precedence of symbols $\itrue \prec
+  \cst{a} \prec \cst{b} \prec \cst{c} \prec \cst{p} \prec \cst{q}$. As no
+  literals and subterms are selected, the second literal is eligible, as it is maximal. This makes the term 
+  $\cst{q} \, (\cst{p} \ior \cst{a} \ieq \cst{b})$ eligible. Further, the green subterm
+  $\cst{p} \ior \cst{a} \ieq \cst{b}$ is eligible. Similarly, $\cst{p}$ and $\cst{a} \ieq \cst{b}$
+  are eligible. Lastly, as $\cst{a} \prec \cst{b}$, $\cst{b}$ is eligible.
+\end{exa}
+
 The above definitions of green subterms and eligibility were originally introduced
 with \osup{} \cite{bbtv-21-full-ho-sup}.
 The Boolean selection function plays a similar role as the literal
@@ -698,7 +704,7 @@ This notion of eligibility opens up possibilities for reasoning with
 formulas that are hard to simulate with the existing superposition machinery.
 For example, given a formula $\varphi \iimplies \psi$, selecting the antecedent
 simulates forward reasoning, whereas selecting the consequent simulates backward
-reasoning. The new eligibility also makes it possible to restrict the proof
+reasoning. This concept of eligibility also makes it possible to restrict the proof
 search to a small, promising part of a formula. Note that
 literal selection can override Boolean selection: Selecting a literal 
 might make some of its green subterms eligible, regardless
@@ -725,7 +731,8 @@ subterm occurs. This suggests the following definition:
   The \emph{context
   Boolean selection function} $\mathit{Sel\/}_{\mathit{ctx}}^{\,\vartriangleright}(C)$
   selects all terms $t$ such that $t=C|_p$, $p \in \mathit{ctx}(C)$, and
-  $(t,p)$ is maximal with respect to $\vartriangleright$.
+  $(t,p)$ is maximal with respect to $\vartriangleright$, compared with all other pairs $(C|_{p'}, p')$,
+  $p' \neq p$, and $p \in \mathit{ctx}(C)$.
 \end{defi}
 
 In the above definition, the function $\mathit{ctx}$ lets
@@ -1055,7 +1062,7 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
 % \end{figure}
 % \vspace{2.5\jot}
 
-Entry point to the above pseudocode is the function \textsc{GivenClause}, called
+The entry point of the above pseudocode is the function \textsc{GivenClause}, called
 with arguments $(\mathcal{P}, \mathcal{A}, \mathcal{Q})$, which are initialized
 as usual: All input clauses are put into $\mathcal{P}$, and $\mathcal{A}$ and
 $\mathcal{Q}$ are empty. In other words, the parameters $P, A$, and $Q$ intuitively
@@ -1101,8 +1108,8 @@ All three probing functions are invoked by
 from the standard given clause procedure in three ways:
 First, the proof state includes $Q$ in addition to $P$ and $A$. Second,
 new inferences involving the given clause are added to $Q$ instead of being
-performed immediately. Third, inferences in $Q$ are periodically performed
-lazily to fill $P$.
+performed immediately. Third, a number of inferences in $Q$ are periodically computed
+to fill $P$.
 
 \newcommand\infstream[1]{[#1]}
 
@@ -1177,7 +1184,7 @@ redundancy elimination, we will often find the necessary unifier within the
 first few unifiers returned. Similarly, if a stream keeps returning
 $\emptyset$, it is likely that it is blocked in a nonterminating computation
 and should be ignored. Our heuristics to increase the stream penalties take
-both observations into account.
+these observations into account.
 
 \ourpara{Evaluation and Discussion}
 
@@ -1469,7 +1476,7 @@ techniques for controlling the use of backends.
 In his thesis \cite[Sect.~6.1]{as-18-phd}, Steen extensively studies
 the effects of using different first-order backends on the performance of
 Leo-III. His results suggest that adding only one backend already substantially
-improves the performance. To reduce the effort required for integrating multiple backends, we chose Ehoh, an extension of E \cite{scv-19-e23} to support \lfsup{},  as our single
+improves the performance. To reduce the effort required for integrating multiple backends, we chose Ehoh, an extension of E \cite{scv-19-e23} that supports \lfsup{},  as our single
 backend. In Chapter \ref{ch:ehoh}, we described Ehoh in detail.
 %formulas occurring as arguments of function symbols.
 On the one hand, Ehoh provides the efficiency of E while easing the translation from full
@@ -1606,7 +1613,7 @@ to use Zipperposition~2 to its full potential, we have created a portfolio mode
 that runs up to 50 configurations in parallel during the allotted time. The portfolio
 was designed to solve as many problems as possible from the TPTP benchmark set. To
 provide some context, we compare Zipperposition~2 with the following versions of
-all higher-order provers that competed at CASC in 2020:\ CVC4 1.9
+all other higher-order provers that competed at CASC in 2020:\ CVC4 1.9
 \cite{cbetal-11-cvc4}, Leo-III 1.5.6 \cite{sb-21-leo3}, Satallax 3.5
 \cite{cb-2013-satallax}, and Vampire 4.5.1 \cite{br-20-full-sup-w-combs}.
 The provers were run using the same parameters as in CASC, but with updated
@@ -1618,7 +1625,8 @@ full higher-order logic, including $\lambda$-abstractions.
 Semantically, Ehoh~2.7 is arguably the weakest among the listed provers:
 It simply performs $o$-RW rewriting described in Sect.~\ref{sec:ho-tech:preprocessing} followed by
 $\lambda$-lifting before it applies \relax{\lfsup{}} \cite{bbcw-21-lfho}
-on the preprocessed problem.
+on the preprocessed problem. It is a conservative extension of Ehoh presented in Chapter~\ref{ch:ehoh},
+and serves as a baseline for comparison with $\lambda$E introduced in Chapter~\ref{ch:ehoh2}.
 
 We use the same benchmark sets as elsewhere in this chapter. To imitate the
 setup of the 2020 edition of CASC, we use a 120~s wall-clock limit and a 960~s CPU limit.
@@ -1759,7 +1767,7 @@ calculus extensions and heuristics. We implemented them in Ehoh, obtaining a
 prover called $\lambda$E. This new prover substantially increases the
 higher-order reasoning capabilities of Ehoh. Even without all of the techniques
 described in this chapter, it outperforms all higher-order provers except for
-Zipperposition. We give detailed description of $\lambda$E, as well as reasoning
+Zipperposition. We give detailed a description of $\lambda$E, as well as reasoning
 behind all design decision we took in Chapter \ref{ch:ehoh2}.
 
 
