@@ -58,7 +58,7 @@ is the \emph{arity} of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ 
 $\cst{f}$ a \emph{predicate symbol}, otherwise we call it a \emph{function symbol}. Argument types may not be Boolean.
 
 \emph{Terms} are the basic building blocks of first-order logic, built inductively as follows. Variables
-$x,y,\ldots$, assigned types $\tau \in T$, are terms. If $t_1,\ldots,t_n$ are
+$x,y,\ldots$, assigned types $\tau \in T\setminus \{ o \}$, are terms. If $t_1,\ldots,t_n$ are
 terms of types $\tau_1, \ldots, \tau_n$, respectively, and $\cst{f} : (\tau_1,
 \ldots, \tau_{n}) \rightarrow \tau$, then $\cst{f}(t_1, \ldots, t_n)$ is a term
 of type $\tau$. If $n=0$, we drop the parentheses and write $\cst{f}$. We also

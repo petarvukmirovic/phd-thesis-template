@@ -22,7 +22,7 @@
 
 \authors{
     Joint work with\\
-    Jasmin Blanchette,
+    Jasmin Blanchette
     and Marijn J.H. Heule
 }
 
@@ -81,14 +81,15 @@ clause set. This latter technique, \emph{variable elimination by substitution},
 has been an important preprocessor component in many SAT solvers since its
 introduction in 2004.
 
-Specializing second-order quantifier elimination
-\cite{go-1992-so-pred-elim,hjo-1996-scan}, Khasidashvili and Korovin
-\cite{kk-2016-pe-fol} adapted variable elimination to preprocess first-order
-problems, yielding a technique we call \emph{singular predicate elimination}. We
-extend their work along two axes (Sect.~\ref{sec:satfol:predicate-elimination}): We
-generalize E\'en and Biere's refinement to first-order logic, resulting in
-\emph{defined predicate elimination}, and explain how both types of predicate
-elimination can be used during the proof search as inprocessing.
+\begin{sloppypar}
+    Specializing second-order quantifier elimination
+    \cite{go-1992-so-pred-elim,hjo-1996-scan}, Khasidashvili and Korovin~\cite{kk-2016-pe-fol} adapted variable elimination to preprocess first-order
+    problems, yielding a technique we call \emph{singular predicate elimination}. We
+    extend their work along two axes (Sect.~\ref{sec:satfol:predicate-elimination}): We
+    generalize E\'en and Biere's refinement to first-order logic, resulting in
+    \emph{defined predicate elimination}, and explain how both types of predicate
+    elimination can be used during the proof search as inprocessing.    
+\end{sloppypar}
 
 \begin{qle}
 It is well known that clauses containing \emph{pure literals}---predicate
