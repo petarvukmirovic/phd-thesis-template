@@ -212,11 +212,13 @@ enabling us to delete $C$. Note that $\PHL(L,N)$ is finite for a finite~$N.$
 \end{theorem}
 
 \begin{proof}
-For HLE, if $L' \in \PHL(L, N)$,  $\binset{N} \models \neglit{L'} \cor L$.
-Then, subsumption resolution \cite{bg-01-resolution} yields shortened clause $L \cor C'$ from
-Definition~\ref{def:hle}. For HTE, it can be shown that $N' \models C$ if and
-only if $C \cor L'$, where $L' \in \PHL(C, N)$. By transitivity of equivalence,
-we get the desired result.
+For HLE, if $L' \in \PHL(L, N)$,  $\binset{N} \models \neglit{L'} \cor L$. Then,
+subsumption resolution (a sound rule that applies resolution followed by
+subsumption \cite{bg-01-resolution}) yields shortened clause $L \cor C'$ from
+Definition~\ref{def:hle}. For HTE, it can be shown that sets $N$ and $N
+\cup \{ C' \} \setminus \{C\}$ are equivalent
+\cite[Sect.~2.1]{hjb-2011-big-simplification}. As clause $C'$ is a tautology,
+$N$ and $N \setminus \{C\}$ are equivalent.\qedhere
 \end{proof}
 
 We generalize hidden literals to first-order logic with equality by
@@ -276,7 +278,7 @@ therefore entailed by $N.$ For \infname{FLE}, the condition $L',
    $\cst{p}(\cst{f}(\cst{f}(x))) \bigfimpl{N} \cst{p}(\cst{f}(x))$, and
    hence $\cst{p}(\cst{f}(\cst{f}(x))) \bigfimpl{N}^\ast  \cst{p}(x)$.
    Together with the second clause in $N$, it can be used to derive $\neqlit{\cst{a}}{\cst{b}}
-   \bigfimpl{N}^\ast  \cst{p}(x)$. Finally, using rule~(3) of Definition
+   \bigfimpl{N}^\ast  \cst{p}(x)$. Finally, using rule 3 of Definition
    \ref{def:hl-fo}, we derive $\neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})}
    \bigfimpl{N}^\ast  \cst{p}(x)$---that is,
    $\neqlit{\cst{f}(\cst{a})}{\cst{f}(\cst{b})} \in \HL(\cst{p}(x), N)$. This
