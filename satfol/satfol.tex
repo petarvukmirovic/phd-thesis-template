@@ -901,3 +901,560 @@ problem, it makes sense to fall back on SPE when no definition is found.
    In all other cases, it is not applicable.
 \end{defi}
 
+\subsection{Refutational Completeness}
+\label{ssec:predicate-elimination-refutational-completeness}
+
+\newcommand\FInf{\mathit{FInf}}
+\newcommand\FLInf{\mathit{FLInf}}
+\newcommand\Red{\mathit{Red}}
+\newcommand\RedI{\Red_\mathrm{I}}
+\newcommand\RedF{\Red_\mathrm{F}}
+\newcommand\LRed{\mathit{LRed}}
+\newcommand\LRedI{\LRed_\mathrm{I}}
+\newcommand\LRedF{\LRed_\mathrm{F}}
+\newcommand\gnd{\mathcalx{G}}
+\newcommand\pow[1]{\mathcalx{pe}(#1)}
+\newcommand\Lab{\mathbf{L}}
+\newcommand\FFLab{{\mathbf{FL}}}
+\newcommand\Inv{\mathit{Inv}}
+
+\newcommand\RedWk{\smash{\Red\Wksup}}
+\newcommand\RedIWk{\smash{\Red_\mathrm{I}\Wksup}}
+\newcommand\RedFWk{\smash{\Red_\mathrm{F}\Wksup}}
+
+\newcommand\Wksym{\flat}
+\newcommand\Wksup{^\Wksym}
+\newcommand\modelsWk{\models\Wksup}
+%\newcommand\modelsWkcapgnd{\models^{\Wksym{}\gnd}_\cap}
+\newcommand\modelsWkcapgnd{\modelsWk}
+\newcommand\LRedWk{\LRed^{\Wksym}}
+\newcommand\LRedWksub{\LRed^{\Wksym,\sqsupset}}
+\newcommand\LRedFWksub{\LRedF^{\Wksym,\sqsupset}}
+\newcommand\LRedIWk{\LRedI^{\Wksym}}
+\newcommand\Wk[1]{#1^\Wksym}
+\newcommand\prop{o}
+\newcommand\true{\top}
+\newcommand\false{\bot}
+
+\looseness=-1
+Hidden-literal-based techniques fit within the traditional framework of
+saturation, because they delete or reduce a clause based on the \emph{presence}
+of other clauses. In contrast, predicate elimination relies on the
+\emph{absence} of clauses from the proof state. We can still integrate it with
+superposition as follows: At every $k$th iteration of the given clause
+procedure, perform predicate elimination on $\mathcal{A}
+\cup \mathcal{P}$, and add all new clauses to $\mathcal{P}$.
+
+One may wonder whether such an approach preserves the refutational
+completeness of the calculus. The answer is no.
+%
+\begin{conf}
+To see why, consider the following \emph{binary splitting} rule
+based on Riazanov and Voronkov \cite{riazanov-voronkov-2001}:
+%
+\[\namedsimp{BS}{C \cor D}{\cst{p} \cor C \quad D \cor \neglit{\cst{p}}}\]
+%
+Provisos: $C$ and $D$ have no free variables in common, $\cst{p}$ is fresh, and
+$\cst{p}$ is $\prec$-smaller than $C$ and $D$. Since the conclusions are
+smaller than the premise, the rule can be applied aggressively as a
+simplification. But notice that the effect of splitting can be undone by
+singular predicate elimination, possibly giving rise to loops
+$\infname{BS}, \infname{SPE}, \infname{BS}, \infname{SPE}, \dotsc$.
+This breaks completeness.
+
+Our solution is to curtail the entailment relation used by the redundancy
+criterion to disallow splitting-like simplifications. Weak entailment $\modelsWk$
+is defined via an ad hoc nonclassical logic so that $\{\cst{p} \cor C{,}\;
+\neglit{\cst{p}} \cor C\} \notmodelsWk \{C\}$ and yet $\modelsWk \{\cst{p} \cor
+\neglit{\cst{p}}\}$.
+%
+More precisely, this logic is defined via an
+encoding: $M \modelsWk N$ if and only if $\Wk{M} \models \Wk{N}$, where
+%
+$\Wk{\cst{p}(\tuple{t}{})} = \cst{p}(\tuple{t}{}) \noteq \false$,
+$\Wk{\lnot\,\cst{p}(\tuple{t}{})} = \cst{p}(\tuple{t}{}) \noteq \true$, and
+$\Wk{L} = L$ otherwise.
+%
+Moreover, the type $\prop$ may be interpreted as any set of cardinality at least
+2, and $\false$ must be a distinguished symbol interpreted differently
+from~$\top$.
+
+The standard redundancy criterion $\RedWk$ based on $\modelsWk$ supports all the
+familiar deletion and simplification techniques except splitting. Using $\RedWk$
+not only prevents looping, but it also enables the use of
+the given clause procedure, because any redundant inference
+according to $\RedWk$ remains redundant after SPE or DPE. As usual, the devil is
+in the details, and the details are in the report \cite{our-report}.
+\end{conf}
+
+\begin{rep}
+To see why, consider the following \emph{binary splitting} rule
+based on Riazanov and Vo\-ro\-nkov~\cite{riazanov-voronkov-2001}:
+%
+\[\namedsimp{BS}{C \cor D}{\cst{p} \cor C \quad D \cor \neglit{\cst{p}}}\]
+%
+Provisos: $C$ and $D$ have no free variables in common, $\cst{p}$ is fresh, and
+$\cst{p}$ is $\prec$-smaller than $C$ and $D$. Since the conclusions are
+smaller than the premise, the rule can be applied aggressively as a
+simplification. But notice that the effect of splitting can be undone by
+singular predicate elimination, possibly giving rise to loops
+$\infname{BS}, \infname{SPE}, \infname{BS}, \infname{SPE}, \dotsc$.
+Clearly, we need to curtail predicate elimination.
+
+Under which conditions is predicate elimination refutationally complete? To
+answer this question, we employ the saturation framework of Waldmann, Tourret,
+Robillard, and Blanchette \cite{wtrb-20-sat-framework}. Let
+$(\FInf, \Red)$ be the base calculus without predicate elimination---e.g.,
+resolution or superposition inferences together with the standard
+redundancy criterion \cite[Sect.~4.2]{bg-01-resolution}. The
+inference system $\FInf$ is a set of inferences $(C_n,\ldots,C_1,C_0)$, for $n
+\ge 1$, where $C_n,\ldots,C_1$ are the premises and $C_0$ is the conclusion.
+$C_1$ is called the main premise. %; $C_n,\ldots,C_2$ are the side premises.
+The redundancy criterion is a pair $\Red = (\RedI, \RedF)$ where $\RedI$
+determines which inferences can be omitted and $\RedF$ is used to remove
+clauses.
+
+Next, consider an abstract proving process working on a single clause set.
+Let $\rhd_{\Red}$ denote the transition relation that supports (1)~adding
+arbitrary clauses and (2)~removing clauses deemed useless by $\RedF$.
+Typically, the added clauses are the result of performing inferences and are
+entailed by the premises, but other clauses can be added as well. A
+\emph{$\rhd_{\Red}$-derivation} is a finite or infinite sequence of clause sets
+$N_0 \rhd_{\Red} N_1 \rhd_{\Red} \cdots$.
+
+We fix a finite set $\mathbf{P}$ of predicate symbols that may be subjected to
+predicate elimination. These might include all the predicate symbols occurring
+in the input problem, but exclude any symbols introduced by splitting or other
+rules. Given a clause or clause set $N$, we write $\mathbf{P}(N)$ to denote the
+set of all predicate symbols from $\mathbf{P}$ occurring in $N.$
+%
+Let $\rhd_\mathbf{P}$ denote the elimination of a
+singular or defined predicate symbol from $\mathbf{P}$. A \emph{mixed
+derivation} consists of transitions either of the form $N
+\rhd_\mathbf{P} N'$ or of the form $N \rhd_{\Red} N'$ where
+$\mathbf{P}(N) \supseteq \mathbf{P}(N')$.
+Because $\mathbf{P}$ is finite, any mixed derivation consists of at most
+finitely many $\rhd_\mathbf{P}$ transitions. Hence, in any derivation,
+there exists an index~$k$ from which all transitions are standard
+${\rhd}_{\Red}$-transitions.
+
+This suggests the following path to completeness: Pretend that the transitions
+between $N_0$ and $N_k$ are merely preprocessing and start the actual
+derivation at $N_k$. This works at the abstract level of derivations on single
+clause sets. It fails, however, for an actual saturation prover that
+distinguishes between passive and active clauses.
+
+\begin{exa}
+\label{ex:cex-predelim-sat}
+The counterexample below is based on the given clause prover \textsf{GC}
+from the saturation framework. It shows how predicate elimination can break
+\textsf{GC}'s key invariant, which states that all inferences between active
+clauses are redundant. Breaking the invariant means that the limit might be
+unsaturated, breaking the refutational completeness proof.
+
+We use superposition with the order $\cst{a} \prec
+\cst{b} \prec \cst{c} \prec \cst{d}$ and without selection.
+Assume $\cst{a} \in \mathbf{P}$ and
+suppose we start with the satisfiable clause set %consisting of
+%
+%\begin{linenomath*}
+\begin{align*}
+  & \neglit{\cst{a}} \cor \MAX{\cst{d}}
+  && \neglit{\cst{a}} \cor \MAX{\neglit{\cst{d}}}
+  && \cst{a} \cor \cst{b} \cor \MAX{\cst{c}}
+  && \cst{c} \cor \MAX{\cst{d}}
+  && \cst{b} \cor \MAX{\neglit{\cst{d}}}
+\end{align*}
+%\end{linenomath*}
+%
+where gray boxes mark maximal (i.e., eligible) literals. Suppose the prover makes
+$\cst{c} \cor \cst{d}$ and $\cst{b} \cor \neglit{\cst{d}}$ active. From these
+two clauses, a superposition inference~$\iota$ could derive the conclusion
+$\cst{b} \cor \cst{c}$. However, the three passive clauses are
+$\prec$-smaller than $\iota$'s main premise $\cst{b} \cor \neglit{\cst{d}}$ and
+collectively entail $\iota$'s conclusion. This means that $\iota$ is
+redundant and can be ignored.
+
+If the prover now eliminates the predicate $\cst{a}$ using \infname{SPE}, the
+passive set is reduced to $\{\cst{b} \cor \cst{c} \cor \cst{d}{,}\;
+\cst{b} \cor \cst{c} \cor \neglit{\cst{d}}\}$.
+%
+Either clause is subsumed by an active clause, so the prover deletes it.
+It stops with the active set
+$\{\cst{c} \cor \cst{d}{,}\; \cst{b} \cor \neglit{\cst{d}}\}$, which is
+unsaturated because $\iota$ is no longer redundant. The invariant is broken.
+\end{exa}
+
+\begin{exa}
+\label{ex:cex-predelim-unsat}
+In Example~\ref{ex:cex-predelim-sat}, the initial clause set was satisfiable.
+If it is unsatisfiable, we can even lose refutational
+completeness. To see why, we add the unit clauses
+$\neglit{\cst{b}}$ and $\neglit{\cst{c}}$ to the initial clause set of
+Example~\ref{ex:cex-predelim-sat} to make it unsatisfiable. We repeat the same
+steps as above, including the subsumptions at the end,
+yielding the passive set $\{\MAX{\neglit{\cst{b}}}, \MAX{\neglit{\cst{c}}}\}$ and
+the active set $\{\cst{c} \cor \MAX{\cst{d}}{,}\; \cst{b} \cor \MAX{\neglit{\cst{d}}}\}$. Then,
+making $\neglit{\cst{b}}$ and $\neglit{\cst{c}}$ active triggers no
+inferences. The prover stops with an
+unsatisfiable four-clause active set that does not contain the empty clause.
+\end{exa}
+
+A solution could be to move all active clauses to the passive set at step~$k$
+or later, but this would be costly, since it would force the prover to redo
+inferences whose conclusions might then have to be simplified or subsumed again.
+Instead, we salvage the existing completeness proof for $\mathsf{GC}$, by
+resolving the issues concerning splitting and the $\mathsf{GC}$ invariant. Our
+approach is to weaken the redundancy criterion slightly, enough both to disable
+splitting on $\mathbf{P}$-predicates and to ensure that
+inferences such as $\iota$ in Examples
+\ref{ex:cex-predelim-sat}~and~\ref{ex:cex-predelim-unsat} are performed. The
+required weakening is so mild that it does not invalidate any practical
+simplification or subsumption techniques we are aware of, except of course
+splitting.
+
+In accordance with the saturation framework, let $\mathbf{F}$ be the set of
+first-order $\mupSigma$-clauses, let $\mathbf{G}$ be its ground subset,
+and let $\gnd$ be a function that maps an $\mathbf{F}$-clause to the set of its
+$\mathbf{G}$-clause instances and analogously for $\mathbf{F}$-inferences. We
+define an extension $\mathbf{G}\Wksup$ of $\mathbf{G}$ for
+$\mupSigma\Wksup$-clauses in an ad hoc nonclassical logic reminiscent
+of paraconsistent logics \cite{carnielli-et-al-2007}. The objective is to
+disallow the entailment that makes splitting and Examples
+\ref{ex:cex-predelim-sat}~and~\ref{ex:cex-predelim-unsat} possible.
+%
+The signature~$\mupSigma\Wksup$ extends $\mupSigma$ with a
+distinguished predicate symbol $\false$ that is interpreted differently
+from~$\top$. For $\mupSigma\Wksup$, the Boolean type $\prop$ may be
+interpreted as any set of cardinality at least 2.
+
+\begin{defi}
+The operator $\Wk{}$ translates $\mupSigma$-literals to
+$\mupSigma\Wksup$-literals as follows, where $\cst{p} \in \mathbf{P}$,
+$\cst{q} \notin \mathbf{P}$, and $s, t$ are non-Boolean terms:
+%
+%\begin{linenomath*}
+\begin{align*}
+  \Wk{\cst{p}(\tuple{t}{})} & = \cst{p}(\tuple{t}{}) \noteq \false
+& \Wk{\cst{q}(\tuple{t}{})} & = \cst{q}(\tuple{t}{}) \eq \true
+& \Wk{(s \eq t)} & = s \eq t \\[-\jot]
+  \Wk{\lnot\,\cst{p}(\tuple{t}{})} & = \cst{p}(\tuple{t}{}) \noteq \true
+& \Wk{\lnot\,\cst{q}(\tuple{t}{})} & = \cst{q}(\tuple{t}{}) \noteq \true
+& \Wk{(s \noteq t)} & = s \noteq t
+\end{align*}
+%\end{linenomath*}
+%
+The operator is lifted elementwise to $\mathbf{G}$-clauses and
+$\mathbf{G}$-clause sets.
+The \emph{weak entailment} $\modelsWk$ over $\mathbf{G}$-clause sets
+is defined via an encoding into $\mupSigma\Wksup$-clauses:
+$M \modelsWk N$ if and only if $\Wk{M} \models \Wk{N}$.
+The lifting to $\mathbf{F}$-clauses and $\mathbf{F}$-clause set is achieved
+in the standard way via grounding.
+\end{defi}
+
+The following property of weak entailment will allow us to eliminate
+$\mathbf{P}$-predicates without losing completeness:
+
+\begin{lemma}
+\label{lem:p-Wk-entail}
+Let $C$ be a clause that contains the predicate symbol $\cst{p} \in
+\mathbf{P}$ and $D$ be a clause that does not contain $\cst{p}$. If $N
+\cup \{C\} \modelsWk \{D\}$, then $N \modelsWk \{D\}$.
+\end{lemma}
+
+\begin{proof}
+Suppose $\mathscr{J} \models \Wk{N}$. We will define $\mathscr{J}'$ so that
+$\mathscr{J}' \models \Wk{N} \cup \{\Wk{C}\}$, retrieve $\mathscr{J}'
+\models \Wk{D}$, and then argue that $\mathscr{J} \models \Wk{D}$. We
+take $\mathscr{J}'$ to coincide with $\mathscr{J}$ except that we extend the
+domain for $\prop$ with one fresh value and use this value as the
+interpretation of $\cst{p}(\tuple{t}{})$ for all argument tuples $\tuple{t}{}$.
+This modification makes any $\cst{p}$ literal of $\Wk{C}$ true, and it
+preserves the truth of $\Wk{N}$. By the hypothesis, $\mathscr{J}' \models
+\Wk{D}$. And since $\cst{p}$ does not occur in $D$, we have $\mathscr{J}
+\models \Wk{D}$.\qed
+\end{proof}
+
+Note that the above lemma does not hold for classical entailment $\models$;
+indeed, $\{\cst{p} \cor \cst{q}{,}\; \neglit{\cst{p}} \cor \cst{q}\} \models
+\{\cst{q}\}$. On the other hand, the law of excluded middle does hold for weak
+entailment: $\modelsWk \cst{p} \cor \lnot\,\cst{p}$. In fact, all classical
+clausal tautologies are tautologies for $\modelsWk$. 
+
+The standard redundancy criterion $\Red$ is obtained by lifting a criterion on
+$\mathbf{G}$-clauses to $\mathbf{F}$-clauses. The same construction can be
+replicated using $\modelsWk$ instead of $\models$, yielding the \emph{weak
+redundancy criterion} $\RedWk$.
+It is easy to check that the usual simplification techniques implemented in
+superposition provers can be justified using $\RedWk$. Specifically,
+this concerns the following rules described by Schulz \cite[Sects.\
+2.3.1~and~2.3.2]{ss-02-brainiac}:\
+deletion of duplicated literals, 
+deletion of resolved literals, 
+syntactic tautology deletion,
+semantic tautology deletion,
+rewriting of negative literals,
+positive simplify-reflect,
+negative simplify-reflect,
+clause subsumption, and
+equality subsumption.
+Moreover, rewriting of positive literals is possible if the
+rewriting clause is smaller than the rewritten
+clause (a condition that is also needed with $\models$ but omitted by Schulz).
+Finally, destructive equality resolution cannot be justified with $\models$,
+let alone $\modelsWk$.
+
+We instantiate the saturation framework with $(\FInf,\RedWk)$ to obtain a
+given clause prover \textsf{GC}. The prover operates on sets of labeled clauses
+$(C, l)$, where $C$ is a standard clause and $l \in \Lab$ is a label.
+The $\mathsf{active}$ label identifies active clauses; all other clauses are
+passive. The prover takes the form of two rules,
+\textsc{Process} and \textsc{Infer}, restricted to prevent the introduction of
+$\mathbf{P}$-predicates. We extend it with a third rule,
+\textsc{PredElim}, for predicate elimination, and call the extended prover
+\textsf{GCP}. The rules are as follows, using again the framework notations:
+
+\begin{description}[labelwidth=\widthof{\rm\textsc{PredElim}\,}]
+\itemsep1\jot
+\item[\rm\textsc{Process}\,]
+  $\mathcalx{N} \cup \mathcalx{M}
+   \,\Longrightarrow_\mathsf{GCP}\,
+   \mathcalx{N} \cup \mathcalx{M}'$
+\\
+  where $\mathcalx{M} \subseteq \LRedFWksub(\mathcalx{N} \cup \mathcalx{M}')$,
+  $\mathcalx{M}'{\downarrow}_\mathsf{active} = \emptyset$,
+  and \\
+  $\mathbf{P}(\lfloor\mathcalx{M}'\rfloor) \subseteq \mathbf{P}(\lfloor\mathcalx{N} \cup \mathcalx{M}\rfloor)$
+
+\item[\rm\textsc{Infer}\,]
+  $\mathcalx{N} \cup \{(C, l)\}
+   \,\Longrightarrow_\mathsf{GCP}\,
+   \mathcalx{N} \cup \{(C, \ensuremath{\mathsf{active}})\} \cup \mathcalx{M}$
+\\
+  where $l \not= \ensuremath{\mathsf{active}}$,
+  $\mathcalx{M}{\downarrow}_\mathsf{active} = \emptyset$, \\
+  $\FInf(\lfloor\mathcalx{N}{\downarrow}_\mathsf{active}\rfloor, \{C\}) \subseteq
+    \RedIWk^{{\cap}\gnd}(\lfloor\mathcalx{N}\rfloor \cup \{C\} \cup \lfloor\mathcalx{M}\rfloor)$,
+  and \\
+  $\mathbf{P}(\lfloor\mathcalx{M}\rfloor) \subseteq \mathbf{P}(\lfloor\mathcalx{N}\rfloor \cup \{C\})$
+
+\item[\rm\textsc{PredElim}\,]
+  $\mathcalx{N} \cup \mathcalx{M}
+   \,\Longrightarrow_\mathsf{GCP}\,
+   \mathcalx{N} \cup \mathcalx{M}'$
+\\
+  where $\mathcalx{N} \cup \mathcalx{M} \rhd_\mathbf{P} \mathcalx{N} \cup \mathcalx{M}'$
+  and $\mathcalx{M}'{\downarrow}_\mathsf{active} = \emptyset$
+\end{description}
+
+Here is a summary of the main framework notations:
+%
+\begin{itemize}
+\item The letters $\mathcalx{M}, \mathcalx{N}$ range over sets of labeled clauses.
+  $\mathcalx{M}{\downarrow}_l$ denotes the subset of clauses in $\mathcalx{M}$
+  labeled with $l$. The operator $\lfloor\phantom{\cdot}\rfloor$ erases all
+  labels in a labeled clause or clause set.
+
+\smallskip
+
+\item $\FInf(N)$ denotes the set of all base calculus inferences with premises
+  in $N$, and $\FInf(N, M) = \FInf(N \cup M) \setminus \FInf(N \setminus M)$.
+  The same notations are also available for the straightforward extension $\FLInf$
+  of $\FInf$ with labels.
+
+\smallskip
+
+\item $\LRedWksub$ is the extension of the standard redundancy
+  criterion $\RedWk$ defined using $\modelsWk$ to nonground labeled clauses
+  with subsumption ($\sqsubset$).
+
+\smallskip
+
+\item Given a sequence $(\mathcalx{N}{}_i)_i$, its \emph{limit} (\emph{inferior})
+  is $\mathcalx{N}{}_\infty = \bigcup_i \bigcap_{j\ge i} \mathcalx{N}{}_j$.
+\end{itemize}
+
+\begin{sloppypar}
+   The completeness proof follows the invariance-based argument found in the
+   article by Waldmann et al \cite{waldmann-et-al-202x-article}.
+\end{sloppypar}
+
+\begin{lemma}
+\label{lem:gcp-derivations-are-red-black-derivations}
+Every $\Longrightarrow_\mathsf{GCP}$-derivation is a mixed derivation.
+\end{lemma}
+
+\begin{proof}
+The cases for \textsc{Process} and \textsc{Infer} are almost as in Waldmann et
+al., with adjustments to show that $\cst{P}$-predicates cannot reappear once
+they have disappeared. The case for \textsc{ElimPred} is trivial.
+\end{proof}
+
+Let $\Inv\Wksup_\mathcalx{N}(k)$ denote the condition
+$\textstyle\FLInf(\mathcalx{N}{}_k{\downarrow}_\mathsf{active}) \subseteq
+\LRedIWk(\mathcalx{N}{}_k)$.
+Notice the difference with the definition of the key invariant
+$\Inv_\mathcalx{N}$ in the saturation framework, whose right-hand side is
+$\bigcup_{i=0}^k \RedI^{\Lab}(\mathcalx{N}{}_i)$. We cannot use the
+big union ${\bigcup}$ starting at $i = 0$ because we will need to truncate a
+sequence prefix of an a priori unknown length. The argument will still work
+thanks to monotonicity properties of redundancy criteria.
+
+\begin{lemma}
+\label{lem:gcp-invar-gcp}
+Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation.
+If
+$\mathcalx{N}{}_0{\downarrow}_\mathsf{active} = \emptyset$,
+then
+$\Inv\Wksup_\mathcalx{N}(k)$ holds for all indices~$k$.
+\end{lemma}
+
+\begin{proof}
+The base case is as in Waldmann et al.
+
+For \textsc{Process} and \textsc{Infer}, the proof is essentially as in Waldmann
+et al., except that we also need to show that
+$\LRedIWk(\mathcalx{N}{}_k) \subseteq \LRedIWk(\mathcalx{N}{}_{k+1})$.
+This is a consequence of
+$\mathcalx{N}{}_k \rhd_{\LRedWksub} \mathcalx{N}{}_{k+1}$ and of
+properties (R2) and (R3) of redundancy criteria.
+
+\begin{sloppypar}
+   
+   A new case to consider is that of a \textsc{PredElim} transition
+   $\mathcalx{N}{}_{k} \Longrightarrow_\mathsf{GCP} \mathcalx{N}{}_{k+1}$.
+   Let $\mathcalx{N}{}_{k} = \mathcalx{N} \cup \mathcalx{M}
+   \Longrightarrow_\mathsf{GCP} \mathcalx{N} \cup \mathcalx{M}' = \mathcalx{N}{}_{k+1}$,
+   where $\mathcalx{N} \cup \mathcalx{M} \rhd_\mathbf{P}
+   \mathcalx{N} \cap \mathcalx{M}'$ and
+   $\mathcalx{M}'{\downarrow}_\mathsf{active} = \emptyset$.
+   We assume without loss of generality that $\mathcalx{M} \cap \mathcalx{M}' =
+   \emptyset$.
+   Let $\cst{p}$ be the eliminated predicate. Note that $\cst{p}$ occurs in every
+   clause in $\mathcalx{M}$ but in none of the clauses in $\mathcalx{N}$ or
+   $\mathcalx{M}'$.
+   We must show $\FLInf(\mathcalx{N}{}_{k+1} {\downarrow}_\mathsf{active})
+   \subseteq \LRedIWk(\mathcalx{N}{}_{k+1})$.
+   As for \textsc{Process}, we have the inclusion
+   $\FLInf(\mathcalx{N}{}_{k+1} {\downarrow}_\mathsf{active})
+   \subseteq \FLInf(\mathcalx{N}{}_k {\downarrow}_\mathsf{active})$,
+   by the side condition that
+   $\mathcalx{M}'{\downarrow}_\mathsf{active} = \emptyset$.
+   Moreover, by the induction hypothesis,
+   $\FLInf(\mathcalx{N}{}_k {\downarrow}_\mathsf{active})
+   \subseteq \LRedIWk(\mathcalx{N}{}_k)$. Thus,
+   $\FLInf(\mathcalx{N}{}_k {\downarrow}_\mathsf{active})
+   \subseteq \LRedIWk(\mathcalx{N} \cup \mathcalx{M})$.
+\end{sloppypar}
+
+Let $\iota \in \FLInf(\mathcalx{N} {\downarrow}_\mathsf{active})$.
+By the argument above, we have
+$\iota \in \LRedIWk(\mathcalx{N} \cup \mathcalx{M})$.
+We must
+show $\iota \in \LRedIWk(\mathcalx{N} \cup \mathcalx{M}')$.
+%
+By definition of $\LRedIWk$, it suffices to show that for
+every ground instance $(C_n,\ldots,C_1,C_0)$ of $\iota$, there exists a finite
+clause set $\mathcalx{D} \subseteq \gnd(\mathcalx{N}) \cup \gnd(\mathcalx{M}')$
+that is $\prec$-smaller than $C_1$ and such that
+$\{C_n,\ldots,C_2\} \cup \mathcalx{D} \modelsWk \{C_0\}$.
+Without loss of generality, we assume that $\mathcalx{D}$ is the smallest such
+set.
+
+By definition of $\mathcalx{N}$, $\cst{p}$ cannot occur in $C_0$.
+By Lemma~\ref{lem:p-Wk-entail}, if $\cst{p}$ occurred in $D \in \mathcalx{D}$,
+we could remove $D$, but this would mean $\mathcalx{D}$ is not minimal.
+As a result, $\mathcalx{D}$ cannot contain clauses from $\gnd(\mathcalx{M})$ and
+hence $\mathcalx{D} \subseteq \gnd(\mathcalx{N})$. Thus,
+$\iota \in \LRedIWk(\mathcalx{N})$. By property (R2) of
+redundancy criteria, we have the desired result: $\iota \in
+\LRedIWk(\mathcalx{N} \cup \mathcalx{M}')$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:gcp-invar-infinity}
+Let $(\mathcalx{N}{}_i)_i$ be a
+$\rhd_{\LRedWksub}$-derivation.
+If $\Inv\Wksup_\mathcalx{N}(i)$ holds for all indices~$i$, then
+$\FLInf(\mathcalx{N}{}_\infty{\downarrow}_\mathsf{active}) \subseteq
+\bigcup_i \LRedIWk(\mathcalx{N}{}_i)$
+holds.
+\end{lemma}
+
+\begin{proof}
+We assume $\iota \in \FLInf(\mathcalx{N}{}_\infty {\downarrow}_\mathsf{active})$
+and show $\iota \in \bigcup_i \LRedIWk(\mathcalx{N}{}_i)$
+for some arbitrary $\iota$.
+%
+For $\iota$ to belong to $\FLInf(\mathcalx{N}{}_\infty {\downarrow}_\mathsf{active})$, all of
+its finitely many premises must be in $\mathcalx{N}{}_\infty {\downarrow}_\mathsf{active}$.
+Therefore, there must exist an index $k$ such that
+$\mathcalx{N}{}_k {\downarrow}_\mathsf{active}$ contains all of them, and therefore
+$\iota \in \FLInf(\mathcalx{N}{}_k {\downarrow}_\mathsf{active})$. Since $\Inv_\mathcalx{N}(k)$
+holds, $\iota \in \LRedIWk(\mathcalx{N}{}_k)$.
+Hence, $\iota \in \bigcup_i \LRedIWk(\mathcalx{N}{}_i)$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:fair-gcp-derivations}
+Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation.
+If
+$\mathcalx{N}{}_0{\downarrow}_\mathsf{active} = \emptyset$
+and
+$\mathcalx{N}{}_\infty{\downarrow}_l = \emptyset$ for every label
+$l \not= \ensuremath{\mathsf{active}}$,
+then there exists an index $k$ such that
+$(\mathcalx{N}{}_{k+i})_i$ is a fair $\rhd_{\LRedWksub}$-derivation.
+\end{lemma}
+
+\begin{sloppypar}
+\begin{proof}
+By Lemma~\ref{lem:gcp-derivations-are-red-black-derivations}, there must exist
+an index $k$ such that the sequence $(\mathcalx{N}{}_{k+i})_i$ is a pure
+$\rhd_{\LRedWksub}$-derivation.
+By Lemma~\ref{lem:gcp-invar-gcp},
+$\Inv\Wksup_\mathcalx{N}(k+i)$ holds for all indices~$i$.
+Hence, by Lemma~\ref{lem:gcp-invar-infinity},
+$\FLInf(\mathcalx{N}{}_\infty{\downarrow}_\mathsf{active}) \subseteq
+\bigcup_{i} \LRedIWk(\mathcalx{N}{}_{k+i})$.
+By the second hypothesis, this inclusion simplifies to
+$\FLInf(\mathcalx{N}{}_\infty) \subseteq
+\bigcup_{i} \LRedIWk(\mathcalx{N}{}_{k+i})$.
+\end{proof}
+\end{sloppypar}
+
+\begin{theorem}
+\label{thm:gcp-complete}
+Let $(\mathcalx{N}{}_i)_i$ be a $\Longrightarrow_\mathsf{GCP}$-derivation
+with
+$\mathcalx{N}{}_0{\downarrow}_\mathsf{active} = \emptyset$
+and
+$\mathcalx{N}{}_\infty{\downarrow}_l = \emptyset$ for every label
+$l \not= \ensuremath{\mathsf{active}}$.
+If $\lfloor \mathcalx{N}{}_0\rfloor$ is unsatisfiable,
+then
+some $\mathcalx{N}{}_i$
+contains the empty clause with some arbitrary label.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:fair-gcp-derivations},
+we know that there exists an index $k$ such that
+$(\mathcalx{N}{}_{k+i})_i$ is a fair $\rhd_{\LRedWksub}$-derivation.
+Moreover, since
+$\rhd_{\LRedWksub}$ and
+$\rhd_\mathbf{P}$ preserve unsatisfiability
+(by (R1) of redundancy criteria, Khasidashvili and Korovin's Theorem~1, and our
+Theorem~\ref{thm:pes-sat-equiv}), we have that
+$\lfloor \mathcalx{N}{}_k\rfloor$ is unsatisfiable.
+Since the base calculus $(\FLInf,\allowbreak\LRed)$ is assumed to be statically
+refutationally complete with respect to $\models$, the calculus
+$(\FLInf,\allowbreak\LRedWk)$ with a weaker redundancy criterion is also
+statically complete with respect to $\models$, and by the saturation framework,
+$(\FLInf,\allowbreak\LRedWksub)$ preserves this. Exploiting the equivalence of
+static and dynamic completeness, we conclude that some $\mathcalx{N}{}_{k+i}$ must
+contain a labeled empty clause.
+\end{proof}
+\end{rep}
+
