@@ -1458,5 +1458,624 @@ contain a labeled empty clause.
 \end{proof}
 \end{rep}
 
+\section{Satisfiability by Clause Elimination}
+\label{sec:satfol:satisfiability-by-clause-elimination}
+
+\looseness=-1
+The main approaches to show satisfiability of a first-order problem are to
+produce either a finite Herbrand model or a saturated clause set. Saturations
+rarely occur except for very small problems or within decidable fragments. In
+this section, we explore an alternative approach that establishes satisfiability
+by iteratively removing clauses while preserving
+%satisfiability and
+unsatisfiability,
+until the clause set has been transformed into the empty set. So
+far, this technique has been studied only for QBF~\cite{hsb-14-QRAT}. We show that
+\emph{blocked clause elimination} (BCE)
+% for first-order logic
+can be used for this purpose. It can efficiently solve some problems for which
+the saturated set would be infinite. However, it can break the refutational
+completeness of a saturation prover. We conclude with a procedure that
+transforms a finite Herbrand model into a sequence of clause elimination steps
+ending in the empty clause set, thereby demonstrating the theoretical power of
+clause elimination.
+
+Kiesl et al.\ \cite{ksstb-2017-blockedfol} generalized blocked clause
+elimination to first-order logic. Their generalization uses flat
+$L$-resolvents, an extension of flat resolvents that resolves a single
+literal~$L$ against $m$~literals of the other clause.
+
+\begin{defi}
+   Let $C = L \cor C'$ and $D = L_1 \cor \cdots \cor L_m \cor D'$, where
+   \begin{enumerate}
+      \item $m \ge\nobreak 1$
+      \item the literals $L_i$ are of opposite polarity to $L$
+      \item $L$'s atom is $\cst{p}(\tuplen{s})$
+      \item $L_i$'s atom is $\cst{p}(\tuple{t_i}{})$ for each~$i$
+      \item $C$ and $D$ have no variables in common
+   \end{enumerate}
+   The clause
+   $\bigl(\bigvee_{i=1}^m \bigvee_{j=1}^n
+     \neqlit{s_j}{t_{ij}}\bigr) \cor C' \cor D'$
+   is a \emph{flat $L$-resolvent} of $C$~and~$D$.
+\end{defi}
+
+\begin{defi}
+   \label{def:equality-blocked}
+   \begin{conf}%
+      A clause $C = L \cor C'$ is (\emph{equality-})\emph{blocked} by $L$ in a clause
+      set $N$ if all flat $L$-resolvents between $C$ and clauses in $N \setminus \{C\}$ are
+      tautologies.
+   \end{conf}%
+   \begin{rep}%
+      Let $C = L \cor C'$ be a clause and $N$ be a clause set.
+      Let $N'$ consist of all clauses from $N \setminus \{C\}$ with their variables
+      renamed so that they share no variables with $C$.
+      The clause $C$ is (\emph{equality-})\emph{blocked} by $L$ in the set $N$ if
+      all flat $L$-resolvents between $C$ and clauses in $N'$ are tautologies.
+   \end{rep}
+\end{defi}
+
+Removing a blocked clause from a set preserves unsatisfiability
+\cite{ksstb-2017-blockedfol}. Kiesl et al.\ evaluated the effect of removing all
+blocked clauses as a preprocessing step and found that it increases
+\confrep{}{the }prover's success rate.
+
+In fact, there exist satisfiable problems that cannot be saturated in finitely
+many steps regardless of the calculus's parameters but that can be reduced to
+an empty, vacuously satisfiable problem through blocked clause elimination.
+
+\begin{exa}
+   \label{example:infinite-blocked-set}
+   \looseness=-1
+   Consider the clause set $N$ consisting of $C = \pospredlit{\cst{p}(x,x)}$ and
+   $D = \negpredlit{\cst{p}(y_1,y_3)} \cor \pospredlit{\cst{p}(y_1,y_2)} \cor
+   \pospredlit{\cst{p}(y_2,y_3)}$. Note that if no literal is selected, all
+   literals can take part in superposition inferences (i.e., they are eligible), as literals in
+   clause $D$ are $\succ$-uncomparable. In particular, the superposition of
+   $\pospredlit{\cst{p}(x,x)}$ into $D$'s negative literal eventually needs to
+   be performed regardless of the chosen selection function or term order, with
+   the conclusion $E_1 = \pospredlit{\cst{p}(z_1,z_2)} \cor
+   \pospredlit{\cst{p}(z_2,z_1)}$. Then, superposition of $E_1$ into $D$ yields
+   $E_2 = \pospredlit{\cst{p}(z_1,z_2)} \cor \pospredlit{\cst{p}(z_2,z_3)} \cor
+   \pospredlit{\cst{p}(z_3,z_1)}$. Repeating this process yields infinitely many
+   clauses $E_i = \pospredlit{\cst{p}(z_1,z_2)} \cor \cdots \cor
+   \pospredlit{\cst{p}(z_i,z_{i+1})} \cor \pospredlit{\cst{p}(z_{i+1},z_1)}$
+   that cannot be eliminated using standard redu\-ndancy-based techniques.
+\end{exa}
+
+\looseness=-1
+In the example above, the clause $D$ is blocked by its second or third
+literal. If we delete $D$, $C$ becomes blocked in turn. Deleting
+$C$ leaves us with the empty set, which is vacuously satisfiable. The example
+suggests that using BCE during saturation might help focus the proof search.
+Indeed, Kiesl et al.\ ended their investigations by asking whether BCE can be
+used as an inprocessing technique in a saturation prover. Unfortunately,
+in general the answer is no\confrep{.}{:}
+
+\begin{exa}
+   \label{example:bce-completeness}
+   Consider the unsatisfiable set $N=\{ C_1, \ldots,\allowbreak C_6 \}$, where
+%   \begin{linenomath*}
+   \begin{align*}
+      C_1 &= \negpredlit{\cst{c}} \cor \pospredlit{\cst{e}} \cor \MAX{\negpredlit{\cst{a}}} 
+      & C_2 &= \negpredlit{\cst{c}} \cor \MAX{\negpredlit{\cst{e}}}
+      & C_3 &= \pospredlit{\cst{b}} \cor \MAX{\pospredlit{\cst{c}}}
+      \\
+      C_4 &= \negpredlit{\cst{b}} \cor \MAX{\negpredlit{\cst{c}}}
+      & C_5 &= \pospredlit{\cst{a}} \cor \MAX{\pospredlit{\cst{b}}} 
+      & C_6 &= \pospredlit{\cst{c}} \cor \MAX{\negpredlit{\cst{b}}} 
+         &
+   \end{align*}
+%   \end{linenomath*}
+   Assume the simplification ordering $\cst{a} \prec \cst{b} \prec \cst{c} \prec
+   \cst{d} \prec \cst{e}$ and the selection function that chooses the last negative literal of a clause as
+   presented. Gray boxes indicate literals that can take part in superposition
+   inferences. Only two superposition inferences are
+   possible:\ from $C_3$ into $C_4$, yielding the tautology $C_{7} = \pospredlit{\cst{b}} \cor
+   \MAX{\negpredlit{\cst{b}}}$, and from $C_5$ into $C_6$, yielding $C_{8} = \pospredlit{\cst{a}} \cor
+   \MAX{\pospredlit{\cst{c}}}$. Clause $C_{7}$ is
+   clearly redundant, whereas $C_{8}$ is blocked by its first literal. If we
+   allow removing blocked clauses, the prover enters a loop: $C_{8}$ is repeatedly generated and 
+   deleted. Thus, the prover will never generate the
+   empty clause for this unsatisfiable set.
+\end{exa}
+
+   \newcommand{\aset}{\mathcal{A}}
+   \newcommand{\pset}{\mathcal{P}}
+   As with hidden tautologies, removing blocked clauses breaks the invariant of
+   the given clause procedure that all inferences between clauses in $\aset$ are
+   redundant. To see this, assume the setting of Example
+   \ref{example:bce-completeness}, and let $\pset = N$ and $\aset = \emptyset$.
+   Assume $C_1, C_2, C_3$ are moved to the active set. As there are
+   no possible inferences between them, the proof state becomes $\aset = \{C_1,
+   C_2, C_3\}$ and $\pset = \{C_4,C_5,C_6\}$. After $C_4$ is moved to
+   $\aset$, the conclusion $C_7$ is computed, but it is not added to $\pset$ as it
+   is redundant. Moving $C_5$ to $\aset$ produces no new conclusions, but after
+   $C_6$ is moved, $C_{8}$ is produced. However, if we allow eliminating blocked
+   clauses, it will not be added to $\pset$ as it is blocked. The prover then
+   terminates with $\aset=N$ and $\pset=\emptyset$, even though the original set
+   $N$ is unsatisfiable.
+
+Although using BCE as inprocessing breaks the completeness of superposition in
+general, it is conceivable that a well-behaved fragment of BCE might exist.
+This could be investigated further.
+
+   
+Not only can BCE prevent infinite saturation (Example \ref{example:infinite-blocked-set}),
+but it can also be used to convert a finite Herbrand model
+into a certificate of clause set satisfiability. The certificate uses only
+blocked clause elimination and addition, in conjunction with a transformation
+to reduce the clause set to an empty set. This theoretical result
+explores the relationship between Herbrand models and satisfiability certificates
+based on clause elimination and addition. It is conceivable that it can form
+the basis of an efficient way to certify Herbrand models.
+
+
+In propositional logic, \emph{asymmetric literals} can be added to
+or removed from clauses, retaining the equivalence of the resulting clause set with
+the original one. Kiesl and Suda~\cite{ks-2017-unif-principle} described an extension of
+this technique to first-order logic.
+Their definition of asymmetric literals can be relaxed to
+allow the addition of more literals, but the resulting set is then only
+equisatisfiable to the original one, not equivalent.
+This in turn allows us to show that a problem is satisfiable by
+reducing it to an empty problem, as is done in some SAT solvers.
+
+For the rest of this section, we work with clausal first-order logic
+\relax{without equality}. We use \relax{Herbrand models} as canonical
+representatives of first-order models, recalling that every
+satisfiable set has a Herbrand model \cite[Sect.~5.4]{mf-1996-fol}.
+
+\begin{defi}
+   \looseness=-1
+   A literal $L$ is a \emph{global asymmetric literal} (GAL) for a clause $C$
+   and a clause set $N$ if for every ground instance $\sigmacl{C}$ of $C$, there
+   exists a ground instance $\substterm{\varrho}{D} \cor \substterm{\varrho}{L'}$ of $D \cor L' \in N \setminus \{C\}$ such that $\substterm{\varrho}{D}
+   \subseteq \substterm{\sigma}{C}$ and $\substterm{\varrho}{\neglit L'} = \sigmaterm{L}$.
+ \end{defi}
+\confrep{}{}
+
+Every asymmetric literal is GAL, but the converse does not hold:
+
+\begin{exa}
+   \looseness=-1
+   Consider a clause $C = \pospredlit{\cst{p}(x,y)}$ and a clause set $N = \{\pospredlit{\cst{q}} \cor
+  \pospredlit{\cst{p}(\cst{a},\cst{a})}\}$. Then, $\negpredlit{\cst{q}}$ is not an asymmetric literal
+  for $C$ and $N$, but it is a GAL for $C$ and $N$.
+\end{exa}
+
+Adding and removing GALs preserves and reflects satisfiability:
+
+\begin{theorem}
+   \label{thm:gal}
+   If $L$ is a GAL for the clause $C$ and the clause set $N$, then the set $(N \setminus
+   \{C\}) \cup\allowbreak \{ C \cor\nobreak L \}$ is satisfiable if and only if $N$ is satisfiable.
+\end{theorem}
+\begin{rep}%
+\begin{proof}
+   \looseness=-1
+   Let $N' = N \setminus \{C\} \cup \{ C \cor L \}$.
+   Non-trivial direction is proving that if $N'$ has a model, so does
+   $N.$ If $N'$ has a model, it has an Herbrand model $\ourmodel$. Clearly,
+   $\ourmodel$ satisfies every clause in $N$, with the possible exception of
+   $C$. Assume that there exists a grounding substitution $\sigma$ such that ground instance $\sigmaterm{C}$ is falsified by
+   $\ourmodel$. Since $L$ is a GAL for $C$ and $N$, then there exists a clause $D \cor L' \in N'$, and a grounding substitution $\tau$ such that
+   $\substcl{\tau}{D} \subseteq \sigmacl{C}$ and $\substcl{\tau}{\neg L'} =
+   \sigmaterm{L}$. If $\ourmodel \models
+   \substterm{\tau}{L'}$, for $\sigmaterm{C} \cor \sigmaterm{L}$ to be satisfied by $\ourmodel$ (as $C \cor L \in N'$), some
+   literal in $\sigmaterm{C}$ must be satisfied by $\ourmodel$, contradicting that
+   $\sigmaterm{C}$ is falsified by $\ourmodel$. If $\ourmodel \notmodels \substterm{\tau}{L'}$
+   then some literal in $\substterm{\tau}{D}$ must be satisfied. As $\substterm{\tau}{D} \subseteq \sigmaterm{C}$,
+   we again get the same contradiction. Therefore, $\ourmodel$ satisfies $N$,
+   as needed.
+ \end{proof}
+
+\end{rep}
+\looseness=-1
+For first-order logic without equality, a clause $L \cor C$ is blocked if all its
+$L$-resolvents are tautologies \cite{ksstb-2017-blockedfol}. The $L$-resolvent
+between $L \cor C$ and $\neglit{L_1} \cor \cdots \cor \neglit{L_n} \cor
+D$ (which are renamed apart) is $\sigmacl{C \cor D}$, where $\sigma$ is the most general unifier
+of the literals $L, L_1, \ldots, L_n$.
+Given a Herbrand model $\ourmodel$ of a problem, the following procedure
+removes all clauses while preserving satisfiability:
+
+\begin{enumerate}
+   \item \label{item:step1}
+   \looseness=-1
+   Let $\cst{q}$ be a fresh predicate symbol. For each atom
+   $\cst{p}(\tupleempty{s})$ in the Herbrand universe: If
+   $\ourmodel \models \cst{p}(\tupleempty{s})$, add the clause $\cst{q} \cor
+   \cst{p}(\tupleempty{s})$; otherwise, add %the clause
+   $\cst{q} \cor \neglit{\cst{p}(\tupleempty{s})}$. Adding either clause
+   preserves satisfiability as both are blocked by~$\cst{q}$.
+% \pagebreak[2]
+   \smallskip
+   \item \label{item:step2}
+   Since $\ourmodel$ is a model, for each ground instance $\sigmacl{C}$, there exists a clause
+   $\cst{q} \cor L$ with $L \in \sigmacl{C}$. We can transform $C \in N$ into
+   $C \cor \neglit{\cst{q}}$, since $\neglit{\cst{q}}$ is a GAL for $C$ and $N$.
+
+   \smallskip
+   \item \label{item:step3}
+   \looseness=-1
+   Consider the clause $\cst{q} \cor L$ added by step \ref{item:step1}. Since
+   $L$ is ground and no clause $\cst{q} \cor \neglit{L}$ was added (since $\ourmodel$ is a
+   model), the only $L$-resolvents are against clauses added by step~\ref{item:step2}.
+   Since all of those clauses contain $\neglit{\cst{q}}$, the resolvents are tautologies. 
+   Thus, each $\cst{q} \cor L$ is blocked and can be removed in turn.
+
+   \smallskip
+   \item The remaining clauses all contain the literal $\neglit{\cst{q}}$. They can be removed
+   by BCE as well.
+\end{enumerate}
+
+
+The procedure is limited to the first-order logic without equality, since step
+\ref{item:step3} is justified only if $L$ is a predicate literal. (Otherwise,
+$L$ cannot block clause $\cst{q} \cor L$ \cite{ksstb-2017-blockedfol}.) The
+procedure also terminates only for finite Herbrand models. 
+
+% \begin{rep}
+
+\begin{exa}
+   Consider the satisfiable clause set $N = \{\pospredlit{\cst{r}(x)} \cor
+   \pospredlit{\cst{s}(x)}{,}\; \negpredlit{\cst{r}(\cst{a})}{,}\allowbreak\;
+   \negpredlit{\cst{s}(\cst{b})}\}$ and a Herbrand model $\ourmodel$ over
+   $\{\cst{a}, \cst{b}, \cst{r}, \cst{s}\}$ such that
+   $\cst{r}(\cst{b})$ and $\cst{s}(\cst{a})$ are the only true atoms in
+   $\ourmodel$. We show how to remove all clauses in $N$ using $\ourmodel$ 
+   by following the procedure above.
+
+   Let $N_{\ourmodel} = \{ \cst{q} \cor \negpredlit{\cst{r}(\cst{a})}{,}\; \cst{q}
+   \cor \pospredlit{\cst{r}(\cst{b})}{,}\; \cst{q} \cor
+   \pospredlit{\cst{s}(\cst{a})}{,}\; \cst{q} \cor \negpredlit{\cst{s}(\cst{b})}
+   \}$. We set $N \gets N \cup N_{\ourmodel}$. This preserves satisfiability
+   since all clauses in $N_{\ourmodel}$ are blocked. It is easy to check that
+   $\negpredlit{\cst{q}}$ is GAL for every clause in $N \setminus N_{\ourmodel}$. The
+   only substitutions that need to be considered are $\{x \mapsto \cst{a} \}$ and $\{x \mapsto
+   \cst{b} \}$ for $\pospredlit{\cst{r}(x)} \cor \pospredlit{\cst{s}(x)}$.
+   So we set $N \gets \{\negpredlit{\cst{q}} \cor \pospredlit{\cst{r}(x)} \cor \pospredlit{\cst{s}(x)}{,}\;
+   \negpredlit{\cst{q}} \cor \negpredlit{\cst{r}(\cst{a})}{,}\;
+   \negpredlit{\cst{q}} \cor \negpredlit{\cst{s}(\cst{b})}\} \cup N_{\ourmodel}$.
+   Clearly, all clauses in $N_{\ourmodel}$ are blocked, so we set $N \gets N \setminus
+   N_{\ourmodel}$. All clauses remaining in $N$ have a literal $\negpredlit{\cst{q}}$
+   and can be removed, leaving $N$ empty as desired.
+\end{exa}
+
+\section{Implementation}
+\label{sec:satfol:implementation}
+% {\large\bf {TODO: Shorten and introduce SPPE here in a sentence}}
+
+\newcommand{\impmap}{\textit{Imp}}
+
+Hidden-literal-based, predicate, \begin{qle}quasipure, \end{qle}and blocked clause
+elimination all admit efficient implementations in a superposition
+prover. In this section, we describe how to implement the first
+\begin{noqle}two\end{noqle}\begin{qle}three\end{qle} sets of
+techniques. For BCE, we refer to Kiesl et al.\ \cite{ksstb-2017-blockedfol}.
+All techniques are implemented in the Zipperposition prover
+\cite{sc-supind-17}. Zipperposition is designed for fast prototyping
+of improvements to superposition, but it implements many of the most successful
+heuristics from the E prover \cite{scv-19-e23} and has recently become
+quite competitive \cite{gs-19-casc27}.
+
+\ourpara{Hidden-Literal-Based Elimination}
+% 
+% Heule et al.\ \cite{hjb-2010-cl-elim} show how hidden tautologies can be removed
+% without creating the binary implication graph. For each literal~$L$ occurring in
+% the clause set $N$, they compute the set $\PHL(L,N)$. Then for each $\neglit{L}'
+% \in \PHL(L,N)$, they label $L'$ with $L$. A clause $C$ is a hidden tautology if
+% there are two literals $L,L' \in C$ such that $L'$ is labeled with $L$. The
+% described approach can be generalized to first-order logic and used to implement
+% all rules from Sect.~\ref{sec:satfol:hidden-literal-based-elimination}.
+% 
+For HLBE, an efficient representation of $\HL(L,N)$ is crucial. Because
+this set may be infinite, we underapproximate it by
+restricting the length of the
+transitive chains via a parameter $K_\mathrm{len}$. Given the current
+clause set $N$, the finite map $\impmap[L']$ associates with each literal $L'$
+a set of pairs $(L,M)$ such that $L' \bigfimpl{N}^k L$, where $k \leq
+K_\mathrm{len}$ and $M$ is the multiset of clauses used to derive $L' \bigfimpl{N}^k L$.
+Moreover, we consider only transitions of type 1 (as per
+Definition~\ref{def:hl-fo}).
+%Intuitively,
+%$\impmap[L']$ contains all literals which can be reached from $L'$ following $k$
+%edges of the generalized binary implication graph.
+The following algorithm
+maintains $\impmap$ dynamically, updating it as the prover derives and deletes
+clauses.
+It depends on the global variable $\impmap$ and the parameters
+$K_\mathrm{len}$ and $K_{\mathrm{imp}}$.
+
+% By choosing a limit $K_\mathrm{len}$ we can create a map $\impmap[L]$, which maps a literal $L$
+% to a finite a set of pairs $(L', M)$ such that
+% $\impk{L}{L'}{i}{M}$ where $i \leq K_\mathrm{len}$. It is important to record clauses used
+% in deriving the implication, as this information is necessary to construct the
+% proof. Mapping $\impmap$ is constructed so that whenever $(L', M) \in
+% \impmap[L]$, then $L \in \HL(L',M)$.
+% Proof by very simple induction
+
+\looseness=-1
+
+\newcommand{\vn}[1]{\ensuremath{\mathit{#1}}} %variable name
+\algrenewcommand\alglinenumber[1]{{\color{gray} \footnotesize #1}}
+\algrenewcommand\algorithmicindent{0.75em}
+
+%%% TYPESETTING: hack
+% \vskip\abovedisplayskip
+% \kern-.5\jot
+
+%% \begin{nolinenumbers}%\begin{figure}[h!]
+\begin{algorithmic}[5]
+
+%   \Procedure{DecomposeNegLit}{$c$, $C$}
+%   \State $\vn{res} \gets \{(c, C)\}$
+%   \ForAll{non-empty contexts $u$ such that $c = \neqlit{u[s]}{u[t]}$}
+%       \State $\vn{res} \gets \{ (\neqlit{s}{t}, C) \} \cup \vn{res}$
+%   \EndFor
+%   \State \Return $\vn{res}$
+%   \EndProcedure
+
+%  \kern1\jot
+
+  \Procedure{AddImplication}{$L_\mathrm{a}{,}\> L_\mathrm{c}{,}\> C$}
+    \If{$\impmap[\sigmaterm{L_\mathrm{a}}] \not = \emptyset$ for some renaming $\sigma$} \label{statement:alpha}
+      \State $(L_\mathrm{a}, L_\mathrm{c}) \gets (\sigmaterm(L_\mathrm{a}), \sigmaterm{L_\mathrm{c}})$
+    \EndIf
+
+   %  \vspace{0.1em}
+    \If{there are no $L,L',M,\sigma$ such that $(L',M) \in \impmap[L]$,\label{statement:more-general}
+      %   \\\noindent\kern3.5ex 
+        $\sigmaterm{L} = L_\mathrm{a}$, and $\sigmaterm{L'}=L_\mathrm{c}$} 
+      % \State $\vn{Inst} \gets \{(\sigma, M) \mid (L_\mathrm{c}\sigma, M) \in \impmap[L_\mathrm{a}\sigma]\}$
+      \ForAll{$(\sigma, M)$ such that $(\sigmaterm{L_\mathrm{c}}, M) \in \impmap[\sigmaterm{L_\mathrm{a}}]$} \label{statement:instances}
+        \State {erase all $(L',M')$ such that $M \subseteq M'$ from $\impmap[\sigmaterm{L_{\mathrm{a}}}]$}
+      \EndFor
+      
+      \ForAll{$L$ such that $(L', M) \in \impmap[L]$ and $\sigmaterm{L_\mathrm{a}} = L'$ for some $\sigma$} \label{statement:transitivity}
+        \If{$|M| < K_\mathrm{len}$}
+          \State $\impmap[L] \gets \impmap[L] \cup \{(\sigmaterm{L_\mathrm{c}}, M \uplus \{C\})\} $
+        \EndIf
+      \EndFor
+
+      \ForAll{$L$ such that $\impmap[L] \not= \emptyset$ and $\sigmaterm{L} = L_\mathrm{c}$ for some $\sigma$} \label{statement:triggered}
+         % \If{$|M| < K_\mathrm{len}-1$}
+         \State $\vn{Concl} \gets \{(\sigmaterm{L'}, M \uplus \{\mathit{C}\}) \mid (L',M) \in \impmap[L], |M| < K_\mathrm{len}  \}$
+         \State $\impmap[L_\mathrm{a}] \gets \impmap[L_\mathrm{a}] \cup  \vn{Concl}$
+         % (L'\sigma, M \cup \{\mathit{C}\}) $
+         % \EndIf
+      \EndFor
+      
+      \State $\vn{Congr} \gets \{
+         (\neqlit{s}{t}, \{C\}) \mid \exists u.\, L_\mathrm{c} = \neqlit{u[s]}{u[t]}
+         \}$
+      \State $\impmap[L_\mathrm{a}] \gets \impmap[L_\mathrm{a}] \cup \{ (L_\mathrm{c},\{C\}) \} \cup \vn{Congr}$ \label{statement:decomposition}
+
+    \EndIf
+
+  \EndProcedure
+
+  \kern1\jot
+%   \pagebreak[2]
+   \newpage
+ 
+  \Procedure{TrackClause}{$C$}
+    \If{$C$ = $L_1 \cor L_2$}
+      \State \textsc{AddImplication}($\neglit{L_1}$, $L_2$, $C$)
+      \State \textsc{AddImplication}($\neglit{L_2}$, $L_1$, $C$)
+      \If{$L_2 = \sigmaterm{\neglit {L_1}}$ for some nonidempotent $\sigma$}  \label{statement:self-impl}
+      \ForAll{$i \gets 1$  to $K_\mathrm{imp}$}
+         \State $L_2 \gets \sigmaterm{L_2}$
+         \State \textsc{AddImplication}($\neglit L_1$, $L_2$, $C$)
+      \EndFor
+      \EndIf
+    \EndIf
+  \EndProcedure
+
+  \kern1\jot
+
+  \Procedure{UntrackClause}{$C$}
+   %  \ForAll {$L_\mathrm{a}, L_\mathrm{c}, M$ such that $ (L_\mathrm{c}, M) \in \impmap[L_\mathrm{a}]$}
+   \ForAll{$L_\mathrm{a}, L_\mathrm{c}, M$ such that $(L_\mathrm{c},M) \in \impmap[L_\mathrm{a}]$}
+      \If{$C \in M$}
+         \State erase $(L_\mathrm{c},M)$ from $\impmap[L_\mathrm{a}]$
+      \EndIf
+      % \EndFor
+    \EndFor
+  \EndProcedure
+\end{algorithmic}
+%\end{nolinenumbers}
+%\end{figure}
+
+%% TYPESETTING: hack
+\vskip-1.5\jot
+\vskip\belowdisplayskip
+
+The algorithm views a clause $L \cor L'$ as two implications
+$\neglit{L} \impl L'$ and $\neglit{L'} \impl L$.
+%
+It stores only one entry for all literals equal up to variable renaming (line
+\ref{statement:alpha}). Each implication $L_\mathrm{a} \impl L_\mathrm{c}$
+represented by the clause is stored only if its generalization is not present in
+$\impmap$ (line~\ref{statement:more-general}). Conversely, all instances of the
+implication are removed (line~\ref{statement:instances}).
+
+Next, the algorithm
+finds each implication stored in $\impmap$ that can be linked to $L_\mathrm{a} \impl L_\mathrm{c}$: Either
+$L_\mathrm{c}$ becomes the new consequent (line~\ref{statement:transitivity}) or
+$L_\mathrm{a}$ becomes the new antecedent (line~\ref{statement:triggered}). If
+$L_\mathrm{c}$ can be decomposed into $\neqlit{u[s]}{u[t]}$, rule~3 of
+Definition \ref{def:hl-fo} allows us to store $\neqlit{s}{t}$ in
+$\impmap[L_\mathrm{a}]$ (line~\ref{statement:decomposition}). This is an
+exception to the idea that transitive chains should use only rule~1. The
+application of rule~3 does not count toward the bound $K_\mathrm{len}$.
+If $L_\mathrm{a}$ is of the form $\eqlit{u[s]}{u[t]}$, then
+$\impmap$ could be extended so that $\impmap[\eqlit{s}{t}] =
+\impmap[L_\mathrm{a}]$, but this would substantially increase $\impmap$'s
+memory footprint.
+
+In first-order logic, different instances of the same clause can
+be used along a transitive chain. For example, the clause $C =
+\negpredlit{\cst{p}(x)} \cor \pospredlit{\cst{p}(\cst{f}(x))}$ induces $\cst{p}(x) \bigfimpl{M}^i \cst{p}(\cst{f}^i(x))$ for all $i$.
+The algorithm discovers such self-implications (line~\ref{statement:self-impl}): For
+each clause~$C$ of the form $\neglit{L} \cor \sigma(L)$, where $\sigma$ is
+some nonidempotent substitution, the entires $(\sigma^2(L), \{C\}),\allowbreak
+\ldots,\allowbreak (\sigma^{K_{\mathrm{imp}} + 1}(L), \{C\})$ are added to
+$\impmap[L]$, where $K_{\mathrm{imp}}$ is a parameter. 
+
+\newcommand{\concl}{\ensuremath{\impmap^{-1}}}
+
+\looseness=-1
+To track and untrack clauses efficiently, we implement the mapping $\impmap$ as a
+nonperfect discrimination tree \cite{rsv-2001-term-indexing}. Given a query
+literal $L$, this indexing data structure efficiently finds all literals $L'$ such that
+for some $\sigma$, $\sigmaterm{L'} = L$ and $\impmap[L'] \not= \emptyset$. We can use
+it to optimize all lookups except the one on line~\ref{statement:transitivity}.
+For this remaining lookup, we add an
+index \concl{} that inverts $\impmap$, i.e., $\concl[L] = \{ L' \mid
+\impmap[L'] = (L,M) \text{ for some } M \}$. To avoid sequentially going through
+all entries in $\impmap$ when the prover deletes them, for each clause $C$
+we keep track of each literal $L$ such that $C$ appears in $\impmap[L]$.
+Finally, we limit the number of entries stored in $\impmap[L]$ -- by default,
+up to 48 pairs in each $\impmap[L]$ are stored.
+
+\newcommand{\unitset}{\ensuremath{\textit{Unit}}}
+\begin{conf} 
+\looseness=-1   
+Rules \infname{HLE} and \infname{HTR} have a simple
+implementation based on $\impmap$ lookups. To implement \infname{UnitHLE} and
+\infname{UnitHTR}, we maintain the index \unitset, containing literals
+$L_\mathrm{c}\sigma$, such that $(L_\mathrm{c}, M) \in \impmap[L_\mathrm{a}]$ for
+some $M$ and $L_\mathrm{a}$ and $\sigma$ is the most general unifier of $L'$ and
+$L_\mathrm{a}$, for some unit clause $\{ L' \}$. The implementation
+of \infname{FLE} and \infname{FLR} also uses \unitset:
+When $(L',M)$ is added to $\impmap[L]$, we
+check if $(\neglit{L'},M') \in \impmap[L]$ for some $M'$. If so, $\neglit{L}$
+is added to $\unitset$.
+\end{conf}
+\begin{rep}
+   
+   To implement the \infname{HLE} rule, we use $\impmap[L]$ as
+   follows: Given a clause $C = L \cor L' \cor C'$, if there are two literals
+   $L_1,L_2$ and a substitution $\sigma$ such that $(L_2, M) \in \impmap[L_1]$,
+   $C \not\in M$,  $\sigmaterm{L_1} = L$, and $\sigmaterm{L_2} = L'$, we remove $L$ from $C$.
+   Literal $L$ can also be removed if $\sigmaterm{L_1} = \neglit{L'}$ and $\sigmaterm{L_2} = \neglit{L}$. 
+   Rule \infname{HTR} is implemented analogously.
+
+% @PETAR: Used to say "UnitHTR rules rely", but there's only one. Double-check. --JB
+   The \infname{UnitHTR} rule relies on maintaining the index $\unitset$, which is
+   built as follows. Whenever the prover derives a unit clause $C = \{ L \}$, we
+   find all entries $L_\mathrm{a}$ in $\impmap$ such that $L_\mathrm{a}$ and $L$
+   are unifiable with the most general unifier $\sigma$. Then, we set $\unitset
+   \gets \unitset \cup \{ (\sigmaterm{L_\mathrm{c}}, M \cup \{ C \} ) \mid
+   (L_\mathrm{c}, M) \in \impmap[L_\mathrm{a}] \}$. Given a clause $L \cor C'$
+   we apply \infname{UnitHLE} by looking for $(L', M) \in \unitset$ such that
+   $\sigmaterm{L'} = \neglit{L}$, for some substitution $\sigma$; we apply
+   \infname{UnitHTR} by looking for $L'$ such that $\sigmaterm{L'} = L$.  The sets
+   stored together with literals in $\unitset$ are used for building the proof
+   object and to remove literals from $\unitset$ once a clause from the given
+   set becomes redundant.
+
+   The same data structure is used
+   for supporting \infname{FLE} and \infname{FLR}. When $(L',M)$ is added to $\impmap[L]$, we
+   check whether $(\neglit{L'},M') \in \impmap[L]$ for some $M'$. If so, $(\neglit{L}, M \cup M')$
+   is added to $\unitset$.
+\end{rep}
+
+
+% % Using this algorithm, hidden-literal-based elimination can be implemented
+% % efficiently. We implement them as simplifications, used during saturation.
+% \begin{rep}
+% We implement \infname{ShallowHLE} by checking if there are two literals $L,L'
+% \in C$ such that for some substitution $\sigma$, and literals $L_1$ and $L_2$,
+% $(L_2, M) \in \impmap[L_1]$ and $L_1\sigma = L$, $L_2\sigma = L'$, $L$ can be
+% removed from $C$. When $(L',M)$ is added to $\impmap[L]$, Zipperposition checks
+% if $(\neglit{L'},M) \in \impmap[L]$ for some $M$. If so, it notes that there
+% are complementary literals in $\HL(\neglit{L},M)$. This information is used to
+% implement \infname{FLD}. For \infname{HTR}, a check whether there are $L,L' \in
+% C$ such that $(L_1, M) \in \impmap[L_0]$, where $\neglit{L_0\sigma} = L$ and
+% $L_1\sigma = L'$ is performed. Rule \infname{DeepHLE} is not implemented.
+
+% Rules \infname{UnitHLE} and \infname{UnitHTR} are implemented as well. For
+% \infname{UnitHLE}, given a clause $L \cor C$ we do as follows. First we try to
+% find a literal $L_0$ such that $\neglit{L_0\sigma} = L$ for some $\sigma$ and
+% $(L_1,M) \in \impmap[L_0]$ such that $L_1\sigma$ is subsumed by a unit clause
+% indexed by Zipperposition. If this does not succeed, we try finding a literal
+% $L_0$ such that $L_0\sigma = L$ for some $\sigma$ and $(L_1,M) \in \impmap[L_0]$
+% such that $\neglit{L_1}$ is subsumed by a unit clause. Rule \infname{UnitHTR} is
+% implemented analogously.
+% \end{rep}
+
+In propositional logic, the conventional approach constructs the
+\emph{binary implication graph} for the clause set~$N$
+\cite{hjb-2011-big-simplification}, with edges $(\neglit{L}, L')$ and
+$(\neglit{L'}, L)$ whenever $L \cor L' \in N.$ To avoid traversing the graph
+repeatedly, solvers rely on timestamps to discover connections between
+literals. This relies on syntactic literal comparisons, which is very
+fast in propositional logic but not in first-order logic, because of
+substitutions and congruence.
+
+\ourpara{Predicate Elimination}
+% 
+To implement portfolio predicate elimination, we maintain a record for each
+predicate symbol $\cst{p}$ occurring in the problem with the
+following fields:\
+set of definition clauses for $\cst{p}$, set of nondefinition clauses in which
+$\cst{p}$ occurs once, and set of clauses in which $\cst{p}$ occurs more than
+once. These records are kept in a priority queue, prioritized by properties such
+as presence of definition sets and number of estimated resolutions. If
+$\cst{p}$ is the highest-priority symbol that is eligible for SPE or DPE, we
+eliminate it by removing all the clauses stored in $\cst{p}$'s record from the
+proof state and by adding flat resolvents to the passive set.
+Eliminating a symbol might make another symbol eligible.
+%In this case, the updated record is put on the processing queue.
+
+As an optimization, predicate elimination keeps track only of symbols that appear
+at most $K_\mathrm{occ}$~times in the clause set. For inprocessing, we use
+signals that the prover emits whenever a clause is added to or removed from
+the proof state and update the records. At the beginning of the
+1st, $(K_\mathrm{iter} + 1)$st, $(2 K_\mathrm{iter} + 1)$st, $\dots{}$ iteration of the given clause procedure's
+loop body, predicate elimination is systematically applied to the entire proof
+state. The first application of inprocessing amounts to preprocessing. By
+default, $K_\mathrm{occ} = 512$ and $K_\mathrm{iter}=10$. The same ideas and
+limits apply for blocked clause elimination.
+
+The most important novel aspect of our predicate elimination implementation is
+recognizing the definition clauses for symbol $\cst{p}$ in a clause set $N$, which is performed
+as follows:
+\begin{enumerate}
+   \item Let $G = \{ C \mid C = \arbpredlit{\cst{p}(\tupleempty{x})} \cor C', C \in
+   N$, no variable repeats in $\tupleempty{x}$, and variables of $C'$ are among
+   $\tupleempty{x}\}$. If $G$ is empty, report failure; otherwise continue.
+
+   \smallskip
+   \item Rename all clauses in $G$ so that their only variables are~$\tupleempty{x}$.
+
+   \smallskip
+   \item\label{step:encoding} Let $\lfloor a \rfloor$ be a function that assigns
+   a propositional variable to each atom $a$. This function is lifted to
+   literals by assigning $\lfloor \neg a \rfloor  = \neg x$, if $\lfloor a
+   \rfloor = x$, and to clauses pointwise. Furthermore,  
+   let $E = \{ \lfloor C' \rfloor \mid
+   \arbpredlit{\cst{p}(\tupleempty{x})} \cor C' \in G \}$. If $E$ is satisfiable,
+   report failure. Else, let $E'$ be the unsatisfiable core of $E$
+   and $G'$ the set of corresponding first-order clauses and continue.
+
+   \smallskip
+   \item If all resolvents in $G'_{\pospredlit{\cst{p}}} \flatres_{\!\cst{p}}
+   G'_{\negpredlit{\cst{p}}}$ are tautologies, then $G'$ is the definition set
+   for symbol $\cst{p}$. Else, report failure.
+\end{enumerate}
+
+The invalidity of set $E$ from step \ref{step:encoding} is checked using a SAT
+solver, which is already integrated in Zipperposition. As modern theorem provers
+(such as E or Vampire) also use SAT solvers, the method can easily be
+implemented.
+
+During experimentation, we noticed that recognizing definitions of symbols that
+occur in the conjecture often harms performance. Thus, Zipperposition
+recognizes definitions only for the remaining symbols.
 
 
