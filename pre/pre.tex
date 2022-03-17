@@ -101,6 +101,7 @@ in the holes of a context $C$ with the terms $\overline{u}_n$, left to right.
 We say a term is {\em ground} if it has no variables. By $u[s]$
 we denote that $s$ is a subterm of $u$. 
 
+\looseness=-1
 {\em Substitutions} $\sigma, \varrho, \ldots$ are total mappings from variables to
 terms of the same type. Substitutions map only finitely many variables to terms
 other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
@@ -108,7 +109,7 @@ x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to themselves.
 Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$, results in
 replacing all mapped variables by the corresponding terms.
 The composition $\varrho\sigma$ of substitutions is defined by
-$\left(\varrho\sigma\right)t=\varrho\left(\sigma t\right)$. We say that substitution $\sigma$ is {\em grounding}
+$\left(\varrho\sigma\right)t=\varrho\left(\sigma (t)\right)$. We call a substitution $\sigma$ {\em grounding}
 if $\sigma(x) \not= x$ implies that $\sigma(x)$ is ground.
 
 \section{Higher-Order Logic}
@@ -129,15 +130,19 @@ Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 \upsilon$ and $\tau$, respectively, then $s \, t$ is a term of type $\upsilon$.
 Lastly, if $x$ is a bound variable of type $\tau$ and $s$ is a term of type
 $\upsilon$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau
-\rightarrow \upsilon$. The syntactic distinction between free and bound variables
-gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
-\cite{tn-93-patterns}. Note that there is no requirement that a symbol is not
-applied to terms of Boolean type as in first-order logic. Furthermore, all
-logical connectives are symbols present in the set $\Sigma$. This means that
-higher-order logic does not distinguish between terms and formulas. For example,
-$\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand \cst{q})$ are well-formed
-terms of higher-order logic. For convenience, we still call terms of Boolean
-type \emph{formulas}.
+\rightarrow \upsilon$. The syntactic distinction between free and bound
+variables gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \,
+\cst{a}}$) \cite{tn-93-patterns}. Note that there is no requirement that a
+symbol is not applied to terms of Boolean type as in first-order logic.
+Furthermore, all logical connectives are symbols present in the set $\Sigma$.
+This means that higher-order logic does not distinguish between terms and
+formulas. For example, $\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand
+\cst{q})$ are well-formed terms of higher-order logic. For convenience, we still
+call terms of Boolean type \emph{formulas}. Our logic also supports Hilbert
+choice operator $\varepsilon$. Intuitively, this operator chooses an arbitrary value that
+satisfies a predicate and it is axiomatized as follows: $\iforall p. \, (\iexists
+x. \, p \, x) \iimplies p \, (\varepsilon \, p)$.
+
 
 \looseness=-1
 With $\alpha$-conversion we assume the rule $(\lambda x. \, s) \longrightarrow

@@ -573,7 +573,7 @@ We designed and evaluated the following strategies for handling
   \item[\rm no-RW$+$KBO~] like $no$-RW but adjusting KBO weights for all definitions.
 \end{enumerate}
 
-The results are given in Fig.~\ref{fig:rewrite}. In all the figures, each
+The results are given in Figure~\ref{fig:rewrite}. In all the figures, each
 cell gives the number of proved problems, and cells marked with $\star$
 correspond to the base configuration. The highest number in a category is typeset in
 \relax{bold}. SH benchmarks are not
@@ -639,7 +639,7 @@ rewriting can be so expensive that the prover can spend all
 allotted CPU time in the preprocessing phase. The evaluation results confirm this
 observation: There are \NumberOK{64} problems proved by in-RW but not by
 pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
-by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
+by in-RW but not by any other above described configuration. % from Figure~\ref{fig:rewrite}.
 
 \section{Reasoning about Formulas}
 \label{sec:satfol:ho-tech:formulas}
@@ -840,7 +840,7 @@ The Boolean instantiation technique presented above requires delayed
 clausification.
 We assessed it in the best configuration from
 %To assess it, we enabled it in the best configuration from
-Fig.~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
+Figure~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
 Zipperposition proves \NumberOK{1700} TPTP problems and \NumberOK{456} SH
 problems.
 On TPTP, even though $+$\relax{BI} solves \NumberOK{3} problems less
@@ -867,7 +867,7 @@ proof using the \relax{DCI}$-$\relax{LA} configuration, but this requires
 
 %Raw data reveals that Boolean instantiation
 The $+$\relax{BI} configuration proves \NumberOK{18} TPTP problems no other
-configuration from Fig.~\ref{fig:avatar-clause} can prove. Among these is
+configuration from Figure~\ref{fig:avatar-clause} can prove. Among these is
 \texttt{DAT056\^{}2} (Example~\ref{ex:dat056-2}). In contrast, on SH benchmarks, only
 \NumberOK{6} problems are proved using $+$\relax{BI} and not
 \relax{DCS}$-$\relax{LA}. For all these problems, Boolean instantiation does not
@@ -1113,7 +1113,7 @@ it contains a selectable Boolean subterm.
 
 The results of evaluating 21 concrete selection functions obtained
 by instantiating the contextualized Boolean selection function are shown in
-Fig.~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
+Figure~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
 while columns denote the function $\mathit{ctx}$.
 
 \looseness=-1
@@ -1135,7 +1135,7 @@ on TPTP but the opposite is observed on SH.
 
 Using different Boolean selection functions yields vastly different sets of
 proved problems on TPTP benchmarks: In total, there are \NumberOK{103} problems
-proved by some configuration from Fig.~\ref{fig:bool-sel} but not by
+proved by some configuration from Figure~\ref{fig:bool-sel} but not by
 \relax{DCI}$-$\relax{LA}. However, there are only \NumberOK{16} such SH problems.
 It would seem that the advanced formula reasoning facilitated by the Boolean
 selection formulas is usually not required by Sledgehammer problems.
@@ -1709,7 +1709,7 @@ To evaluate the new priority functions, we replaced
 \texttt{CP} with one of the new functions in this queue,
 %the queue ordered by \texttt{CP} with the queue ordered by one of the new
 %functions,
-leaving the clause weight intact. The results are shown in Fig.~\ref{fig:priorities}.
+leaving the clause weight intact. The results are shown in Figure~\ref{fig:priorities}.
 
 Even though constant priority function achieves remarkable performance, the new priority functions are
 useful additions to the prover's repertoire: \NumberOK{37} additional
@@ -1743,7 +1743,7 @@ rule is disabled in \emph{base} because it is so explosive and so seldom useful.
 To test whether increasing inference stream weights makes a difference on the
 success rate, we tried enabling \infname{FluidSup} with different weight
 increments~$\ParamPenaltyIncrease$ for \infname{FluidSup} inference queues. The
-results are shown in Fig.~\ref{fig:penalties}. As expected, using a low
+results are shown in Figure~\ref{fig:penalties}. As expected, using a low
 increment with \infname{FluidSup} is detrimental on TPTP. On this
 benchmark set, \NumberOK{16} additional problems can be proved when
 \infname{FluidSup} is enabled. The penalty mostly affects only proving time: All

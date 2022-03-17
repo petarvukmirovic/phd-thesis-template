@@ -14,7 +14,7 @@
 with the exception of inference streams which were designed by Alexander
 Bentkamp and Sophie Tourret. Alexander Bentkamp and Jasmin Blanchette also
 discussed many of the techniques with me and suggested important updates. Visa
-Nummelin worked on implementation of FOOL preprocessing. Simon Cruanes is the
+Nummelin worked on the implementation of FOOL preprocessing. Simon Cruanes is the
 original developer of Zipperposition and provided us with invaluable knowledge.
 }
 
@@ -67,10 +67,10 @@ mentioned in Sect.~\ref{sec:pre:ho-sup-calculi} we have implemented three
 higher-order calculi---\lfsup{}, \lsup{}, and \osup{}---which extend first-order superposition in a graceful way.
 Bhayat and Reger also gracefully extended superposition to higher-order logic using
 \textsf{SKBCI} combinators \cite{br-20-full-sup-w-combs}, resulting in a calculus called combinatory superposition. Significant progress has been
-made on SMT front as well \cite{brotb-19-ho-smt}.
+made on the SMT front as well \cite{brotb-19-ho-smt}.
 
-In 2019 we tested if the idea of gracefully extending first-order provers to
-higher-order logic really improves the state of the art for the first time. We
+In 2019 we tested for the first time if the idea of gracefully extending first-order provers to
+higher-order logic really improves the state of the art. We
 implemented \lsup{} \cite{bbtvw-21-sup-lam} in Zipperposition~1.5 with basic
 heuristics and rudimentary extensions of the calculus to deal with Booleans. It
 finished third at that year's higher-order division of CASC competition
@@ -214,7 +214,7 @@ uniformly used monomorphic benchmarks.
 We fixed a \emph{base} configuration
 of Zipperposition parameters as a baseline for all comparisons. This is an
 incomplete, pragmatic configuration of \osup{} using heuristics expected to perform
-well on a wide range of problems. The set of parameters used for baseline configuration in this
+well on a wide range of problems. The set of parameters used for the baseline configuration in this
 chapter differs from the one in the previous chapter.
 %Note that
 %we use a different baseline configuration than in our earlier paper \cite{making-ho-work}.
@@ -277,7 +277,7 @@ superposition.
 We describe two techniques to mitigate these issues. The first one is based on the observation that in practice,
 the explosion associated with definition unfolding mostly
 manifests itself on definitions of nonpredicate symbols. In some cases, it is
-preferable to rely on superposition's term order and powerful simplification
+preferable to rely on superposition's term order and the powerful simplification
 engine to rewrite the proof state rather than to blindly rewrite definitions. On
 the other hand, superposition's reasoning with equivalences is often inadequate
 \cite{bbtv-21-full-ho-sup, gs-05-boolsup}. Thus, it makes sense to treat only
@@ -352,7 +352,7 @@ We designed and evaluated the following strategies for handling
   \item[\rm no-RW$+$KBO~] like $no$-RW but adjusting KBO weights for all definitions.
 \end{description}
 
-The results are given in Fig.~\ref{fig:rewrite}. In all the figures in this chapter, each
+The results are given in Figure~\ref{fig:rewrite}. In all the figures in this chapter, each
 cell gives the number of proved problems, and cells marked with $\star$
 correspond to the base configuration. The highest number in a category is typeset in
 \relax{bold}. SH benchmarks are not
@@ -378,22 +378,22 @@ included because they do not contain the \texttt{definition} role.
 The four configurations in which definitions are treated as rewrite rules
 perform much better than the other two. In contrast, adjusting KBO weights gives
 no substantial improvement: Looking at raw data, we found only
-\NumberOK{2}~problems proved by $o$-RW$+$KBO but not by $o$-RW in which the
+\NumberOK{two}~problems proved by $o$-RW$+$KBO but not by $o$-RW in which the
 feature was used in the proof. For no-RW and no-RW$+$KBO, the
-\NumberOK{2}-problem difference may be just noise. Even though it proves fewer
+\NumberOK{two}-problem difference may be just noise. Even though it proves fewer
 problems, the configuration $o$-RW has some advantages over pre-RW: It proves
-\NumberOK{16} problems that pre-RW does not, \NumberOK{3} of which have a TPTP
+\NumberOK{16} problems that pre-RW does not, \NumberOK{three} of which have a TPTP
 difficulty rating (the ratio of eligible %TPTP
 provers that cannot prove the problem) of~1.
 
 % \looseness=-1
-Rewriting after clausification avoids getting stuck rewriting parts of the
+Rewriting after clausification avoids getting stuck in rewriting parts of the
 proof state that might not contribute to the proof. In practice, we noticed that
 rewriting can be so expensive that the prover can spend all
 allotted CPU time in the preprocessing phase. The evaluation results confirm this
 observation: There are \NumberOK{64} problems proved by in-RW but not by
 pre-RW. Moreover, there are \NumberOK{41} problems that can be proved only
-by in-RW but not by any other above described configuration. % from Fig.~\ref{fig:rewrite}.
+by in-RW but not by any other above described configuration. % from Figure~\ref{fig:rewrite}.
 
 
 \section{Reasoning about Formulas}
@@ -560,7 +560,7 @@ clauses it creates. By manually inspecting the  proofs found by the \relax{DCS}
 configuration, we noticed that a main reason for its success is that it does
 not simplify away equivalences.
 %
-Overall, the lightweight AVATAR harms performance, but the sets of
+Overall, lightweight AVATAR harms performance, but the sets of
 problems proved with and without it are vastly different. For example,
 the \relax{IC}$+$\relax{LA} configuration proves \NumberOK{38} problems not
 proved by \relax{IC}$-$\relax{LA} (i.e., \emph{base}) on TPTP benchmarks and
@@ -571,10 +571,10 @@ The Boolean instantiation technique presented above requires delayed
 clausification.
 We assessed it in the best configuration from
 %To assess it, we enabled it in the best configuration from
-Fig.~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
+Figure~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
 Zipperposition proves \NumberOK{1700} TPTP problems and \NumberOK{456} SH
 problems.
-On TPTP, even though $+$\relax{BI} solves \NumberOK{3} problems less
+On TPTP, even though $+$\relax{BI} solves \NumberOK{three} problems less
 than \relax{DCS}$-$LA, it is very useful: \NumberOK{41}
 problems can be proved with $+$\relax{BI} but not with \relax{DCS}$-$\relax{LA}. 
 Conversely, \NumberOK{44} problems are solved with \relax{DCS}$-$\relax{LA},
@@ -598,9 +598,9 @@ proof using the \relax{DCI}$-$\relax{LA} configuration, but this requires
 
 %Raw data reveals that Boolean instantiation
 The $+$\relax{BI} configuration proves \NumberOK{18} TPTP problems no other
-configuration from Fig.~\ref{fig:avatar-clause} can prove. Among these is
+configuration from Figure~\ref{fig:avatar-clause} can prove. Among these is
 \texttt{DAT056\^{}2} (Example~\ref{ex:dat056-2}). In contrast, on SH benchmarks, only
-\NumberOK{6} problems are proved using $+$\relax{BI} and not
+\NumberOK{six} problems are proved using $+$\relax{BI} and not
 \relax{DCS}$-$\relax{LA}. For all these problems, Boolean instantiation does not
 appear in the proof, suggesting that this result is due to the randomness in the
 evaluation environment. The fact that \relax{BI} has no effect on SH benchmarks
@@ -622,7 +622,7 @@ an inference, the \osup{} calculus introduces \emph{Boolean selection
 functions}. 
 
 A Boolean selection function chooses \emph{green subterms} of Boolean type,
-which are different than $\itrue$ or $\ifalse$ and not occurring at either side
+which are different than $\itrue$ or $\ifalse$ and do not occur at either side
 of a positive literal in a clause. It gives rise to a notion of eligibility that
 considers the formula structure. We call terms that can be selected
 \emph{selectable subterms}. Green subterms correspond to the first-order
@@ -649,12 +649,12 @@ applied variables, quantifiers, or $\lambda$-abstractions.
 %
 Green positions are lifted to clauses as follows: If $p$ is the green position
 of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
-t\}$ of $C$, the green position of the same subterm in the clause is denoted by $l.s.p$.
+t\}$ of a clause $C$, the green position of the same subterm in $C$ is denoted by $l.s.p$.
 \osup{} mandates additional restrictions on the Boolean selection function:
-$\itrue$, $\ifalse$ and variable-headed terms cannot be selected; for literals
-$s \eq t$, neither $s$ not $t$ cannot be selected; if a term $s$ contains a
-variable $X$ as a green subterm, and $X\> \tuplen{u}$, with $n \ge 1$, is a
-maximal term of the clause, $s$ cannot be selected.
+$\itrue$, $\ifalse$, and variable-headed terms cannot be selected; for literals
+$s \eq t$, neither $s$ nor $t$ cannot be selected; if $s$ (or $t$) contains a
+variable $X$ as a green subterm and $X\> \tuplen{u}$, with $n \ge 1$, is a
+maximal term of $C$, then $s$ (or $t$) cannot be selected.
 
 \begin{defi}[Eligibility]
   \,Given a substitution $\sigma$ and term order $\succ$, we say a literal $l$
@@ -670,7 +670,7 @@ maximal term of the clause, $s$ cannot be selected.
   For a strictly eligible literal $s \eq t$ with $\sigmaterm{t} \not\succ
   \sigmaterm{s}$, $s$ is eligible. For an eligible literal $s \not\eq t$ with
   $\sigmaterm{t} \not\succ \sigmaterm{s}$, $s$ is eligible. If a subterm $t$ is eligible
-  and the head of $t$ is not $\ieq$ or $\ineq$, all direct green subterms of
+  and the head of $t$ is not $\ieq$ or $\ineq$, all green subterms directly below the head of
   $t$ are eligible. If a subterm $t$ is eligible and $t$ is of the form $u
   \ieq v$ or $u \ineq v$, then $u$ is eligible if $\sigmaterm{v} \not\succ \sigmaterm{u}$
   and $v$ is eligible if $\sigmaterm{u} \not\succ \sigmaterm{v}$.
@@ -713,7 +713,7 @@ of Boolean selection.
 In our previous work \cite{nbtv-2021-foboolsup}, we left this area of new
 possibilities largely unexplored. We designed simple functions that selected
 smallest, largest, innermost, or outermost terms, but they did not impact
-performance much. A similar idea has been discussed in the context of \infname{Cases}(\infname{Simp}) rule
+performance much. A similar idea has been discussed in the context of the \infname{Cases}(\infname{Simp}) rule
 in Sect.~\ref{sect:bool:native}.  Here, we propose alternatives.
 %
 Intuitively, a well-performing literal selection
@@ -742,7 +742,7 @@ respect to $\vartriangleright$.
 
 Ganzinger and Stuber considered Boolean subterm selection for their extension of
 first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus requires
-selection of subterms occurring in negative green positions, defined below.
+only allows the selection of subterms that occur in negative green positions, defined below.
 
 \begin{defi}[Polarity of green positions]
  \,Negative and positive green positions in a clause $C = l_1 \llor \cdots \llor
@@ -809,7 +809,7 @@ are more explosive. Otherwise, the orders use the following criteria:
   t$, make this subterm larger. \\[2\jot]
   $\vartriangleright_\text{depth}$ & If one of the subterms has larger subterm depth
      (longest valid green subterm position), make this subterm larger; otherwise, if one of the
-     subterms has less distinct variables, make this subterm larger. \\[2\jot]
+     subterms has fewer distinct variables, make this subterm larger. \\[2\jot]
   $\vartriangleright_\text{def}$ & If exactly one of the subterms is of the form
   $\cst{p}\,\tuplen{X}$ where $\tuplen{X}$ is a tuple of free variables, make
   the other subterm larger; otherwise, if exactly one of the subterms is of the form $X \,
@@ -838,7 +838,7 @@ explosive.
   \, (\lambda x.\, x) \, \cst{a})$ and $\cst{p} \,
   (\lambda y.\, \cst{a})$ have infinitely many unifiers of the form $\{ X \mapsto \lambda fx.
   \, f^i\, (x) \}, i \geq 0$, whereas terms $\cst{p} \, (\lambda y. \, X
-  \, y \, \cst{a})$ and $\cst{p} \, (\lambda y. y^{100} \, \cst{b})$ have the MGU. 
+  \, y \, \cst{a})$ and $\cst{p} \, (\lambda y. y^{100} \, \cst{b})$ have a finite CSU (in fact an MGU). 
   When \texttt{Forward} context selection is enabled, % the subterm
   $\cst{p} \, (\lambda y.\, X \, (\lambda x.\, x) \, \cst{a})$ is made the target of superposition inference, 
   forcing computation of at least 100 unifiers (under the assumption that
@@ -881,7 +881,7 @@ it contains a selectable Boolean subterm.
 
 The results of evaluating 21 concrete selection functions obtained
 by instantiating the contextualized Boolean selection function are shown in
-Fig.~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
+Figure~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
 while columns denote the function $\mathit{ctx}$.
 
 \looseness=-1
@@ -896,14 +896,14 @@ The results suggest that selection of term context has more impact
 than the partial term order. % The number of proved problems fluctuates more when
 %changing the function $\mathit{ctx}$ than when changing the partial order.
 Also, the best results are obtained when a context more specific than \texttt{Any}
-is chosen. Remarkably, functions using \texttt{Pos} context
-perform better than the ones using \texttt{Neg} context
-on TPTP but the opposite is observed on SH.
+is chosen. Remarkably, functions using the \texttt{Pos} context
+perform better than the ones using the \texttt{Neg} context
+on TPTP, but the opposite is observed on SH.
 
 
 Using different Boolean selection functions yields vastly different sets of
 proved problems on TPTP benchmarks: In total, there are \NumberOK{103} problems
-proved by some configuration from Fig.~\ref{fig:bool-sel} but not by
+proved by some configuration from Figure~\ref{fig:bool-sel} but not by
 \relax{DCI}$-$\relax{LA}. However, there are only \NumberOK{16} such SH problems.
 It would seem that the advanced formula reasoning facilitated by the Boolean
 selection formulas is usually not required by Sledgehammer problems.
@@ -920,7 +920,7 @@ superposition) compute only a finite subset of the possible conclusions for
 inferences that require enumerating a CSU. Not only is this a source of
 incompleteness, but choosing the cardinality of the computed subset is a
 difficult heuristic choice. Small sets can result in missing the necessary unifier, while large sets make the prover spend too long in
-the unification procedure, generate useless clauses, and possibly get sidetracked into the wrong parts of the search space.
+the unification procedure, generate useless clauses, and possibly get sidetracked into wrong parts of the search space.
 
 We propose a modification to the given clause procedure to seamlessly
 interleave unifier computation and proof state exploration. Given a complete
@@ -934,7 +934,7 @@ without sacrificing completeness.
 \pagebreak[2]
 
 Given that we cannot decide whether there exists a next CSU
-element in a stream of unifiers, the request for the next conclusion might not
+element in a stream of unifiers, a request for the next conclusion might not
 terminate,
 effectively bringing the theorem prover to a halt. Our modified given clause procedure
 expects the unification procedure to return a lazily computed stream
@@ -1075,7 +1075,7 @@ rule.
 \looseness=-1
 To eventually consider inference conclusions from streams in $Q$ as given
 clauses, we extract elements from, or \emph{probe}, streams and move any obtained
-clauses to $P$. Analogously to the traditional pick--given ratio
+clauses to $P$. Analogous to the traditional pick--given ratio
 \cite{ss-02-brainiac,mcw-1997-otter}, we use a parameter
 \ParamMode{} (by default, $\ParamMode = 70$) to ensure fairness: Every \ParamMode{}th iteration,
 \textsc{FairProbe} probes an increasing number of oldest streams, which achieves
@@ -1210,8 +1210,8 @@ $F$.
 
 % TODO: If I add a new benchmark set, make sure this sentence is fixed
 \looseness=-1
-For evaluation of our unification algorithm (using somewhat different
-evaluation setup and older version of Zipperposition), we also compared a complete, nonterminating variant of the
+To evaluate our unification algorithm (using a somewhat different
+evaluation setup and an older version of Zipperposition), we also compared a complete, nonterminating variant of the
 unification procedure and a pragmatic, terminating variant. The
 pragmatic variant was used directly---all the inference conclusions were put
 immediately in $P$, bypassing $Q$. The complete variant, which relies on
@@ -1246,9 +1246,9 @@ of parameters perform similarly.
 Among the competing higher-order provers, only Satallax uses infinitely
 branching calculus rules. It maintains a queue of ``commands'' that contain
 instructions on how to create a successor state in the tableau. One
-command describes infinite enumeration of all closed terms of a given function
-type. Each execution of this command makes progress in the enumeration. Unlike
-evaluation of streams representing elements of CSU, each command execution
+command describes an infinite enumeration of all closed terms of a given function
+type. Each execution of this command makes progress in the enumeration. In contrast to
+computing inferences using streams representing elements of CSU, each command execution
 is guaranteed to make progress in enumerating the next closed functional
 term, so there is no need to ever return $\emptyset$.
 
@@ -1421,7 +1421,7 @@ of applied variables.
 In the base configuration (\emph{base}), Zipperposition visits several clause
 queues. The configuration uses queues that prefer the clauses that stem from
 the conjecture, the ones that have at least one positive literal, the ones that
-have been moved from active to passive set, and so on. One of the queues uses the constant
+have been moved from the active to the passive set, and so on. One of the queues uses the constant
 priority function \texttt{ConstPrio} (\texttt{CP}), meaning that it assigns the same
 priority to every clause. As this queue is the most often visited one in \emph{base},
 changing its priority function should affect the result noticeably.
@@ -1429,14 +1429,14 @@ To evaluate the new priority functions, we replaced
 \texttt{CP} with one of the new functions in this queue,
 %the queue ordered by \texttt{CP} with the queue ordered by one of the new
 %functions,
-leaving the clause weight intact. The results are shown in Fig.~\ref{fig:priorities}.
+leaving the clause weight intact. The results are shown in Figure~\ref{fig:priorities}.
 
-Even though constant priority function achieves remarkable performance, the new priority functions are
+Even though the constant priority function achieves a remarkable performance, the new priority functions are
 useful additions to the prover's repertoire: \NumberOK{37} additional
 TPTP problems and \NumberOK{17} additional SH problems can be proved when some
 nonconstant priority is used. The generally average-performing \verb|PEHO|
-function can prove \NumberOK{9} problems not proved with any other priority function on TPTP
-(and \NumberOK{1} on SH). Globally, \NumberOK{24} TPTP problems and \NumberOK{6} SH problems
+function can prove \NumberOK{nine} problems not proved with any other priority function on TPTP
+(and \NumberOK{one} on SH). Globally, \NumberOK{24} TPTP problems and \NumberOK{six} SH problems
 can be proved exclusively using one particular priority function.
 
 
@@ -1445,11 +1445,11 @@ rule is disabled in \emph{base} because it is so explosive and so seldom useful.
 To test whether increasing inference stream weights makes a difference on the
 success rate, we tried enabling \infname{FluidSup} with different weight
 increments~$\ParamPenaltyIncrease$ for \infname{FluidSup} inference queues. The
-results are shown in Fig.~\ref{fig:penalties}. As expected, using a low
+results are shown in Figure~\ref{fig:penalties}. As expected, using a low
 increment with \infname{FluidSup} is detrimental on TPTP. On this
 benchmark set, \NumberOK{16} additional problems can be proved when
 \infname{FluidSup} is enabled. The penalty mostly affects only proving time: All
-but \NumberOK{2} of these problems were proved by using at least three different
+but \NumberOK{two} of these problems were proved by using at least three different
 values of $\ParamPenaltyIncrease$. On SH problems, the best result is obtained
 when the rule is disabled as well. Unexpectedly, the next best result is obtained when
 $\ParamPenaltyIncrease=1$.
@@ -1720,7 +1720,7 @@ by Bentkamp et al.\
 \cite{br-19-restricted-unif, br-20-full-sup-w-combs}. They introduced proof calculi,
 proved them refutationally complete, and suggested optional rules, but
 they hardly discussed the practical aspects of higher-order superposition. Extensions
-of SMT are discussed by Barbosa et al. \cite{brotb-19-ho-smt}.
+of SMT are discussed by Barbosa et al.\ \cite{brotb-19-ho-smt}.
 Bachmair and Ganzinger \cite{bg-1992-nonclausal}, Manna and Waldinger
 \cite{mw-1979-nonclausal}, and Murray \cite{nm-1982-nonclausal} have studied
 nonclausal resolution calculi.
@@ -1767,8 +1767,8 @@ calculus extensions and heuristics. We implemented them in Ehoh, obtaining a
 prover called $\lambda$E. This new prover substantially increases the
 higher-order reasoning capabilities of Ehoh. Even without all of the techniques
 described in this chapter, it outperforms all higher-order provers except for
-Zipperposition. We give detailed a description of $\lambda$E, as well as reasoning
-behind all design decision we took in Chapter \ref{ch:ehoh2}.
+Zipperposition. We give a detailed description of $\lambda$E, as well as the reasoning
+behind all design decisions we took in Chapter \ref{ch:ehoh2}.
 
 
 

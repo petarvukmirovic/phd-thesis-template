@@ -153,8 +153,10 @@ first-order logic.'' In the spirit of FOOL \cite{kotelnikov-16-fool}, we
 %% kotelnikov-15-fool
 extend the syntax of this logic by making formulas a special case of terms (without adding logical symbols to the signature),
 and its semantics by interpreting the Boolean type $o$ as a domain of
-cardinality~2. Functional extensionality can be obtained by adding suitable
-axioms \cite[Sect.~3.1]{bbcw-21-lfho}.
+cardinality~2. Functional extensionality, the property that two functions are equal if they
+always return the same value when given the same arguments, can be obtained by
+adding suitable axioms can be obtained by adding suitable axioms
+\cite[Sect.~3.1]{bbcw-21-lfho}.
 
 \looseness=-1
 
@@ -191,8 +193,8 @@ functions of finite domain from variables to terms, written $\{ x_1 \mapsto s_1,
 \ldots, x_m \mapsto s_m \}$, where each $s_i$ has the same type as $x_i$. The
 substitution $\sigma[x \mapsto s]$ maps $x$ to $s$ and otherwise coincides with
 $\sigma$. Applying $\sigma$ to a variable beyond $\sigma$'s domain is the
-identity. We deviated from the view of substitutions in Section \ref{sec:pre:hol}
-as it made proofs in Sections \ref{sec:ehoh:unif-match} and \ref{sec:ehoh:indexing}
+identity. We deviated from the view of substitutions in Sect.~\ref{sec:pre:hol}
+as it made proofs in Sect.~\ref{sec:ehoh:unif-match} and \ref{sec:ehoh:indexing}
 easier. It is easy to check that both views are equivalent. We also consider unification 
 constraints $s \unif t$ as \emph{ordered} pairs.
 %Applying a substitution to a term~$t$ applies it homomorphically to $t$'s
