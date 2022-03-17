@@ -2078,4 +2078,367 @@ During experimentation, we noticed that recognizing definitions of symbols that
 occur in the conjecture often harms performance. Thus, Zipperposition
 recognizes definitions only for the remaining symbols.
 
+\section{Evaluation}
+\label{sec:satfol:evaluation}
 
+% {\bf\large TODO: Evaluate \textit{real} PPE in Figure \ref{fig:preprocess} and discuss SPPE and PPE.
+% References to PPE are broken now. }
+
+\newcommand{\baseres}[0]{7897}
+% \newcommand{\baseresplusfive}[0]{1563}
+
+\newcommand{\resnum}[1]{
+   \FPeval{\result}{clip(#1-\baseres)}%
+   \ifnumcomp{\result}{>}{0}{$+\result$}{$\result$}%
+}
+\newcommand{\resnumphantom}[1]{%
+   \FPeval{\result}{clip(#1-\baseres)}%
+   \FPeval{\negresult}{clip(-\result)}%
+   \ifnumcomp{\result}{>}{0}{\phantom{$0$}{${+}\result$}}{\phantom{$0$}{${-}\negresult$}}%
+}
+\newcommand{\resnumbold}[1]{
+   \FPeval{\result}{clip(#1-\baseres)}%
+   \FPeval{\negresult}{clip(-\result)}%
+   \ifnumcomp{\result}{>}{0}{\phantom{${+}\result$}\llap{$\mathbf{\boldsymbol{+}\result}$}}{\phantom{${-}\negresult$}$\llap{\mathbf{\boldsymbol{-}\negresult}}$}%
+}
+\newcommand{\resnumboldphantom}[1]{%
+   \FPeval{\result}{clip(#1-\baseres)}%
+   \FPeval{\negresult}{clip(-\result)}%
+   \ifnumcomp{\result}{>}{0}{\phantom{$0{+}\result$}\llap{$\mathbf{\phantom{0}{\boldsymbol{+}}\result}$}}{\phantom{$0{-}\negresult$}$\llap{\mathbf{\phantom{0}{\boldsymbol{-}}\negresult}}$}%
+}
+\newcommand{\evaluating}[0]{\textbf{?}}
+
+\looseness=-1
+We measure the impact of our elimination techniques for various values of their
+parameters. As a baseline, we use Zipperposition's first-order portfolio mode,
+which runs the prover in 13~configurations of
+heuristic parameters in consecutive time slices. None of these configurations
+use our new techniques. To evaluate a given parameter value, we fix
+it across all 13~configurations and compare the results with the baseline.
+
+\looseness=-1
+The benchmark set consists of all 13\,495 CNF and FOF TPTP 7.3.0 theorems
+\cite{gs-17-tptp}.
+%
+The experiments were carried out on StarExec servers \cite{sst-14-starexec}
+equipped with Intel Xeon E5-2609 CPUs clocked at 2.40 GHz. The portfolio mode
+uses a single CPU core with a CPU time limit of 180~s. The base
+configuration solves \NumberOK{\baseres} problems. The values in the tables
+indicate the number of problems solved minus \NumberOK{\baseres}. Thus,
+positive numbers indicate gains over the baseline. The best result is shown in
+bold.
+
+\ourpara{Hidden-Literal-Based Elimination}
+% 
+The first experiments use all implemented HLBE rules.
+To avoid overburdening Zipperposition, we can enable an option to limit the
+number of tracked clauses for hidden literals. Once the limit has been reached, any
+request for tracking a clause will be rejected until a tracked
+clause is deleted. We can choose which kind of clauses are
+tracked:\ only clauses from the active set $\mathcal{A}$,
+only clauses from the passive set $\mathcal{P}$, or both.
+We also vary the maximal implication chain length $K_\mathrm{len}$ and the
+number of computed self-implications $K_\mathrm{imp}$.
+
+In Zipperposition, every lookup for instances or generalizations of
+$\eqlit{s}{t}$ must be done once for each orientation of the equation.
+To avoid this inefficiency, and also because the implementation of hidden literals does not fully
+exploit congruence, we can disable\pagebreak[2] tracking clauses with at least one
+functional literal. Clauses containing functional literals can then still be
+simplified.
+
+Figures~\ref{fig:hle-clauses-neq} and \ref{fig:hle-clauses-eq}
+%~\ref{fig:hle}
+show the results, without and with functional literal tracking enabled,
+for $K_\mathrm{len} = 2$ and $K_\mathrm{imp} = 0$.
+The columns specify different limits on the number of tracked clauses, with $\infty$
+denoting that no limit is imposed. The rows represent different kinds of tracked clauses.
+The results suggest that tracking functional literals is \NumberOK{not} worth the effort
+but that tracking predicate literals \NumberOK{is}. The best improvement is observed when
+both active and passive clauses are tracked. Normally DISCOUNT-loop
+provers \cite{adf-1995-discount} such as Zipperposition do not simplify
+active clauses using passive clauses, but here we see that this can be effective.
+%
+%--Raw data shows that when up to 250 clauses in either set are
+%--tracked, tracking functional literals helps solve \NumberNOK{5} problems that
+%--cannot be solved by a configuration that tracks only predicate literals or the
+%--base configuration. This suggests that a more optimized indexing implementation
+%--would help our technique reach its full potential.
+Figure~\ref{fig:km-kimp} shows the impact of varying $K_\mathrm{len}$ and
+$K_\mathrm{imp}$, when 500 clauses from the entire proof state are tracked.
+These results suggest that computing long implication chains \NumberOK{is counterproductive.}
+% Furthermore, raw data reveals that there is
+% no gain in this case: not a single problem that configuration with $K_\mathrm{len}=2$ and
+% $K_\mathrm{imp}=0$ cannot solve is solved when $K_\mathrm{imp}K_\mathrm{len}$ is set to 8 and
+% $K_\mathrm{imp}$ to 0.
+
+\begin{figure}[t]
+   \centering
+   \begin{minipage}{.48\textwidth}
+     \begin{center}
+       \def\arraystretch{1.1}%
+       \relax{\begin{tabular}[t]{l@{\hskip 1em}c@{\hskip 1em}c@{\hskip1em}c@{\hskip 1em}c}
+         & \multicolumn{4}{c}{Tracked clauses} \\
+         & $250$        & $500$         & $1000$       &$\infty$ \\ \midrule 
+\strut Active       & \resnum{7883}  & \resnum{7881}   & \resnum{7889}  & \resnum{7885}    \\
+\strut Passive      & \resnumphantom{7904}  & \resnum{7907}   & \resnum{7902}  & \resnum{7862}    \\
+\strut Both         & \resnumbold{7909}  & \resnum{7907}   & \resnum{7904}  & \resnum{7852} \\     
+\end{tabular}}
+\caption{Impact of the number and kinds of tracked clauses on HLBE performance, when only predicate literals are tracked}
+\label{fig:hle-clauses-neq}
+     \end{center}
+   \end{minipage}
+   \hfill
+   \begin{minipage}{.45\textwidth}
+     \begin{center}
+       \def\arraystretch{1.1}%
+       \relax{\begin{tabular}[t]{l@{\hskip 1em}c@{\hskip 1em}c@{\hskip1em}c@{\hskip 1em}c}
+         & \multicolumn{4}{c}{Tracked clauses} \\
+         & $250$                   & $500$                 & $1000$                    & $\infty$ \\ \midrule 
+\strut Active       & \resnum{7887}            & \resnum{7883}         & \resnumphantom{7889}      & \resnum{7879}    \\
+\strut Passive      & \resnumphantom{7892}     & \resnumphantom{7892}  & \resnum{7883}             & \resnum{7826}    \\
+\strut Both         & \resnumboldphantom{7899} & \resnumphantom{7896}  & \resnumphantom{7889}      & \resnum{7818} \\ 
+\end{tabular}}
+\caption{Impact of the number and kinds of tracked clauses on HLBE performance, when all literals are tracked}
+\label{fig:hle-clauses-eq}
+     \end{center}
+   \end{minipage}
+ \end{figure}
+
+
+ 
+
+\begin{figure}[t]
+\small
+\centering
+\def\arraystretch{1.1}%
+\begin{tabular}[t]{l@{\hskip 2em}c@{\hskip 1.5em}c@{\hskip1.5em}c@{\hskip 1.5em}c} 
+                             & \multicolumn{4}{c}{Chain length $K_\mathrm{len}$} \\
+                             & $1$                   & $2$                 & $4$                   & $8$ \\ \midrule 
+   $K_\mathrm{imp}=0$        & \resnum{7906}         & \resnum{7907}       & \resnum{7904}         & \resnum{7902}    \\
+   $K_\mathrm{imp}=1$        & \resnum{7902}         & \resnumbold{7908}       & \resnum{7904}         & \resnum{7901}    \\
+   $K_\mathrm{imp}=2$        & \resnum{7903}         & \resnumbold{7908}       & \resnum{7905}         & \resnum{7905}    \\
+\end{tabular}
+\caption{Impact of the parameters $K_\mathrm{len}$ and $K_\mathrm{imp}$ on HLBE performance}
+\label{fig:km-kimp}
+\end{figure}
+
+\begin{figure}[t!]
+   \small
+   \centering
+   \def\arraystretch{1.1}%
+   \begin{tabular}[t]{l@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c}
+                           &               & \multicolumn{5}{c}{Relaxed with $K_\mathrm{tol}$} \\
+                           & K\&K          & $0$             & $25$           & $50$           & $100$    & $200$    \\ \midrule 
+   \infname{SPE} preproc.  & \resnum{7967} & \resnum{8014}   & \resnum{8051}  & \resnum{8057}  & \resnum{8051}      & \resnum{8055} \\
+   \infname{PPE} preproc.  & \resnum{7968} & \resnum{8021}   & \resnum{8057}  & \resnum{8061}  & \resnumbold{8062}      & \resnum{8059} \\
+   \end{tabular}
+   \caption{Impact of the choice of criterion on predicate elimination performance}
+   \label{fig:criterion}
+\end{figure}
+
+\begin{figure}[t]
+   \small
+   \centering
+   \def\arraystretch{1.1}%
+   \begin{tabular}[t]{l@{\hskip 1em}c@{\hskip 1.3em}c@{\hskip 1em}c@{\hskip 1.3em}c@{\hskip 1em}c@{\hskip 1.3em}c}
+                         &               &               &                &               &                    & \smash{HLBE} \\[-1pt] %% TYPESETTING
+                         &               &               & \smash{SPE}    &               & \smash{PPE}        & \smash{+PPE} \\[-1pt] %% TYPESETTING
+                         & BCE           & SPE           & +BCE           & PPE           & +BCE               & +BCE           \\ \midrule 
+   \strut Preprocessing  & \resnum{7927} & \resnum{8051} & \resnum{8056}  & \resnum{8057} & \resnumbold{8063}  & \resnum{8059} \\
+   \strut Inprocessing   & \resnum{7849} & \resnum{8037} & \resnum{8024}  & \resnum{8043} & \resnum{8028}      & \resnum{8024}     \\
+   \end{tabular}
+   \caption{Performance of predicate and blocked clause elimination}
+   \label{fig:preprocess}
+\end{figure}
+
+
+\renewcommand{\baseres}{856}
+
+\begin{figure}[t]
+   \small
+   \centering
+   \def\arraystretch{1.1}%
+   \begin{tabular}[t]{l@{\hskip 1em}c@{\hskip 1.3em}c@{\hskip 1em}c@{\hskip 1.3em}c@{\hskip 1em}c@{\hskip 1em}c} \\
+                         &              &              &                   &              &              & \smash{HLBE}   \\[-1pt] 
+                         &              &              & \smash{SPE}       &              & \smash{PPE}  & \smash{+PPE}   \\[-1pt] 
+                         & BCE          & SPE          & +BCE              & PPE          & +BCE          & \smash{+BCE}    \\ \midrule 
+   \strut Preprocessing  & \resnum{885} & \resnum{902} & \resnumbold{916}  & \resnum{903} & \resnum{915} & \resnum{911}  \\
+   \end{tabular}
+   \caption{Performance of predicate and blocked clause elimination for establishing satisfiability}
+   \label{fig:bce-sat}
+\end{figure}
+
+\ourpara{Predicate and Blocked Clause Elimination}
+%
+% \textit{Evaluation results discussion paragraph---here effects of definitions can be discussed}
+% \textit{Do not forget to mention SPE was already implemented and }
+For defined predicate elimination, the number of resolvents grows
+exponentially with the number of occurrences of $\cst{p}$. To avoid this expensive
+computation, we limit the applicability of PPE to proof states for which $\cst{p}$
+is singular. According to our informal experiments, full PPE,
+without this restriction, generally performs less well.
+
+\begin{qle}\color{red} (TODO: Add QLE)\color{black}\end{qle}
+
+Predicate elimination can be done using Khasidashvili and Korovin's
+criterion (K\&K) or using our relaxed criterion with different values of
+$K_\mathrm{tol}$. Figure~\ref{fig:criterion} shows the results
+for SPE and PPE used as preprocessors.
+Our numbers corroborate Khasidashvili and Korovin's findings:
+SPE with K\&K proves \NumberOK{70} more problems than the base, a
+\NumberOK{0.9\%} increase, comparable to the 1.8\% they observe when
+they combine SPE with additional preprocessing.
+Remarkably, the number of additional proved problems more than
+\NumberOK{doubles} when we use our criterion with $K_\mathrm{tol} > 0$, for both SPE and PPE.
+
+\looseness=-1
+Although this is not evident in Figure~\ref{fig:criterion}, varying
+$K_\mathrm{tol}$ substantially changes the set of problems solved. For example,
+when $K_\mathrm{tol}=0$, SPE proves \NumberOK{60} theorems not proved using
+$K_\mathrm{tol}=50$. The effect weakens as $K_\mathrm{tol}$ grows. When
+$K_\mathrm{tol}=100$, SPE proves only \NumberOK{13} problems not found when
+$K_\mathrm{tol}=200$. Similarly, the set of problems proved by SPE and PPE
+differs: When $K_\mathrm{tol}=25$, \NumberOK{14} problems are proved by PPE but
+missed by SPE. Recognizing definition sets is useful:
+PPE \NumberOK{outperforms} SPE regardless of the criterion.
+
+% \looseness=-1 Having implemented those techniques, we are in position to answer
+% two interesting questions: {How helpful are definition clauses in defined
+% predicate elimination (DPE)?} and {What are the effects of performing blocked
+% clause elimination (BCE) and DPE until fixpoint (BD)?}. The second question was
+% also of interest to Kiesl et al.\ \cite{ksstb-2017-blockedfol}, but was left
+% unanswered as they did not implement predicate elimination.
+
+\looseness=-1
+Performing BCE and variable elimination until fixpoint increases the performance
+of SAT solvers~\cite{jbh-10-BCE}. We can check whether the same holds for superposition provers.
+In this experiment, we use the relaxed criterion with
+$K_\mathrm{tol}=25$ and HLBE which tracks up
+to 500 clauses from any clause set, $K_\mathrm{len}=2$, and
+$K_{\mathrm{imp}}=0$. We use each technique as preprocessing and inprocessing.
+
+The results are summarized in Figure~\ref{fig:preprocess}, where
+the +~sign denotes the combination of techniques.
+We confirm the results obtained by Kiesl et al.\ about the performance of BCE
+as preprocessing:
+It helps prove \NumberOK{30} more problems from our benchmark set, increasing the
+success rate by roughly \NumberOK{0.4\%}. The same percentage increase was obtained Kiesl et al.
+%
+Using BCE as inprocessing, however, hurts performance, presumably because of
+its incompatibility with the redundancy criterion.
+
+\looseness=-1%
+For preprocessing, the combinations SPE+BCE and PPE+BCE performed roughly \NumberOK{on a
+par} with SPE and PPE, respectively. This stands in contrast to the situation
+with SAT solvers, where such a combination usually helps. It is also worth noting
+that the inprocessing techniques never outperform their preprocessing
+counterparts.
+%
+The last column shows that combining HLBE with other elimination techniques
+\NumberOK{overburdens} the prover.
+
+
+\ourpara{Satisfiability by Blocked Clause Elimination}
+%
+\looseness=-1%
+Kiesl et al.\ found that blocked clause elimination is especially effective on
+satisfiable problems. To corroborate their results and ascertain
+whether a combination of predicate elimination and blocked clause elimination
+increases the success rate, we evaluate BCE on all 2273
+satisfiable or TPTP FOF and CNF problems.
+The hardware and CPU time limits are the same as in the experiments above.
+Figure~\ref{fig:bce-sat} presents the results.
+
+\looseness=-1
+The baseline establishes the satisfiability of \baseres~problems. We consider
+only preprocessing techniques, since BCE compromises refutational
+completeness---a saturation does not guarantee that the original problem was
+satisfiable. We note that recognizing definition sets makes almost no difference on
+satisfiable problems. The sets of problems solved by BCE and PPE
+differ---\NumberOK{30} problems are solved by BCE and not by PPE.
+% Kiesl sees around 2.5%, we see 3.5% with BCE
+
+\section{Discussion and Related Work}
+\label{sec:satfol:discussion-and-related-work}
+
+We briefly surveyed related work in Sect.~\ref{sec:satfol:introduction}. In this
+section, we give a more detailed overview and further discuss connections with
+the related work.
+
+The research presented in this \paper{} is two-pronged. For SAT elimination
+techniques already generalized to preprocess first-order problems, we looked for
+ways to interleave them with the given clause procedure of a superposition
+prover, as inprocessing. For techniques that had not yet been ported to
+first-order logic, we looked for generalizations that allow both preprocessing and
+inprocessing.
+
+Hidden tautology elimination was first described
+by Heule et al.\ \cite{hjb-2010-cl-elim}. Better implementation that also
+supports hidden literal elimination was later described by the same group of
+authors \cite{hjb-2011-big-simplification}. We generalized the underlying
+theoretical concepts to first-order logic, and provided an efficient way to deal
+with the infinite number of hidden literals that arise  with this
+generalization. More efficient graph-based techniques are yet to be explored.
+
+Variable elimination, based on Davis--Putnam resolution \cite{dp-60-dp}, has been studied in
+the context of both propositional logic \cite{sp-04-niver,cs-00-zres} and QBF
+\cite{ab-2004-re}. It was generalized to first-order logic (as a
+preprocessor) by Khasidashvili and Korovin \cite{kk-2016-pe-fol} yielding a technique called
+predicate elimination. Improvement of variable elimination,
+which uses formula definition information, has been popularized as a preprocessing and
+inprocessing technique for CDCL solvers by E{\'{e}}n and Biere
+\cite{eb-2005-satpreprocess}. We generalized this improvement to first-order
+logic and combined it with existing extension. With tolerable restrictions,
+this extension can be used as an inprocessing technique. In SAT and QBF, it was observed that
+allowing variable elimination to slightly increase in the clause set size
+improves performance \cite{bls-11-bloqqer}. We implemented a similar approach,
+achieving the double the number of additional proofs found compared to more
+restrictive approaches.
+
+Blocked clause elimination is used in both SAT~\cite{jbh-10-BCE} and QBF
+solvers \cite{bls-11-bloqqer}. Its generalization to first-order logic
+\cite{ksstb-2017-blockedfol} has showed positive effects when used as a
+preprocessor. We showed that blocked clauses cannot be removed during
+saturation, but that they can be effectively used to show satisfiability of the
+clause set. A combination of blocked clause elimination and
+variable elimination performs well in propositional logic \cite{jbh-10-BCE}, but we observed no substantial
+improvement when their generalizations are combined.
+
+Our approach is one of many ways to combine ideas from SAT solving and
+first-order proving. Other noteworthy architectures that either incorporate a
+SAT solver or that generalize the CDCL calculus include DPLL($T$) with
+quantifier instantiation
+\cite{de-moura-bjoerner-2007,barbosa-et-al-2017,reynolds-et-al-2018},
+DPLL($\mupGamma+T$) \cite{bonacina-et-al-2009},
+labeled splitting \cite{fietzke-weidenbach-2009},
+AVATAR \cite{av-2014-avatar},
+MCSAT \cite{de-moura-jovanovic-2013},
+CDSAT \cite{bonacina-et-al-2017}, and
+SGGS~\cite{bonacina-plaisted-2014}.
+
+\section{Conclusion}
+\label{sec:satfol:conclusion}
+
+We adapted several preprocessing and inprocessing elimination techniques implemented in
+modern SAT solvers so that they work in a superposition prover. This involved lifting
+the techniques to first-order logic with equality but also tailoring them to
+work in tandem with superposition and its redundancy criterion.
+Although SAT solvers and superposition provers embody radically different
+philosophies, we found that the lifted SAT techniques provide valuable optimizations.
+
+\pagebreak[2]
+We see several avenues for future work. First, the implementation of hidden
+literals could be extended to exploit equality congruence. Second, although
+inprocessing blocked clause elimination is incomplete in general, we hope to achieve
+refutational completeness for a substantial fragment of it. Third, predicate and
+blocked clause elimination, which thrives on the absence of clauses from the
+proof state, could be enhanced by tagging and ignoring generated clauses that
+have not yet been used to subsume or simplify untagged clauses. Fourth,
+predicate and blocked clause elimination could be extended to work with
+functional literals. Fifth, more SAT techniques could be adapted, including
+bounded variable addition~\cite{mhb-12-reencoding} and blocked clause
+addition~\cite{ok-99-er}. Sixth, the techniques we covered could be adapted to
+work with other first-order calculi, or generalized
+further to work with higher-order calculi such as combinatory superposition
+\cite{br-20-full-sup-w-combs} and \osup{}.
