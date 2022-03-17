@@ -115,14 +115,17 @@ if $\sigma(x) \not= x$ implies that $\sigma(x)$ is ground.
 \section{Higher-Order Logic}
 \label{sec:pre:hol}
 
-In this thesis we use classic simply typed monomorphic higher-order logic with
-the choice operator (and some variations of this logic). Assuming a set of
-base types $T$ and a set of symbols $\Sigma$, let us
-define terms and types. Types are either base types $\tau \in T$, or function
-types $\tau \rightarrow \upsilon$ where both $\tau$ and $\upsilon$ are types.
-When we write $\tau_1 \rightarrow \cdots \rightarrow \tau_n \rightarrow \upsilon$
-we assume $\upsilon$ to be a base type ($\upsilon \in T$), by convention.
-Each symbol $\cst{f} \in \Sigma$ is assigned a type.
+In this thesis we use classic extensional simply typed monomorphic higher-order
+logic with the choice operator, but without the description operator, the axiom of infinity,
+and the axiom of at least two individuals \cite[Sect.~3.5]{bm-14-automation-ho}.
+This logic corresponds to Henkin's extensional type theory. We additionally use
+some variations of this logic, clearly stating the differences. Assuming a set of
+base types $T$ and a set of symbols $\Sigma$, let us define terms and types.
+Types are either base types $\tau \in T$, or function types $\tau \rightarrow
+\upsilon$ where both $\tau$ and $\upsilon$ are types. When we write $\tau_1
+\rightarrow \cdots \rightarrow \tau_n \rightarrow \upsilon$ we assume $\upsilon$
+to be a base type ($\upsilon \in T$), by convention. Each symbol $\cst{f} \in
+\Sigma$ is assigned a type.
 
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 \dotsc$, or symbols $\cst{f}, \cst{g},\allowbreak \cst{a},\allowbreak \cst{b}

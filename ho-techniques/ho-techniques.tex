@@ -141,11 +141,10 @@ corroborates the competition results.
 \section{Background and Setting}
 \label{sec:ho-tech:background}
 
-We focus on monomorphic higher-order logic, without the axiom of infinity or the
-axiom of at least two individuals \cite{bm-14-automation-ho}. However, the
-techniques can easily be extended with polymorphism. Indeed, Zipperposition
+We focus on monomorphic higher-order logic, defined in Sect.~\ref{sec:pre:hol}. However, the
+techniques can easily be extended with rank-1 polymorphism \cite{ksr-16-th1}. Indeed, Zipperposition
 already supports some of them polymorphically. Further, we use exactly the same
-notation for this logic as introduced in Chapter \ref{ch:pre}. Since we are
+notation for this logic and superposition calculus as introduced in Chapter \ref{ch:pre}. Since we are
 working with extensions of superposition, we assume a clausal structure
 (Sect.~\ref{sec:pre:clauses}). Like in the previous chapter, literals
 of clauses can contain arbitrary higher-order terms, including formulas.  
@@ -950,12 +949,13 @@ requirement. Based on the stream of unifiers interspersed with $\emptyset$, we
 can construct a stream of inferences similarly interspersed with $\emptyset$.
 Any finite prefixes of this stream can be computed in finite time.
 
+\looseness=-1
 To support such streams in the given clause procedure, we extend it to
 represent the proof state not only by the active ($\mathcal{A}$) and passive ($\mathcal{P}$) clause
 sets, but also by a priority queue $\mathcal{Q}$ containing the inference streams,
 similar to the ``to do'' set $T$ present in the abstract Zipperposition loop of 
 Waldmann et al.\  \cite[Sect.~4]{wtrb-20-sat-framework}.
-Each stream is associated with a weight, and $\mathcal{Q}$ is sorted in order of
+Each stream is given a weight, and $\mathcal{Q}$ is sorted in order of
 increasing weight\confrep{}{, a low weight corresponding to a high priority}.
 When they introduced \lsup, Bentkamp et al.\
 \cite{bbtvw-21-sup-lam} described an older version of this extension. Here
@@ -995,7 +995,7 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
       \State \Return $\mathit{collected\_clauses}$
     \EndFunction
 
-  \newpage
+  \pagebreak[2]
   \Function{FairProbe}{$Q$, $\mathit{num\_oldest}$}
     \assign{collected\_clauses}{\emptyset}
     \assign{oldest\_streams}{\text{pop } \mathit{num\_oldest} \text{ oldest streams from } Q}
