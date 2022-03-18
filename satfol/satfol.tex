@@ -141,7 +141,8 @@ We assume the same notion of substitution introduced in Sect.~\ref{sec:pre:fol}.
 We extend the notation by writing a substitution $\{x_1 \mapsto t_1,
 \ldots,\allowbreak x_n \mapsto t_n\}$ shortly as $\{ \tupleempty{x} \mapsto \tupleempty{t} \}$.
 A substitution is a \emph{variable renaming} if it is a
-bijection from a set of variables to a set of variables.
+bijection from a set of variables to a set of variables. Iterated, $i$-fold application 
+of nonidempotent application $\sigma$ is denoted by $\sigma^i$.
 
 
 As we are working with clausal logic, we assume the clausal structure as defined
@@ -165,8 +166,10 @@ We also assume the notion of normal models from Sect.~\ref{sec:pre:fol} (with
 corresponding notation) and extend it with the notion of \emph{cannonical
 models}: A canonical model $\ourmodel$ is a normal model such that for every
 element $d$ in one of $\ourmodel$'s domains there exists a ground term $t$ such
-that $\ourmodel$ interprets $t$ as $d$. Canonical models generalize Herbrand
-models \cite{mf-1996-fol} to first-order logic with equality: If a clause set is satisfiable, then
+that $\ourmodel$ interprets $t$ as $d$. 
+We also make use of Herbrand models and Herbrand's theorem \cite[Sect.~5.4]{mf-1996-fol}.
+Canonical models generalize Herbrand
+models to first-order logic with equality: If a clause set is satisfiable, then
 it is satisfiable in a canonical model.
 
 All of the techniques described in this chapter are applied in the context of

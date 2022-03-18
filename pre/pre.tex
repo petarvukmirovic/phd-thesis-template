@@ -198,6 +198,14 @@ with respect to Henkin semantics \cite{bm-14-automation-ho}. Note that no
 complete calculus exists for higher-order calculi with standard (full)
 semantics.
 
+Some of the approaches described in this thesis are based on {\em rank-1
+polymorphism} \cite{bp-13-tff1,ksr-16-th1}. This is an extension of simply typed
+logic which adds type variables to the definition of types and type arguments to
+polymorphic constants (Chapter \ref{ch:bools}). It further
+requires that type arguments are instantiated with concrete, non-quantified
+types. In clausal structure it allows (implicit)
+quantification over types only on top-level and not inside literals.
+
 \section{Clausal Forms}
 \label{sec:pre:clauses}
 
@@ -214,20 +222,18 @@ t$. A clause $C$ is a finite multiset of literals, interpreted and written
 disjunctively:\ $l_1 \llor \cdots \llor l_n$. Free variables of clauses are
 implicitly universally quantified. Note that $\llor$ denoting disjunction in
 clauses is different from the formula-building $\ior$. In general,
-formula-building logical connectives are written in boldface.
-In standard, non-clausal first-order logic, an atom is either
-predicate or equational. For uniformity, and to
-stay close to the implementation, we encode predicate atoms as equations with
-$\itrue$. Negative literals are encoded as disequations. For example,
-$\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
-$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. To lighten the notation,
-we sometimes write the predicate literals in non-encoded form.
-
-Applying substitution to a literal is reduced to applying it to both sides of
-the (dis)equa\-tion and it is extended pointwise to clauses. It is sometimes
-also written in postfix notation as $l\sigma$ and $C\sigma$. We say
+formula-building logical connectives are written in boldface. In standard,
+non-clausal first-order logic, an atom is either predicate or equational. For
+uniformity, and to stay close to the implementation, we encode predicate atoms
+as equations with $\itrue$. Negative literals are encoded as disequations. For
+example, $\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
+$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. To lighten the
+notation, we sometimes write the predicate literals in non-encoded form.
+Applying a substitution to a literal is reduced to applying it to both sides of
+the (dis)equa\-tion and it is extended pointwise to clauses. We say
 $\sigmacl{C}$ is a ground instance of $C$ if $\sigma$ is a grounding
 substitution.
+\pagebreak[2]
 
 \section{Superposition}
 \label{sec:pre:sup}
