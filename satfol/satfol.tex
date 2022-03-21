@@ -1181,6 +1181,7 @@ preserves the truth of $\Wk{N}$. By the hypothesis, $\mathscr{J}' \models
 
 Note that the above lemma does not hold for classical entailment $\models$;
 indeed, $\{\cst{p} \cor \cst{q}{,}\; \neglit{\cst{p}} \cor \cst{q}\} \models
+\{\cst{q}\}$ yet $\{\cst{p} \cor \cst{q}\} \not\models
 \{\cst{q}\}$. On the other hand, the law of excluded middle does hold for weak
 entailment: $\modelsWk \cst{p} \cor \lnot\,\cst{p}$. In fact, all classical
 clausal tautologies are tautologies for $\modelsWk$. 
@@ -1289,9 +1290,9 @@ Every $\Longrightarrow_\mathsf{GCP}$-derivation is a mixed derivation.
 \end{lemma}
 
 \begin{proof}
-The cases for \textsc{Process} and \textsc{Infer} are almost as in Waldmann et
-al., with adjustments to show that $\cst{P}$-predicates cannot reappear once
-they have disappeared. The case for \textsc{ElimPred} is trivial.
+   The cases for \textsc{Process} and \textsc{Infer} are almost as in Waldmann et
+al., with adjustments to show that $\cst{P}$-predicates cannot appear from
+nowhere. The case for \textsc{ElimPred} is trivial.
 \end{proof}
 
 Let $\Inv\Wksup_\mathcalx{N}(k)$ denote the condition
@@ -1456,7 +1457,8 @@ refutationally complete with respect to $\models$, the calculus
 $(\FLInf,\allowbreak\LRedWk)$ with a weaker redundancy criterion is also
 statically complete with respect to $\models$, and by the saturation framework,
 $(\FLInf,\allowbreak\LRedWksub)$ preserves this. Exploiting the equivalence of
-static and dynamic completeness, we conclude that some $\mathcalx{N}{}_{k+i}$ must
+static and dynamic completeness (Lemmas 10~and~11
+in Waldmann et al.~\cite{waldmann-et-al-202x-article}), we conclude that some $\mathcalx{N}{}_{k+i}$ must
 contain a labeled empty clause.
 \end{proof}
 \end{rep}
@@ -1659,7 +1661,7 @@ Adding and removing GALs preserves and reflects satisfiability:
 \begin{proof}
    \looseness=-1
    Let $N' = N \setminus \{C\} \cup \{ C \cor L \}$.
-   Non-trivial direction is proving that if $N'$ has a model, so does
+   The nontrivial direction is to prove that if $N'$ has a model, so does
    $N.$ If $N'$ has a model, it has an Herbrand model $\ourmodel$. Clearly,
    $\ourmodel$ satisfies every clause in $N$, with the possible exception of
    $C$. Assume that there exists a grounding substitution $\sigma$ such that ground instance $\sigmaterm{C}$ is falsified by
@@ -1669,8 +1671,8 @@ Adding and removing GALs preserves and reflects satisfiability:
    \substterm{\tau}{L'}$, for $\sigmaterm{C} \cor \sigmaterm{L}$ to be satisfied by $\ourmodel$ (as $C \cor L \in N'$), some
    literal in $\sigmaterm{C}$ must be satisfied by $\ourmodel$, contradicting that
    $\sigmaterm{C}$ is falsified by $\ourmodel$. If $\ourmodel \notmodels \substterm{\tau}{L'}$
-   then some literal in $\substterm{\tau}{D}$ must be satisfied. As $\substterm{\tau}{D} \subseteq \sigmaterm{C}$,
-   we again get the same contradiction. Therefore, $\ourmodel$ satisfies $N$,
+   then some literal in $\substterm{\tau}{D}$ must be satisfied. Since $\substterm{\tau}{D} \subseteq \sigmaterm{C}$,
+   we get the same contradiction. Therefore, $\ourmodel$ satisfies $N$,
    as needed.
  \end{proof}
 
@@ -1753,7 +1755,8 @@ procedure also terminates only for finite Herbrand models.
 
 \newcommand{\impmap}{\textit{Imp}}
 
-Hidden-literal-based, predicate, \begin{qle}quasipure, \end{qle}and blocked clause
+Hidden-literal-based elimination, predicate elimination, \begin{qle}quasipure
+elimination, \end{qle}and blocked clause
 elimination all admit efficient implementations in a superposition
 prover. In this section, we describe how to implement the first
 \begin{noqle}two\end{noqle}\begin{qle}three\end{qle} sets of
@@ -2051,7 +2054,7 @@ as follows:
 \begin{enumerate}
    \item Let $G = \{ C \mid C = \arbpredlit{\cst{p}(\tupleempty{x})} \cor C', C \in
    N$, no variable repeats in $\tupleempty{x}$, and variables of $C'$ are among
-   $\tupleempty{x}\}$. If $G$ is empty, report failure; otherwise continue.
+   $\tupleempty{x}\}$. If $G$ is empty, report failure; otherwise, continue.
 
    \smallskip
    \item Rename all clauses in $G$ so that their only variables are~$\tupleempty{x}$.
@@ -2074,7 +2077,7 @@ as follows:
 
 The invalidity of set $E$ from step \ref{step:encoding} is checked using a SAT
 solver, which is already integrated in Zipperposition. As modern theorem provers
-(such as E or Vampire) also use SAT solvers, the method can easily be
+(including E and Vampire) also use SAT solvers, the method can easily be
 implemented.
 
 During experimentation, we noticed that recognizing definitions of symbols that
@@ -2233,8 +2236,8 @@ These results suggest that computing long implication chains \NumberOK{is counte
    \begin{tabular}[t]{l@{\hskip 1.5em}c@{\hskip 1.5em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c@{\hskip 1em}c}
                            &               & \multicolumn{5}{c}{Relaxed with $K_\mathrm{tol}$} \\
                            & K\&K          & $0$             & $25$           & $50$           & $100$    & $200$    \\ \midrule 
-   \infname{SPE} preproc.  & \resnum{7967} & \resnum{8014}   & \resnum{8051}  & \resnum{8057}  & \resnum{8051}      & \resnum{8055} \\
-   \infname{PPE} preproc.  & \resnum{7968} & \resnum{8021}   & \resnum{8057}  & \resnum{8061}  & \resnumbold{8062}      & \resnum{8059} \\
+   \infname{SPE} preprocessing  & \resnum{7967} & \resnum{8014}   & \resnum{8051}  & \resnum{8057}  & \resnum{8051}      & \resnum{8055} \\
+   \infname{PPE} preprocessing  & \resnum{7968} & \resnum{8021}   & \resnum{8057}  & \resnum{8061}  & \resnumbold{8062}      & \resnum{8059} \\
    \end{tabular}
    \caption{Impact of the choice of criterion on predicate elimination performance}
    \label{fig:criterion}
@@ -2388,11 +2391,11 @@ Variable elimination, based on Davis--Putnam resolution \cite{dp-60-dp}, has bee
 the context of both propositional logic \cite{sp-04-niver,cs-00-zres} and QBF
 \cite{ab-2004-re}. It was generalized to first-order logic (as a
 preprocessor) by Khasidashvili and Korovin \cite{kk-2016-pe-fol} yielding a technique called
-predicate elimination. Improvement of variable elimination,
-which uses formula definition information, has been popularized as a preprocessing and
+predicate elimination. An improvement of variable elimination,
+that uses formula definition information, has been popularized as a preprocessing and
 inprocessing technique for CDCL solvers by E{\'{e}}n and Biere
 \cite{eb-2005-satpreprocess}. We generalized this improvement to first-order
-logic and combined it with existing extension. With tolerable restrictions,
+logic and combined it with Khasidashvili and Korovin's approach. With tolerable restrictions,
 this extension can be used as an inprocessing technique. In SAT and QBF, it was observed that
 allowing variable elimination to slightly increase in the clause set size
 improves performance \cite{bls-11-bloqqer}. We implemented a similar approach,
@@ -2405,10 +2408,10 @@ solvers \cite{bls-11-bloqqer}. Its generalization to first-order logic
 preprocessor. We showed that blocked clauses cannot be removed during
 saturation, but that they can be effectively used to show satisfiability of the
 clause set. A combination of blocked clause elimination and
-variable elimination performs well in propositional logic \cite{jbh-10-BCE}, but we observed no substantial
+variable elimination performs well in propositional logic \cite{jbh-10-BCE}, but we observed no comparable
 improvement when their generalizations are combined.
 
-Our approach is one of many ways to combine ideas from SAT solving and
+Our general approach is one of many ways to combine ideas from SAT solving and
 first-order proving. Other noteworthy architectures that either incorporate a
 SAT solver or that generalize the CDCL calculus include DPLL($T$) with
 quantifier instantiation
@@ -2433,7 +2436,8 @@ philosophies, we found that the lifted SAT techniques provide valuable optimizat
 \pagebreak[2]
 We see several avenues for future work. First, the implementation of hidden
 literals could be extended to exploit equality congruence. Second, although
-inprocessing blocked clause elimination is incomplete in general, we hope to achieve
+blocked clause elimination is generally incomplete as an inprocessing technique,
+we hope to achieve
 refutational completeness for a substantial fragment of it. Third, predicate and
 blocked clause elimination, which thrives on the absence of clauses from the
 proof state, could be enhanced by tagging and ignoring generated clauses that
