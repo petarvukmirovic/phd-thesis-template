@@ -40,10 +40,10 @@ clauses. Our evaluation using the Zipperposition prover confirms that the new
 techniques usefully supplement the existing superposition machinery.
 \end{abstract}
 
-\blfootnote{In this work I was the main designer behind all the presented techniques.
+\blfootnote{In this work I was the main designer of all the presented techniques.
 Marijn Heule did weekly supervision and provided his knowledge of SAT solving to 
 guide the design of all techniques. Jasmin Blanchette found the exact conditions
-under which superposition remains complete when predicate elimination rule is added
+under which superposition remains complete when the predicate elimination rule is added
 to the calculus. I also implemented and evaluated all the techniques. 
 }
 
@@ -160,7 +160,7 @@ $\sigmacl{C}$ always has the same number of literals as $C$, a most convenient
 property. Given a clause set $N$, $\binset{N}$ denotes the subset of its binary
 clauses: $\binset{N} = \{ L_1 \cor L_2 \mid L_1 \cor L_2 \in N \}$.
 
-We assume the natural extensions of domain, valuation, interpretation and model
+We assume the natural extensions of domain, valuation, interpretation, and model
 (as defined by Fitting \cite{mf-1996-fol}) from unsorted to many-sorted logic.
 We also assume the notion of normal models from Sect.~\ref{sec:pre:fol} (with
 corresponding notation) and extend it with the notion of \emph{cannonical
@@ -170,7 +170,7 @@ that $\ourmodel$ interprets $t$ as $d$.
 We also make use of Herbrand models and Herbrand's theorem \cite[Sect.~5.4]{mf-1996-fol}.
 Canonical models generalize Herbrand
 models to first-order logic with equality: If a clause set is satisfiable, then
-it is satisfiable in a canonical model.
+it is satisfiable by a canonical model.
 
 All of the techniques described in this chapter are applied in the context of
 first-order superposition which is introduced in Sect.~\ref{sec:pre:sup}. We
@@ -798,7 +798,7 @@ The key result about propositional gates carries over to definition sets.
       % First, $C$ must have the form $\arbpredlit{\cst{p}(\tuple{s}{})} \cor C'$,
       % where $\tuple{s}{}$ is a tuple of ground terms. 
       Without loss of generality,
-      we assume that the leading literal of $C$ is positive.
+      we assume that the leading literal of $C$ is positive (i.e., $C$ is of the form $\pospredlit{\cst{p}(\tuple{s}{n})} \cor C'$).
       Towards a contradiction, assume $\xi$ is a valuation such that $\mm \notmodels_\xi C$. Then, $\mm \notmodels_\xi
       \pospredlit{\cst{p}(\tuple{s}{n})}$. 
       % Let $\xi'$ be a valuation that
@@ -1280,7 +1280,7 @@ Here is a summary of the main framework notations:
 
 \begin{sloppypar}
    The completeness proof follows the invariance-based argument found in the
-   article by Waldmann et al \cite{waldmann-et-al-202x-article}.
+   article by Waldmann et al. \cite{waldmann-et-al-202x-article}.
 \end{sloppypar}
 
 \begin{lemma}
@@ -1924,7 +1924,7 @@ be used along a transitive chain. For example, the clause $C =
 \negpredlit{\cst{p}(x)} \cor \pospredlit{\cst{p}(\cst{f}(x))}$ induces $\cst{p}(x) \bigfimpl{M}^i \cst{p}(\cst{f}^i(x))$ for all $i$.
 The algorithm discovers such self-implications (line~\ref{statement:self-impl}): For
 each clause~$C$ of the form $\neglit{L} \cor \sigma(L)$, where $\sigma$ is
-some nonidempotent substitution, the entires $(\sigma^2(L), \{C\}),\allowbreak
+some nonidempotent substitution, the pairs $(\sigma^2(L), \{C\}),\allowbreak
 \ldots,\allowbreak (\sigma^{K_{\mathrm{imp}} + 1}(L), \{C\})$ are added to
 $\impmap[L]$, where $K_{\mathrm{imp}}$ is a parameter. 
 
