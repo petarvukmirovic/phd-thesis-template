@@ -30,14 +30,16 @@
 }
 
 \begin{abstract}
-Optimized SAT solvers not only preprocess the clause set, they also transform it
-during solving as inprocessing. Some preprocessing techniques have been
-generalized to first-order logic with equality. In this \paper, we port
-inprocessing techniques to work with superposition, a leading first-order proof
-calculus, and we strengthen known preprocessing techniques. Specifically, we
-look into elimination of hidden literals, variables (predicates), and blocked
-clauses. Our evaluation using the Zipperposition prover confirms that the new
-techniques usefully supplement the existing superposition machinery.
+Optimized SAT solvers not only simplify the clause set during preprocessing, but
+they also simplify it during solving. This interleaving of
+simplification and solving is called inprocessing. Some preprocessing
+techniques have been generalized to first-order logic with equality. In this
+\paper, we port inprocessing techniques to work with superposition, a leading
+first-order proof calculus, and we strengthen known preprocessing techniques.
+Specifically, we look into elimination of hidden literals, variables
+(predicates), and blocked clauses. Our evaluation using the Zipperposition
+prover confirms that the new techniques usefully supplement the existing
+superposition machinery.
 \end{abstract}
 
 \blfootnote{In this work I was the main designer of all the presented techniques.
@@ -52,16 +54,15 @@ to the calculus. I also implemented and evaluated all the techniques.
 \section{Introduction}
 \label{sec:satfol:introduction}
 
-Automated reasoning tools have become much more powerful in the last few
-decades thanks to procedures such as conflict-driven clause learning (CDCL)
-\cite{MSLM09HBSAT} for propositional logic and superposition
-\cite{bg-94-superposition} for first-order logic with equality. However,
-the effectiveness of these procedures crucially depends on how the input
-problem is represented as a clause set. The clause set
+Automated reasoning tools have become much more powerful in the last few decades
+thanks to procedures such as conflict-driven clause learning (CDCL)
+\cite{MSLM09HBSAT} for propositional logic and superposition for first-order
+logic with equality. However, the effectiveness of these procedures crucially
+depends on how the input problem is represented as a clause set. The clause set
 can be optimized beforehand (\emph{preprocessing}) or during the execution of
-the procedure (\emph{inprocessing}). In this \paper, we lift several preprocessing and
-inprocessing techniques from propositional logic to clausal first-order logic
-and demonstrate their usefulness in a superposition prover.
+the procedure (\emph{inprocessing}). In this \paper, we lift several
+preprocessing and inprocessing techniques from propositional logic to clausal
+first-order logic and demonstrate their usefulness in a superposition prover.
 
 For many years, SAT solvers have used inexpensive clause simplification
 techniques such as \emph{hidden literal} and \emph{hidden tautology elimination}
@@ -113,7 +114,7 @@ rule. Unfortunately, we find that its use as inprocessing can compromise the
 refutational completeness of superposition.
 
 
-All techniques are implemented in the Zipperposition prover
+All techniques have been implemented in the Zipperposition prover
 (Sect.~\ref{sec:satfol:implementation}), allowing us to ascertain their usefulness
 (Sect.~\ref{sec:satfol:evaluation}). The best configuration solves \NumberOK{160}
 additional problems on benchmarks consisting of all 13\,495 first-order TPTP theorems
@@ -129,7 +130,7 @@ technical report \cite{our-report}.}{}
 Our setting is many-sorted (i.e., many-typed), first-order
 logic~\cite{jg-1987-logic-textbook} with interpreted equality and a
 distinguished type (or sort) $o$. We introduced this logic in
-Sect.~\ref{sec:pre:fol} and we use the same notation introduced in this section.
+Sect.~\ref{sec:pre:fol} and here we use the same notation introduced in that section.
 We write $\cst{f}^i(s)$ for the $i$-fold application of an unary symbol
 $\cst{f}$ (e.g., $\cst{f}^3(x) = \cst{f}(\cst{f}(\cst{f}(x)))$) and call nullary
 function symbols \emph{constants}. In this chapter, propositional variables
@@ -137,12 +138,12 @@ function symbols \emph{constants}. In this chapter, propositional variables
 $\cst{x}, \cst{y}, \cst{p}, \cst{q}, \ldots$, while first-order free variables
 are written in lowercase as $x,y,z,\ldots$.
 
-We assume the same notion of substitution introduced in Sect.~\ref{sec:pre:fol}.
+We assume the notion of substitution introduced in Sect.~\ref{sec:pre:fol}.
 We extend the notation by writing a substitution $\{x_1 \mapsto t_1,
 \ldots,\allowbreak x_n \mapsto t_n\}$ shortly as $\{ \tupleempty{x} \mapsto \tupleempty{t} \}$.
 A substitution is a \emph{variable renaming} if it is a
 bijection from a set of variables to a set of variables. Iterated, $i$-fold application 
-of nonidempotent application $\sigma$ is denoted by $\sigma^i$.
+of a nonidempotent application $\sigma$ is denoted by $\sigma^i$.
 
 
 As we are working with clausal logic, we assume the clausal structure as defined
@@ -163,18 +164,20 @@ clauses: $\binset{N} = \{ L_1 \cor L_2 \mid L_1 \cor L_2 \in N \}$.
 We assume the natural extensions of domain, valuation, interpretation, and model
 (as defined by Fitting \cite{mf-1996-fol}) from unsorted to many-sorted logic.
 We also assume the notion of normal models from Sect.~\ref{sec:pre:fol} (with
-corresponding notation) and extend it with the notion of \emph{cannonical
+corresponding notation) and extend it with the notion of \emph{canonical
 models}: A canonical model $\ourmodel$ is a normal model such that for every
 element $d$ in one of $\ourmodel$'s domains there exists a ground term $t$ such
 that $\ourmodel$ interprets $t$ as $d$. 
 We also make use of Herbrand models and Herbrand's theorem \cite[Sect.~5.4]{mf-1996-fol}.
-Canonical models generalize Herbrand
-models to first-order logic with equality: If a clause set is satisfiable, then
-it is satisfiable by a canonical model.
+In Herbrand's models the domain consists of all ground terms. These models have a 
+useful property that if a formula is satisfiable in a model, then it is also satisfiable in an
+Herbrand model. Herbrand's theorem states that every unsatisfiable clause set has (propositionally)
+unsatisfiable ground instance.     
+Canonical models generalize Herbrand models to first-order logic with equality.
 
 All of the techniques described in this chapter are applied in the context of
-first-order superposition which is introduced in Sect.~\ref{sec:pre:sup}. We
-reuse all the notions introduced in this section and the corresponding notation. 
+first-order superposition which was introduced in Sect.~\ref{sec:pre:sup}. We
+reuse all the notions introduced in this section and the corresponding notations. 
 
 \section{Hidden-Literal-Based Elimination}
 \label{sec:satfol:hidden-literal-based-elimination}
@@ -189,7 +192,7 @@ literals} to capture such implications.
    Given a propositional literal $L$ and a propositional clause set~$N$, the
    set of \emph{propositional hidden literals} for $L$ and~$N$ is
    $\PHL(L, N) = \{ L' \mid L' \bigpimpl{N}^\ast L \} \setminus \{ L \}$, where $\bigpimpl{N}$ is
-   defined such that $\neglit{L_1} \bigpimpl{N} L_2$ whenever $L_1 \cor L_2 \in N.$
+   defined so that $\neglit{L_1} \bigpimpl{N} L_2$ whenever $L_1 \cor L_2 \in N.$
    Moreover, $\PHL(L_1 \cor \cdots \cor L_n, N) = \bigcup_{i=1}^n
    \PHL(L_i, N)$.
 \end{defi}
@@ -305,7 +308,7 @@ Hidden literals can be combined with unit clauses~$L'$ to remove more literals:
 %\text{~for some~}\sigma -- %%% Not necessary in a rule -- all variables are universally quantified. --JB
 \]
 %
-Given a unit clause $L' \in N$, the rule uses it to discharge $\sigmaterm{L'}$ in
+Given a unit clause $L' \in N$, the rule uses $L'$ to discharge $\sigmaterm{L'}$ in
 $N \models \sigmaterm{L'} \impl \neglit{L}$. As a result, we have $N \models
 \neglit{L}$, making it possible to remove $L$ from $L \cor C$.
 
@@ -364,7 +367,7 @@ Next, we generalize hidden tautologies to first-order logic.
    In practice, most provers use a variant of the given clause procedure.
    Removing hidden tautologies breaks the invariant of the procedure that all
    inferences between clauses in $\aset$ are redundant. The end result is not
-   that the prover diverges, but that it terminates without deriving empty
+   that the prover diverges, but that it terminates without deriving the empty
    clause.
 
    To observe this, assume the setting as in Example
@@ -595,18 +598,18 @@ set with no occurrences of $\cst{p}$.
    to show (since $\flatresiter$ is terminating and Newmann's lemma applies
    \cite{bn-98-tr-and-all-that}) that $\flatresiter$ is locally confluent. In
    other words, whenever $(M,N) \flatresiter (M, N_1)$ and $(M,N) \flatresiter
-   (M, N_2)$ there exists $N'$ such that $(M, N_1) \flatresiter (M, N')$ and
+   (M, N_2)$, there exists $N'$ such that $(M, N_1) \flatresiter (M, N')$ and
    $(M, N_2) \flatresiter (M,N')$. 
    
    There are two main sources of nondeterminism of $\flatresiter$: The choice of $C
-   \in N$ and the choice of the literal in $C$ to act on. Let us focus on the choice of
-   $C$ in $N$; the same discussion applies for the choice of literal in $C$.
+   \in N$ and the choice of a literal in $C$ to act on. Let us focus on the choice of
+   $C$ in $N$; the same discussion applies for the choice of a literal in $C$.
 
    Let $N = \{C_1\} \uplus \{C_2\} \uplus N'$, where $C_1$ and $C_2$ are
    clauses with occurrences of $\cst{p}$. Then, $(M, \{C_1\} \uplus \{ C_2 \cup
    N' \}) \flatresiter (M, N'_1 \cup \{ C_2 \cup N'\})$ and $(M, \{C_2\} \uplus
    \{C_1 \cup N' \}) \flatresiter (M, N'_2 \cup \{ C_1 \cup N' \})$ where $N'_1$ and
-   $N'_2$ are sets of corresponding resolvents. Both of $\flatresiter$ steps can
+   $N'_2$ are sets of corresponding resolvents. Both $\flatresiter$ steps can
    be joined (up to variable renaming) to $(M, N'_1 \cup N'_2 \cup N')$, showing
    that $\flatresiter$ is locally confluent.
 \end{proof}
@@ -662,9 +665,11 @@ parameter. A predicate elimination
 step from $N$ to $N'$ is allowed if
 $\lambda(N') < \lambda(N) + K_\mathrm{tol}$ or
 $\mu(N') < \mu(N)$ or
-$|N'| < |N| + K_\mathrm{tol}$.
-\confrep{}{A refinement, which we want to try out in future work, would be to gradually
-increment the tolerance $K_\mathrm{tol}$, as is done in some SAT solvers.}
+$|N'| < |N| + K_\mathrm{tol}$. Intuitively, we allow predicate elimination
+even in the cases in which proof state increases in size, as long as we can control
+this increase with the parameter $K_\mathrm{tol}$. 
+A refinement, which we want to try out in future work, would be to gradually
+increment the tolerance $K_\mathrm{tol}$, as is done in some SAT solvers.
 
 
 \subsection{Defined Predicates}
@@ -779,7 +784,7 @@ The key result about propositional gates carries over to definition sets.
    \begin{lemma}
       \label{lem:flat-res-set-step-satisfiability}
       Let $G$ be a definition set for $\cst{p}$\confrep{,}{} and $N$ \confrep{}{be }an arbitrary clause
-      set. If $(G, N) \flatresiter (G, N')$ then $G \cup N$ and $G \cup N'$ are
+      set. If $(G, N) \flatresiter (G, N')$, then $G \cup N$ and $G \cup N'$ are
       equivalent.
    \end{lemma}
    \begin{proof}
@@ -821,7 +826,7 @@ The key result about propositional gates carries over to definition sets.
 
       Now consider the flat resolvent of $C$ and $D$ on~$\cst{p}$: $R =
       \neqlit{x_1}{s_1} \cor \cdots \cor \neqlit{x_n}{s_n} \cor C' \cor D'$.
-      Let $\zeta$ be a valuation coinciding with $\xi$ on variables of $C$
+      Let $\zeta$ be a valuation coinciding with $\xi$ on the variables of $C$
       and with $\xi'$ on $\tuplen{x}$.
       Clearly, $\mm \notmodels_\zeta R$. Yet, $R \in N'$, and as $\mm \models N'$, we reach a contradiction.
    \end{proof}
@@ -848,7 +853,7 @@ The key result about propositional gates carries over to definition sets.
       $\mm'\notmodels_\xi C$, and consequently $\mm' \models_\xi
       \cst{p}(\tuplen{x})$. By construction of $\mm'$, there exists a clause
       $\pospredlit{\cst{p}(\tuplen{y})} \cor D' \in G$ and an assignment $\xi'$
-      which assigns each $y_i$ value of $\xi(x_i)$ such that $\mm
+      which assigns each $y_i$ the value of $\xi(x_i)$ such that $\mm
       \notmodels_{\xi'} D'$. The resolvent $R = \neqlit{x_1}{y_1} \lor \cdots \lor
       \neqlit{x_n}{y_n} \lor C' \lor D'$ is a tautology, according to condition
       4 of Definition \ref{def:definition}. However, for a valuation that
@@ -1037,7 +1042,7 @@ derivation} consists of transitions either of the form $N
 \rhd_\mathbf{P} N'$ or of the form $N \rhd_{\Red} N'$ where
 $\mathbf{P}(N) \supseteq \mathbf{P}(N')$.
 Because $\mathbf{P}$ is finite, any mixed derivation consists of at most
-finitely many $\rhd_\mathbf{P}$ transitions. Hence, in any derivation,
+finitely many $\rhd_\mathbf{P}$-transitions. Hence, in any derivation,
 there exists an index~$k$ from which all transitions are standard
 ${\rhd}_{\Red}$-transitions.
 
@@ -1135,6 +1140,7 @@ interpreted as any set of cardinality at least 2.
 The operator $\Wk{}$ translates $\mupSigma$-literals to
 $\mupSigma\Wksup$-literals as follows, where $\cst{p} \in \mathbf{P}$,
 $\cst{q} \notin \mathbf{P}$, and $s, t$ are non-Boolean terms:
+\pagebreak[2]
 %
 %\begin{linenomath*}
 \begin{align*}
@@ -1205,7 +1211,8 @@ clause subsumption, and
 equality subsumption.
 Moreover, rewriting of positive literals is possible if the
 rewriting clause is smaller than the rewritten
-clause (a condition that is also needed with $\models$ but omitted by Schulz).
+clause (a condition that is also needed with $\models$ but omitted by Schulz
+to allow more aggressive application of this useful rule).
 Finally, destructive equality resolution cannot be justified with $\models$,
 let alone $\modelsWk$.
 
@@ -1303,7 +1310,7 @@ $\Inv_\mathcalx{N}$ in the saturation framework, whose right-hand side is
 $\bigcup_{i=0}^k \RedI^{\Lab}(\mathcalx{N}{}_i)$. We cannot use the
 big union ${\bigcup}$ starting at $i = 0$ because we will need to truncate a
 sequence prefix of an a priori unknown length. The argument will still work
-thanks to monotonicity properties of redundancy criteria.
+thanks to monotonicity properties of the redundancy criteria.
 
 \begin{lemma}
 \label{lem:gcp-invar-gcp}
@@ -1609,7 +1616,7 @@ This could be investigated further.
    
 Not only can BCE prevent infinite saturation (Example \ref{example:infinite-blocked-set}),
 but it can also be used to convert a finite Herbrand model
-into a certificate of clause set satisfiability. The certificate uses only
+into a certificate of clause set satisfiability (i.e., an object that carries the checkable proof of satisfiability). The certificate uses only
 blocked clause elimination and addition, in conjunction with a transformation
 to reduce the clause set to an empty set. This theoretical result
 explores the relationship between Herbrand models and satisfiability certificates
@@ -1670,7 +1677,7 @@ Adding and removing GALs preserves and reflects satisfiability:
    \sigmaterm{L}$. If $\ourmodel \models
    \substterm{\tau}{L'}$, for $\sigmaterm{C} \cor \sigmaterm{L}$ to be satisfied by $\ourmodel$ (as $C \cor L \in N'$), some
    literal in $\sigmaterm{C}$ must be satisfied by $\ourmodel$, contradicting that
-   $\sigmaterm{C}$ is falsified by $\ourmodel$. If $\ourmodel \notmodels \substterm{\tau}{L'}$
+   $\sigmaterm{C}$ is falsified by $\ourmodel$. If $\ourmodel \notmodels \substterm{\tau}{L'}$,
    then some literal in $\substterm{\tau}{D}$ must be satisfied. Since $\substterm{\tau}{D} \subseteq \sigmaterm{C}$,
    we get the same contradiction. Therefore, $\ourmodel$ satisfies $N$,
    as needed.
@@ -1681,7 +1688,7 @@ Adding and removing GALs preserves and reflects satisfiability:
 For first-order logic without equality, a clause $L \cor C$ is blocked if all its
 $L$-resolvents are tautologies \cite{ksstb-2017-blockedfol}. The $L$-resolvent
 between $L \cor C$ and $\neglit{L_1} \cor \cdots \cor \neglit{L_n} \cor
-D$ (which are renamed apart) is $\sigmacl{C \cor D}$, where $\sigma$ is the most general unifier
+D$ (which are renamed apart) is $\sigmacl{C \cor D}$, where $\sigma$ is the MGU
 of the literals $L, L_1, \ldots, L_n$.
 Given a Herbrand model $\ourmodel$ of a problem, the following procedure
 removes all clauses while preserving satisfiability:
@@ -1717,7 +1724,7 @@ removes all clauses while preserving satisfiability:
 \end{enumerate}
 
 
-The procedure is limited to the first-order logic without equality, since step
+The procedure is limited to first-order logic without equality, since step
 \ref{item:step3} is justified only if $L$ is a predicate literal. (Otherwise,
 $L$ cannot block clause $\cst{q} \cor L$ \cite{ksstb-2017-blockedfol}.) The
 procedure also terminates only for finite Herbrand models. 
@@ -1761,11 +1768,8 @@ elimination all admit efficient implementations in a superposition
 prover. In this section, we describe how to implement the first
 \begin{noqle}two\end{noqle}\begin{qle}three\end{qle} sets of
 techniques. For BCE, we refer to Kiesl et al.\ \cite{ksstb-2017-blockedfol}.
-All techniques are implemented in the Zipperposition prover
-\cite{sc-supind-17}. Zipperposition is designed for fast prototyping
-of improvements to superposition, but it implements many of the most successful
-heuristics from the E prover \cite{scv-19-e23} and has recently become
-quite competitive \cite{gs-19-casc27}.
+All techniques have been implemented in the Zipperposition prover
+\cite{sc-supind-17}.
 
 \ourpara{Hidden-Literal-Based Elimination}
 % 
@@ -1974,9 +1978,9 @@ is added to $\unitset$.
    The \infname{UnitHTR} rule relies on maintaining the index $\unitset$, which is
    built as follows. Whenever the prover derives a unit clause $C = \{ L \}$, we
    find all entries $L_\mathrm{a}$ in $\impmap$ such that $L_\mathrm{a}$ and $L$
-   are unifiable with the most general unifier $\sigma$. Then, we set $\unitset
+   are unifiable with the MGU $\sigma$. Then, we set $\unitset
    \gets \unitset \cup \{ (\sigmaterm{L_\mathrm{c}}, M \cup \{ C \} ) \mid
-   (L_\mathrm{c}, M) \in \impmap[L_\mathrm{a}] \}$. Given a clause $L \cor C'$
+   (L_\mathrm{c}, M) \in \impmap[L_\mathrm{a}] \}$. Given a clause $L \cor C'$,
    we apply \infname{UnitHLE} by looking for $(L', M) \in \unitset$ such that
    $\sigmaterm{L'} = \neglit{L}$, for some substitution $\sigma$; we apply
    \infname{UnitHTR} by looking for $L'$ such that $\sigmaterm{L'} = L$.  The sets
@@ -2028,10 +2032,10 @@ substitutions and congruence.
 To implement portfolio predicate elimination, we maintain a record for each
 predicate symbol $\cst{p}$ occurring in the problem with the
 following fields:\
-set of definition clauses for $\cst{p}$, set of nondefinition clauses in which
-$\cst{p}$ occurs once, and set of clauses in which $\cst{p}$ occurs more than
+the set of definition clauses for $\cst{p}$, the set of nondefinition clauses in which
+$\cst{p}$ occurs once, and the set of clauses in which $\cst{p}$ occurs more than
 once. These records are kept in a priority queue, prioritized by properties such
-as presence of definition sets and number of estimated resolutions. If
+as the presence of definition sets and the number of estimated resolutions. If
 $\cst{p}$ is the highest-priority symbol that is eligible for SPE or DPE, we
 eliminate it by removing all the clauses stored in $\cst{p}$'s record from the
 proof state and by adding flat resolvents to the passive set.
@@ -2050,26 +2054,26 @@ limits apply for blocked clause elimination.
 
 The most important novel aspect of our predicate elimination implementation is
 recognizing the definition clauses for symbol $\cst{p}$ in a clause set $N$, which is performed
-as follows:
+as follows, assuming $\tupleempty{x}$ is a fixed tuple of distinct free variables:
 \begin{enumerate}
-   \item Let $G = \{ C \mid C = \arbpredlit{\cst{p}(\tupleempty{x})} \cor C', C \in
-   N$, no variable repeats in $\tupleempty{x}$, and variables of $C'$ are among
-   $\tupleempty{x}\}$. If $G$ is empty, report failure; otherwise, continue.
+   \item Let $G = \{ C \mid C = \arbpredlit{\cst{p}(\tupleempty{y})} \cor C', C \in
+   N$, no variable repeats in $\tupleempty{y}$, and the variables of $C'$ are among
+   $\tupleempty{y}\}$. If $G$ is empty, report failure; otherwise, continue.
 
-   \smallskip
+%    \smallskip
    \item Rename all clauses in $G$ so that their only variables are~$\tupleempty{x}$.
 
-   \smallskip
+%    \smallskip
    \item\label{step:encoding} Let $\lfloor a \rfloor$ be a function that assigns
    a propositional variable to each atom $a$. This function is lifted to
-   literals by assigning $\lfloor \neg a \rfloor  = \neg x$, if $\lfloor a
+   literals by assigning $\lfloor \neg a \rfloor  = \neg x$ if $\lfloor a
    \rfloor = x$, and to clauses pointwise. Furthermore,  
    let $E = \{ \lfloor C' \rfloor \mid
    \arbpredlit{\cst{p}(\tupleempty{x})} \cor C' \in G \}$. If $E$ is satisfiable,
    report failure. Else, let $E'$ be the unsatisfiable core of $E$
    and $G'$ the set of corresponding first-order clauses and continue.
 
-   \smallskip
+%    \smallskip
    \item If all resolvents in $G'_{\pospredlit{\cst{p}}} \flatres_{\!\cst{p}}
    G'_{\negpredlit{\cst{p}}}$ are tautologies, then $G'$ is the definition set
    for symbol $\cst{p}$. Else, report failure.
@@ -2329,7 +2333,7 @@ the +~sign denotes the combination of techniques.
 We confirm the results obtained by Kiesl et al.\ about the performance of BCE
 as preprocessing:
 It helps prove \NumberOK{30} more problems from our benchmark set, increasing the
-success rate by roughly \NumberOK{0.4\%}. The same percentage increase was obtained Kiesl et al.
+success rate by roughly \NumberOK{0.4\%}. The same percentage increase was obtained by Kiesl et al.
 %
 Using BCE as inprocessing, however, hurts performance, presumably because of
 its incompatibility with the redundancy criterion.
@@ -2359,7 +2363,7 @@ Figure~\ref{fig:bce-sat} presents the results.
 \looseness=-1
 The baseline establishes the satisfiability of \baseres~problems. We consider
 only preprocessing techniques, since BCE compromises refutational
-completeness---a saturation does not guarantee that the original problem was
+completeness---a saturation does not guarantee that the original problem is
 satisfiable. We note that recognizing definition sets makes almost no difference on
 satisfiable problems. The sets of problems solved by BCE and PPE
 differ---\NumberOK{30} problems are solved by BCE and not by PPE.
@@ -2370,7 +2374,7 @@ differ---\NumberOK{30} problems are solved by BCE and not by PPE.
 
 We briefly surveyed related work in Sect.~\ref{sec:satfol:introduction}. In this
 section, we give a more detailed overview and further discuss connections with
-the related work.
+related work.
 
 The research presented in this \paper{} is two-pronged. For SAT elimination
 techniques already generalized to preprocess first-order problems, we looked for
@@ -2380,7 +2384,7 @@ first-order logic, we looked for generalizations that allow both preprocessing a
 inprocessing.
 
 Hidden tautology elimination was first described
-by Heule et al.\ \cite{hjb-2010-cl-elim}. Better implementation that also
+by Heule et al.\ \cite{hjb-2010-cl-elim}. A better implementation that also
 supports hidden literal elimination was later described by the same group of
 authors \cite{hjb-2011-big-simplification}. We generalized the underlying
 theoretical concepts to first-order logic, and provided an efficient way to deal
@@ -2390,16 +2394,16 @@ generalization. More efficient graph-based techniques are yet to be explored.
 Variable elimination, based on Davis--Putnam resolution \cite{dp-60-dp}, has been studied in
 the context of both propositional logic \cite{sp-04-niver,cs-00-zres} and QBF
 \cite{ab-2004-re}. It was generalized to first-order logic (as a
-preprocessor) by Khasidashvili and Korovin \cite{kk-2016-pe-fol} yielding a technique called
+preprocessor) by Khasidashvili and Korovin \cite{kk-2016-pe-fol}, yielding a technique called
 predicate elimination. An improvement of variable elimination,
 that uses formula definition information, has been popularized as a preprocessing and
 inprocessing technique for CDCL solvers by E{\'{e}}n and Biere
 \cite{eb-2005-satpreprocess}. We generalized this improvement to first-order
 logic and combined it with Khasidashvili and Korovin's approach. With tolerable restrictions,
 this extension can be used as an inprocessing technique. In SAT and QBF, it was observed that
-allowing variable elimination to slightly increase in the clause set size
+allowing variable elimination to slightly increase the clause set size
 improves performance \cite{bls-11-bloqqer}. We implemented a similar approach,
-achieving the double the number of additional proofs found compared to more
+achieving double the number of additional proofs found compared to more
 restrictive approaches.
 
 Blocked clause elimination is used in both SAT~\cite{jbh-10-BCE} and QBF
@@ -2439,7 +2443,7 @@ literals could be extended to exploit equality congruence. Second, although
 blocked clause elimination is generally incomplete as an inprocessing technique,
 we hope to achieve
 refutational completeness for a substantial fragment of it. Third, predicate and
-blocked clause elimination, which thrives on the absence of clauses from the
+blocked clause elimination, which thrive on the absence of clauses from the
 proof state, could be enhanced by tagging and ignoring generated clauses that
 have not yet been used to subsume or simplify untagged clauses. Fourth,
 predicate and blocked clause elimination could be extended to work with
