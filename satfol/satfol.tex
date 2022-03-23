@@ -1288,7 +1288,7 @@ Here is a summary of the main framework notations:
 
 \begin{sloppypar}
    The completeness proof follows the invariance-based argument found in the
-   article by Waldmann et al. \cite{waldmann-et-al-202x-article}.
+   article by Waldmann et al. \cite{waldmann-et-al-202x-article} about the saturation framework.
 \end{sloppypar}
 
 \begin{lemma}
@@ -1304,7 +1304,7 @@ nowhere. The case for \textsc{ElimPred} is trivial.
 
 Let $\Inv\Wksup_\mathcalx{N}(k)$ denote the condition
 $\textstyle\FLInf(\mathcalx{N}{}_k{\downarrow}_\mathsf{active}) \subseteq
-\LRedIWk(\mathcalx{N}{}_k)$.
+\LRedIWk(\mathcalx{N}{}_k)$. \vspace{0.5em}
 Notice the difference with the definition of the key invariant
 $\Inv_\mathcalx{N}$ in the saturation framework, whose right-hand side is
 $\bigcup_{i=0}^k \RedI^{\Lab}(\mathcalx{N}{}_i)$. We cannot use the
@@ -1370,8 +1370,7 @@ every ground instance $(C_n,\ldots,C_1,C_0)$ of $\iota$, there exists a finite
 clause set $\mathcalx{D} \subseteq \gnd(\mathcalx{N}) \cup \gnd(\mathcalx{M}')$
 that is $\prec$-smaller than $C_1$ and such that
 $\{C_n,\ldots,C_2\} \cup \mathcalx{D} \modelsWk \{C_0\}$.
-Without loss of generality, we assume that $\mathcalx{D}$ is the smallest such
-set.
+Without loss of generality, we assume that $\mathcalx{D}$ is the $\prec$-smallest such set; such a set exists because $\prec$ is well founded.
 
 By definition of $\mathcalx{N}$, $\cst{p}$ cannot occur in $C_0$.
 By Lemma~\ref{lem:p-Wk-entail}, if $\cst{p}$ occurred in $D \in \mathcalx{D}$,
