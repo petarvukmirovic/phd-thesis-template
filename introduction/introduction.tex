@@ -21,8 +21,8 @@ mathematical theories, yet intuitive and understandable enough to allow
 reasonably simple formal reasoning systems. First-order logic seemed to satisfy
 both requirements.  This formalism not only allows one to model simple
 logical relations such as ``if it rains, the road is muddy'' (or formally
-$\cst{rains} \imp \cst{muddy}$), but also to quantify over objects as in ``all
-people are mortal'' ($\iforall x.\, \cst{human}(x) \imp \cst{mortal}(x)$).
+$\cst{rains} \iimplies \cst{muddy}$), but also to quantify over objects as in ``all
+people are mortal'' ($\iforall x.\, \cst{human}(x) \iimplies \cst{mortal}(x)$).
 
 \paragraph{Automatic Theorem Proving}The initial study of first-order logic and the rules to reason about statements in
 it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
@@ -111,7 +111,27 @@ first-order ones \cite{ns-13-leo2sh}. This proved unfruitful as state-of-the-art
 higher-order theorem provers of the time were primarily designed for small and
 tricky problems. On the other hand, problems coming from hammers consist of
 mostly first-order formulas, are rather large, and mostly require simple
-higher-order proof steps. Thus, from the standpoint of proof assistants the ideal
+higher-order proof steps. An example of a problem that is seemingly simple, but its translation to first-order logic
+is out of reach for even the best of first-order provers is \cite{bbbntvw-2x-mechanical-mathematicians}:
+
+$$ \big(\sum_{i=1}^{n} i^2 + 2i + 1\big) \ieq \big(\sum_{i=1}^{n} i^2\big) +
+\big(\sum_{i=1}^{n} 2i\big) + \big(\sum_{i=1}^{n} 1\big) $$ \noindent One of the
+reasons why this problem is hard is that higher-order proof assistants rely on
+unnamed functions, called \emph{$\lambda$-abstractions}, to represent
+variable-binding mathematical operators such as summations, integrals and
+limits. More precisely, the left-hand side of the above equation is usually
+represented as $\cst{sum}(1, n, \lambda i. \, i\cst{*}i + 2\cst{*}i + 1)$. When
+translated to first-order logic, $\lambda$-abstractions, which are ubiquitous as
+all-purpose binders in higher-order logic, are obfuscated to the point that all
+but the simplest  reasoning about them are out of reach for first-order provers.
+However, for higher-order provers the crux of the proof is matching the axiom
+$\iforall i j f g.\, \cst{sum}(i, j, \lambda x. \, f \, x \, \cst{+} \, g\,x) \ieq
+(\cst{sum}(i, j, \lambda x. \, f \, x ) \, \cst{+} \, \cst{sum}(i, j, \lambda x. \, g
+\, x ) )$ against the goal. This operation is relatively simple and, in general, much more efficient
+than first-order reasoning about translations.
+
+
+Thus, from the standpoint of proof assistants the ideal
 automatic theorem prover fulfills the following wishlist:
 \begin{enumerate}
   \item\label{it:fo} Performs as the best first-order provers on first-order problems
@@ -139,14 +159,14 @@ We have identified three stops on the road to full higher-order logic. A
 distinguished feature of higher-order logic is that it not only supports
 quantification over objects, but also over functions that manipulate these
 objects. Thus, higher-order logic allows us to make a statement ``all functions
-with arguments $0$ and $1$ result in $2$" ($\forall x. \,  x (\cst{0}, \cst{1}) \eq
+with arguments $0$ and $1$ result in $2$" ($\iforall x. \,  x (\cst{0}, \cst{1}) \eq
 \cst{2}$). Replacing $x$ with the addition function ($\cst{+}$) is enough to
 disprove this statement. The first stop is to extend E to support
 quantification over functions that are already present in the theory.
 
 Higher-order logic also supports expressing functions that are not explicitly
 present in the theory. Suppose we want to prove there is a
-function that returns 4 when given 2 and 5 when given 3 ($\exists x. x(\cst{2})
+function that returns 4 when given 2 and 5 when given 3 ($\iexists x. x(\cst{2})
 \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such function is
 the function that adds 2 to its argument. In higher-order logic such unnamed
 functions can be represented using $\lambda$-abstractions as $\lambda y.\, y \,
@@ -157,7 +177,7 @@ In higher-order logic we can make statements about statements. More precisely,
 it treats Boolean terms (formulas) as first-class citizens, enabling us to
 model some concepts in a more natural manner. For example, we can naturally
 represent statements such as ``what Jasmin says is true'' as $\iforall x. \,
-\cst{says}(\cst{jasmin}, x) \imp x$. The last stop is to support Boolean terms
+\cst{says}(\cst{jasmin}, x) \iimplies x$. The last stop is to support Boolean terms
 as first-class citizens.
 \pagebreak[2]
 
