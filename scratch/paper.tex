@@ -308,15 +308,15 @@
   we propose to extend first-order provers with native support for
   higher-order features. Building on our extension of E to $\lambda$-free
   higher-order logic, we now extend E to full higher-order logic.
-  The resulting prover is the second strongest on both TPTP benchmarks and
-  benchmarks coming from a proof assistant.
+  The resulting prover is the \NumberOK{strongest} one on benchmarks coming from a
+  proof assistant, and the second best on TPTP benchmarks.
   %It also incurs no overhead on first-order problems.  -- sounds like a detail --JB
 \end{abstract}
 
 \setcounter{footnote}{0}
 
 \section{Introduction}
-\label{sec:introduction}
+\label{sec:ehoh2:introduction}
 
 In the last few decades, proof assistants have become indispensible tools for
 developing trustworthy formal proofs. They are used both in academia to verify
@@ -358,8 +358,8 @@ efficient as E. Nevertheless, it has won the higher-order division of the CASC
 theorem prover competition \cite{gs-21-cascj10} in 2020 and 2021 by a wide
 margin, ending nearly a decade of Satallax domination.
 
-In this \paper, we fulfill a three-year-old promise: We present the extension of
-Ehoh to full higher-order logic (Sect.~\ref{sec:logic}) using incomplete variants
+In this chapter, we fulfill a three-year-old promise: We present the extension of
+Ehoh to full higher-order logic (Sect.~\ref{sec:ehoh2:logic}) using incomplete variants
 of $\lambda$-superposition. We call this prover \ehohii.
 %
 The $\lambda$-superposition calculi were
@@ -369,16 +369,7 @@ extensive experiments with various heuristic choices have been performed
 these experiences to choose a set of effective rules that could easily be
 retrofitted into an originally first-order prover. Another principle that guided 
 the design of \ehohii{} was \emph{gracefulness}: we made sure that our changes
-do not impact already strong first-order performance of Ehoh. 
-
-An simpler approach to support higher-order logic is to implement
-combinatory superposition, which is based on \textsf{SKBCI}-combinators
-and implemented in Vampire \cite{br-20-full-sup-w-combs}.
-These can be supported as a thin layer on top of $\lambda$-free terms. However,
-in unpublished experiments, we found that $\lambda$-superposition performs
-substantially better, corroborating the CASC results, so we
-decided to make a more profound change to Ehoh and implement
-$\lambda$-superposition.
+do not impact the strong first-order performance of E and Ehoh. 
 
 % We
 % also used the experience of fine-tuning the calculi
@@ -386,23 +377,22 @@ $\lambda$-superposition.
 % calculus extensions and heuristics to use in E.
 
 One of the main challenges we faced was retrofitting $\lambda$-terms in Ehoh's
-term representation (Sect.~\ref{sec:terms}). Furthermore, Ehoh's main inference
+term representation (Sect.~\ref{sec:ehoh2:terms}). Furthermore, Ehoh's main inference
 engine was designed with the assumption that it will be used with
 inferences that compute a most general unifier. We
 implementd a higher-order unification procedure \cite{unif-section}
-that can return multiple unifiers (Sect.~\ref{sec:unif-match-index}) and
+that can return multiple unifiers (Sect.~\ref{sec:ehoh2:unif-match-index}) and
 integrated it in the inference engine. Finally, we extended and adapted the
 superposition rule, resulting in an incomplete, pragmatic variant of
-$\lambda$-superposition (Sect.~\ref{sec:calculus}).
+$\lambda$-superposition (Sect.~\ref{sec:ehoh2:calculus}).
 
-% most likely text
 We \NumberOK{evaluated} \ehohii{} on a selection of proof assistants benchmarks
 as well as all higher-order theorems in the TPTP library \cite{gs-17-tptp}
-(Sect.~\ref{sec:eval}). We found
-that \ehohii{} clearly outperforms Ehoh on all benchmarks. Compared
-with other higher-order provers, it is second
-only to the cooperative version of Zipperposition, which employs Ehoh as a
-backend. A fairer comparison without the backend puts \ehohii{} in the
+(Sect.~\ref{sec:ehoh2:eval}). We found
+that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on
+proof assistant benchmarks; on TPTP benchmarks it ended up second only to 
+to the cooperative version of Zipperposition, which employs Ehoh as a
+backend. An arguably fairer comparison without the backend puts \ehohii{} in the
 first place for both benchmark suites.
 We also compared the performance of \ehohii{} with E on first-order
 %%% @PETAR: I made this slightly sentence shorter and more forceful. Please
@@ -413,7 +403,7 @@ extension to higher-order logic.
 \kern-1pt %% TYPESETTING hack
 
 \section{Logic} %---0.5p
-\label{sec:logic}
+\label{sec:ehoh2:logic}
 
 % TO BE CHANGED AS NECESSARY
 Our target logic is monomorphic classical higher-order logic with Hilbert choice.
@@ -430,26 +420,33 @@ gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \, \cst{a}}$)
 %x_n. \> s$ to $\lam{\overline{x}_n}{s}$.
 
 We let $s \, \overline{t}_n$ stand for $s \, t_1 \, \ldots \, t_n$ and
-$\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$.
-Every $\beta$-normal term can be written as $\lam{\overline{x}_m}{s \,
+$\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$. Every
+$\beta$-normal term can be written as $\lam{\overline{x}_m}{s \,
 \overline{t}_n}$, where $s$ is not an application; we call $s$ the \emph{head}
-of the term. If $s$ is a free variable, we call the term \emph{flex};
-otherwise, the term is \emph{rigid}. If the type of a term is of the form $\tau_1 \to \cdots \to
-\tau_n \to o$, where $o$ is the distinguished Boolean type and $n \ge 0$, we
-call it a \emph{predicate}. A literal $l$ is an equation $s \eq t$ or
-a disequation $s \not\eq t$. A clause is a finite multiset of literals,
+of the term. If $s$ is a free variable, we call the term \emph{flex}; otherwise,
+the term is \emph{rigid}. A term of type $o$, where $o$ is the distinguished Boolean type,
+is called a \emph{formula}. A type whose type is of the form $\tau_1 \to
+\cdots \to \tau_n \to o$ is called
+a \emph{predicate}. Logical symbols are part of the signature and
+may thus occur within terms. We write them in bold: $\pmb{\neg}, \iand, \ior,
+\iimplies, \iequiv, \ieq, \dots$.
+
+On top of the terms, we define some clausal structure, as is customary in
+first-order logic.
+A literal $l$ is an equation $s \eq t$ or a
+disequation $s \not\eq t$. A clause is a finite multiset of literals,
 interpreted and written disjunctively:\ $l_1 \llor \cdots \llor l_n$.
-Logical symbols that may occur within terms are written in bold:
-$\pmb{\neg}, \iand, \ior, \iimplies, \iequiv, \dots$. Predicate
-literals are encoded as (dis)equations with $\itrue$ based on their sign; for
+Notice that the clause-level operators are not set in bold.
+Predicate literals are encoded as (dis)equations with $\itrue$ based on their sign; for
 example, $\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
-$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$.
+$\neg\,\cst{even}(x)$ as $\neglit{\cst{even}(x)}$.
 
 \section{Terms}
-\label{sec:terms}
+\label{sec:ehoh2:terms}
 
-Ehoh's term representation is centered around perfect term sharing %or exa
-\cite{ls-01-shared}: Any two structurally identical terms are
+\looseness=-1
+E has been designed around perfect term sharing %or exa
+\cite{ls-01-shared}, a design that we carried on to  Ehoh and \ehohii{}: Any two structurally identical terms are
 guaranteed to be the same object in memory. This is achieved through term
 \emph{cells}, which represent individual terms. Each cell has (among other fields)
 (1)~\texttt{f\_code}, an integer corresponding to the symbol at the head of the term (negative
@@ -497,8 +494,8 @@ index can never be mistaken for a function symbol or a variable.
 
 Other than possibly being instantiated during $\beta$-reduction, De Bruijn
 indices mostly behave as constants. Therefore, we decided to represent De
-Bruijn indices using positive \texttt{f\_code}s: De Bruijn index of value $i$
-will have $i$ as the \texttt{f\_code}. To ensure De Bruijn indices are not
+Bruijn indices using positive \texttt{f\_code}s: The De Bruijn index of value $i$
+will have $i$ as the~\verb|f_code|. To ensure De Bruijn indices are not
 mistaken for function symbols, we use the \texttt{properties} bitfield of the
 cell, which holds precomputed properties of %shared cell
 %%% @PETAR(checked, you are right): I don't understand why you wrote "shared cell". Please double-check. --JB
@@ -573,7 +570,7 @@ is then a complete waste of time.
 To avoid this, we use Ehoh's perfectly shared
 terms and their \texttt{properties} field.
 %
-We introduce the property \texttt{HasBetaReducibleSubterm} that indicates whether
+We introduce the property \texttt{HasBetaReducibleSubterm} which is set if
 %%% @PETAR(is is good): "is" or "may be" below? (Overapproximation?) --JB
 a cell is $\beta$-reducible.
 Whenever a new cell that contains a
@@ -623,7 +620,7 @@ More specifically, when $\eta$-reducing a cell $\internallam(\db{0}, s)$,
 the cell will be of the form
 $\internallam(\db{0}, \dotsc,\allowbreak \internallam(\db{0}, t) \ldots)$,
 where $t$ is not a
-$\lambda$-abstraction. Then \ehohii{} breaks down the body~$t$ into a maximal
+$\lambda$-abstraction, and $l$ is the number of $\internallam$ symbols above $t$. Then \ehohii{} breaks down the body~$t$ into a maximal
 decomposition $u\, (\dbvar{n}\db{{}-1}) \, \ldots \, \db{1} \, \db{0}$.
 If $n = 0$, the cell is not $\eta$-reducible.
 Otherwise, $u$ is traversed to determine the
@@ -633,7 +630,7 @@ taking $\dbvar{j} = \infty$ if no such index exists.
 %bottom-up as innermost can suggest): Check "innermost".
 %%% @PETAR(you are right, but I will add righmost outermost to be more precise): But it's rightmost then not leftmost! In the example, the very first
 %%% binder remains (the one to which the 2's point). --JB
-We can then remove the $k = \min(j,n)$ rightmost outermost $\lambda$ binders in $\internallam(\db{0},
+We can then remove the $k = \min\{j,l,n\}$ rightmost outermost $\lambda$ binders in $\internallam(\db{0},
 \ldots, \internallam(\db{0}, t) \ldots)$ and replace %the body
 $t$ by the variant of
 $u \allowbreak\, (\dbvar{n}\db{{}-1}) \allowbreak\, \ldots \, (\dbvar{k}\db{{}+1}) \, \dbvar{k}$
@@ -715,7 +712,7 @@ computes the $\beta\eta$-reduced instance of the terms
 before comparing them using KBO or LPO.
 
 \section{Unification, Matching, and Term Indexing}
-\label{sec:unif-match-index}
+\label{sec:ehoh2:unif-match-index}
 % \begin{itemize}
 %   \item Procedure that implements a variant of the algo described in Efficient
 %   HO Unif paper.
@@ -742,8 +739,7 @@ In higher-order logic, such a unifier does not in general exist, and the concept
 %%% @PETAR: CSU, infinite
 is replaced by that of a complete set of unifiers (CSU), which may be infinite.
 Vukmirovi\'c et al.\ \cite{unif-section} designed an efficient
-procedure to enumerate a CSU for a term pair. They
-implemented it in Zipperposition, together with some extensions to term indexing.
+procedure to enumerate a CSU for a term pair. It is implemented in Zipperposition, together with some extensions to term indexing.
 In \ehohii{}, we further improve the performance of this procedure by implementing a terminating,
 incomplete variant. We also introduce a new indexing data structure.
 
@@ -1127,7 +1123,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
 
 \section{Preprocessing, Calculus, and Extensions}
 
-\label{sec:calculus}
+\label{sec:ehoh2:calculus}
 % \begin{itemize}  
   % \item The main goal is simplicity, efficiency and maximal compatibility with
   %     FO superposition.
@@ -1172,12 +1168,12 @@ include the defined symbol in the trigger relation.
 \ourpara{Calculus} \ehohii{} implements the same superposition
 calculus as Ehoh with three important changes. First, wherever Ehoh requires
 the most general unifier of terms, \ehohii{} enumerates unifiers from a finite subset of the CSU, as explained in
-Sect.~\ref{sec:unif-match-index}. Second, \ehohii{} uses versions of the KBO and
-RPO orders designed for $\lambda$-terms.
+Sect.~\ref{sec:ehoh2:unif-match-index}. Second, \ehohii{} uses versions of the KBO and
+LPO orders designed for $\lambda$-terms.
 % as described by Bentkamp et al.\ \cite{bbtv-21-full-ho-sup}.
 
 %TODO: @JASMIN: How do we cite the STTT article?
-Third difference is more subtle. One of the main features of Ehoh is
+The third difference is more subtle. One of the main features of Ehoh is
 \emph{prefix optimization} \cite[Sect.~1]{section-ehoh}: a method which, given a demodulator $s \eq t$, allows
 to replace both applied and unapplied occurrences of $s$ by $t$ 
 by traversing only first-order subterms of a rewritable term. In $\lambda$-free setting this
@@ -1300,24 +1296,23 @@ aleviates the need for the other Boolean rules in practice.
 
 
 \section{Evaluation}
-\label{sec:eval}
+\label{sec:ehoh2:eval}
 
 In this section, we try to answer two questions about \ehohii{}: \emph{How does
 \ehohii{} compare against other higher-order provers (including Ehoh)?} \emph{Does
 \ehohii{} introduce any overhead compared with Ehoh?} To answer
 these questions, we ran provers on problems from the TPTP library \cite{gs-17-tptp} and on
-benchmars generated by Sledgehammer (SH) \cite{pb-12-sh}.
+benchmarks generated by Sledgehammer (SH) \cite{pb-12-sh}.
 The experiments were carried out on StarExec Miami
 \cite{sst-14-starexec} nodes equipped with Intel Xeon E5-2620 v4 CPU clocked at
 2.10~GHz. For the TPTP part, we used the CASC-28\footnote{\url{http://www.tptp.org/CASC/28/}} time limits:\ 120~s
-wallclock and 960~s CPU. For SH, we used Sledgehammer's
+wallclock and 960~s CPU. For SH and to answer the other question, we used Sledgehammer's
 default time limit:\ 30~s wallclock and CPU.
 
 \ourpara{Comparison with Other Provers}
 To answer the first question, we let
 \ehohii{} compete with the top contenders in the higher-order division of
-CASC-28:\ cvc5
-\NumberOK{0.0.7},\footnote{\url{https://cvc5.github.io/}}
+CASC-28:\ cvc5 \NumberOK{0.0.7},\footnote{\url{https://cvc5.github.io/}}
 Ehoh 2.7
 \cite{section-ehoh}, Leo-III \NumberOK{1.6.6} \cite{sb-21-leo3}, Vampire 4.6
 \cite{br-20-full-sup-w-combs}, and Zipperposition 2.1
@@ -1341,10 +1336,11 @@ can use multiple CPU cores, and its heuristics have been trained better on highe
 
 \ehohii{} dramatically improves the higher-order reasoning capabilities
 compared to Ehoh. It solves \NumberOK{20\%} more problems on TPTP benchmarks
-and \NumberOK{3\%} more problems on SH benchmarks, where Ehoh was already very
+and \NumberOK{6\%} more problems on SH benchmarks, where Ehoh was already very
 successful.
 
-\ehohii{} also outperforms all other higher-order provers other than Zipperposition-coop.
+\ehohii{} was mainly designed as efficient backed to proof assistants. As such it 
+excels on SH benchmarks. On TPTP, it outperforms all higher-order provers other than Zipperposition-coop.
 If Zipperposition's Ehoh backend is disabled,
 \ehohii{} outperforms Zipperposition by a wide margin.
 This comparison is arguably fairer; after all,
@@ -1358,7 +1354,7 @@ Zipperposition underwent in the last two years.
 
 Remarkably, there is a substantial disparity in the set of problems solved by
 \ehohii{} and Zipperposition-coop. The raw data show thats \ehohii{} solves
-\NumberOK{144} SH problems and \NumberOK{24} TPTP problems that Zipperposition-coop
+\NumberNOK{166} SH problems and \NumberNOK{21} TPTP problems that Zipperposition-coop
 does not. The lower number of uniquely solved TPTP problems is most likely 
 due to Zipperposition's being heavily optimized on TPTP.
 
@@ -1368,7 +1364,7 @@ designed for users that are interested only in E's first-order capabilities and
 care a lot about performance.
 To answer the second
 evaluation question, about assessing overhead of \ehohii{},
-we chose all the \NumberOK{1138} unique problems used at CASC
+we chose all the \NumberNOK{1138} unique problems used at CASC
 from 2019 to 2021 in first-order theorem division and ran Ehoh and \ehohii{}
 both in this first-order (FO) mode and in higher-order (HO) mode.
 
@@ -1400,11 +1396,11 @@ but due to subtle effects \ehohii{} wins.
       \midrule
       cvc5                  & 1931       & 2577      \\
       Ehoh                  & 2105       & 2611      \\
-      \ehohii{}             & 2527       & 2699      \\
+      \ehohii{}             & 2523       & {\bf 2766}\\
       Leo-III               & 2282       & 1601      \\
       Satallax              & 2320       & 1719      \\
       Vampire               & 2203       & 2240      \\
-      Zipperposition-coop   & {\bf 2583} & {\bf 2754}\\
+      Zipperposition-coop   & {\bf 2583} & 2754      \\
       Zipperposition-uncoop & 2483       & 2181      \\
       \bottomrule
     \end{tabular}}
@@ -1417,10 +1413,10 @@ but due to subtle effects \ehohii{} wins.
     \relax{\begin{tabular}{l@{\hskip 1em}@{\hskip 0.5em}c} \toprule
                       & TPTP     \\
       \midrule
-      Ehoh--FO      & 535      \\
-      Ehoh--HO      & 538      \\
-      \ehohii{}--FO & 533      \\
-      \ehohii{}--HO & {\bf 541}\\
+      Ehoh -- FO      & 535      \\
+      Ehoh -- HO      & 538      \\
+      \ehohii{} -- FO & {\bf 539}\\
+      \ehohii{} -- HO & {\bf 539}\\
       \bottomrule
     \end{tabular}}
     \caption{Evaluation of \ehohii{}'s overhead}
@@ -1430,7 +1426,7 @@ but due to subtle effects \ehohii{} wins.
 
 
 \section{Discussion and Related Work} %---0.5p
-\label{sec:discussion}
+\label{sec:ehoh2:discussion}
 
 On the trajectory to \ehohii{}, we developed, together with colleagues, three
 superposition calculi:\ for $\lambda$-free higher-order logic
@@ -1441,13 +1437,20 @@ estimate how the increased reasoning capabilities of each calculus influence its
 performance.
 
 Extending first-order provers with higher-order reasoning capabilities has been
-tried by other researchers as well. Bhayat and Reger first extended Vampire to
-higher-order logic using combinatory unification \cite{br-20-full-sup-w-combs},
-an incomplete approach, before they designed an implemented a complete
-higher-order superposition calculus based on combinators \cite{br-19-restricted-unif}.
-This calculus is also implemented in Zipperposition. Barbosa et al.\ extended
+attempted by other researchers as well.
+Barbosa et al.\ extended
 the SMT solvers CVC4 (now cvc5) and veriT to higher-order logic in an incomplete
 way \cite{brotb-19-ho-smt}.
+Bhayat and Reger first extended Vampire to
+higher-order logic using combinatory unification \cite{br-20-full-sup-w-combs},
+an incomplete approach, before they designed and implemented a complete
+higher-order superposition calculus based on \textsf{SKBCI}-com\-binators \cite{br-19-comb-unif}.
+The advantage is that combinators can be supported as a thin layer on top of
+$\lambda$-free terms.
+This calculus is also implemented in Zipperposition.
+However, in unpublished experiments, we found that $\lambda$-superposition
+performs substantially better, corroborating the CASC results, so we decided to
+make a more profound change to Ehoh and implement $\lambda$-superposition.
 
 Possibly the only actively maintained higher-order prover built from the bottom
 up as a higher-order prover is Leo-III \cite{sb-21-leo3}, as the long-time
@@ -1457,7 +1460,7 @@ provers and the calculi they are based in the paper about Ehoh
 \cite[Sect.~9]{section-ehoh}.
 
 \section{Conclusion} %---0.5p
-\label{sec:conclusion}
+\label{sec:ehoh2:conclusion}
 
 In 2019, the reviewers of our paper introducing Ehoh \cite{section-ehoh} were
 skeptical that extending it with support for full higher-order logic would be
@@ -1471,12 +1474,12 @@ difficult challenges of fully supporting HOL have yet to be confronted.
 \end{quote}
 %
 We ended up addressing the theoretical ``difficult challenges'' in other work
-with colleagues. In this \paper, we faced the practical challenges pertaining to the extension
+with colleagues. In this chapter, we faced the practical challenges pertaining to the extension
 of Ehoh's data structures and algorithms to support full higher-order logic and
 demonstrated that such an extension is possible. \NumberOK{Our evaluation} shows
-that this extension makes \ehohii{} the second best higher-order prover on
-benchmarks coming from interactive theorem proving practice. \ehohii{}'s
-performance lags slightly behind Zipperposition, possibly because Zipperposition
+that this extension makes \ehohii{} the best higher-order prover on
+benchmarks coming from interactive theorem proving practice, which has been our goal since 2017. \ehohii{}'s
+performance lags slightly behind Zipperposition on TPTP problems, possibly because Zipperposition
 does not assume a clausal structure and can perform subtle formula-level
 inferences. In the future, we plan to implement the same features in \ehohii{}.
 We have also only started tuning \ehohii{}'s heuristics on higher-order

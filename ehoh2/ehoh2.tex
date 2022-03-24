@@ -1,3 +1,79 @@
 \chapter{Extending a Brainiac Prover to Higher-Order Logic}
 \setheader{Extending a Brainiac Prover to Higher-Order Logic}
 \label{ch:ehoh2}
+
+% \renewcommand{chapter}[0]{chapter}
+\newcommand\ehohii{$\lambda$E}
+
+
+\blfootnote{In this work I designed, implemented and evaluated all changes to
+term representation, algorithms and indexing data structures. Jasmin Blanchette
+did the daily supervision. Stephan Schulz provided
+the necessary E expertise.}
+
+\begin{abstract}%
+    The automatic discharge of tedious subgoals is high on the wishlist of many
+  users of proof assistants. Some proof assistants discharge such goals
+  by translating them to first-order logic and invoking an efficient prover on
+  them, but much is lost in translation. As an alternative,
+  we propose to extend first-order provers with native support for
+  higher-order features. Building on our extension of E to $\lambda$-free
+  higher-order logic, we now extend E to full higher-order logic.
+  The resulting prover is the \NumberOK{strongest} one on benchmarks coming from a
+  proof assistant, and the second best on TPTP benchmarks.
+    %It also incurs no overhead on first-order problems.  -- sounds like a detail --JB
+\end{abstract}
+
+\newpage
+
+\section{Introduction}
+\label{sec:ehoh2:introduction}
+
+We began this thesis by introducing Ehoh, a rather conservative extension of
+state-of-the-art first-order prover to a fragment of higher-order logic. This
+extension gave us a flavor of the difficulties that we might encounter on the
+way to full higher-order logic. In chapters that precede this one,
+we discussed many ways in which those difficulties can be overcome.
+In this chapter, we fulfill a promise we gave in the beginning of the thesis: We present the extension of
+Ehoh to full higher-order logic (Sect.~\ref{sec:ehoh2:logic}) using incomplete variants
+of $\lambda$-superposition. We call this prover \ehohii.
+
+%
+The $\lambda$-superposition calculi were
+previously implemented in Zipperposition, and
+extensive experiments with various heuristic choices have been performed
+(Chapter \ref{ch:ho-techniques}). In \ehohii{}'s implementation, we used
+these experiences to choose a set of effective rules that could easily be
+retrofitted into an originally first-order prover. Another principle that guided 
+the design of \ehohii{} was \emph{gracefulness}: we made sure that our changes
+do not impact the strong first-order performance of E and $\lambda$-free higher-order performance of Ehoh. 
+
+% We
+% also used the experience of fine-tuning the calculi
+% \cite{section-making-ho-work} in Zipperposition to carefully choose which
+% calculus extensions and heuristics to use in E.
+
+One of the main challenges we faced was retrofitting $\lambda$-terms in Ehoh's
+term representation (Sect.~\ref{sec:ehoh2:terms}). Furthermore, Ehoh's main inference
+engine was designed with the assumption that it will be used with
+inferences that compute a most general unifier. We
+implementd a higher-order unification procedure (Chapter \ref{ch:unif})
+that can return multiple unifiers (Sect.~\ref{sec:ehoh2:unif-match-index}) and
+integrated it in the inference engine. Finally, we extended and adapted the
+superposition rule, resulting in an incomplete, pragmatic variant of
+$\lambda$-superposition (Sect.~\ref{sec:ehoh2:calculus}).
+
+We \NumberOK{evaluated} \ehohii{} on a selection of proof assistants benchmarks
+as well as all higher-order theorems in the TPTP library \cite{gs-17-tptp}
+(Sect.~\ref{sec:ehoh2:eval}). We found
+that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on
+proof assistant benchmarks; on TPTP benchmarks it ended up second only 
+to the cooperative version of Zipperposition, which employs Ehoh as a
+backend. An arguably fairer comparison without the backend puts \ehohii{} in the
+first place for both benchmark suites.
+We also compared the performance of \ehohii{} with E on first-order
+%%% @PETAR: I made this slightly sentence shorter and more forceful. Please
+%%% check if you agree. --JB
+problems and found that little overhead has been introduced by the
+extension to higher-order logic.
+
