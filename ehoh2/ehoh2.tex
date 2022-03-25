@@ -555,7 +555,7 @@ are reached using the iterator's \vn{steps} field.
 Computing bindings is the only point in the procedure where the search tree
 branches and different possibilities are explored. Thus, when \ehohii{} follows
 the branch indicated by the binding module, it records the state to which it
-needs to return, should the followed branch be backtracked. Therese are values
+needs to return, should the followed branch be backtracked. It saves the values
 of $\vn{constraints}, \vn{steps}$, and $\vn{subst}$ before the branch is followed
 and the value of the \vn{branch\_iter} that points past the followed branch. The
 values of \vn{branch\_iter} are either \cn{BindBegin}, which denotes that no
@@ -577,12 +577,14 @@ sides of the constraint must be the same. Unification then continues
 with new constraints derived from the arguments. Otherwise, the iterator must be
 backtracked.
 
-\ourpara{Matching} In Ehoh, the matching algorithm is mostly used inside
+\subsection{Matching} 
+
+In E, the matching algorithm is mostly used inside
 simplification rules such as demodulation and subsumption \cite{ss-02-brainiac}.
 As these rules must be efficiently performed, using any complex matching
 algorithm is not a viable option. Instead, we implemented a matching algorithm
 for the pattern class of terms \cite{tn-93-patterns} to complement Ehoh's
-$\lambda$-free higher-order matching algorithm \cite[Sect.~4]{section-ehoh}.
+$\lambda$-free higher-order matching algorithm (Sect.~\ref{sec:ehoh:unif-match}).
 A term is a \emph{pattern} if each of its free variables either
 has no arguments (as in first-order logic) or is applied to distinct De Bruijn
 indices.
@@ -622,16 +624,16 @@ or whether a simple matcher can be used as in the case of $(X \, (\lambda x. \,x
 usually the desired matcher. If this algorithm does not find a matcher and both
 terms are patterns, pattern matching is tried.
 
-\ourpara{Indexing} Ehoh, like other modern theorem provers, efficiently retrieves
+\subsection{Indexing} E, like other modern theorem provers, efficiently retrieves
 unifiable or matchable pairs of terms using indexing data structures. To find
 terms unifiable with a query term or instances of a query term it uses
 \emph{fingerprint indexing} \cite{ss-12-fp-indexing}. We extended this data
-structure to support (full) higher-order terms in Zipperposition
-\cite[Sect.~6]{unif-section}. We used the same approach in \ehohii{},
+structure to support (full) higher-order terms in Zipperposition (Sect.~\ref{sec:unif:indexing}). 
+We used the same approach in \ehohii{},
 and we extended feature vector indices \cite{ss-2013-feature-vector}
 in the same way.
 
-Ehoh uses \emph{perfect discrimination trees} \cite{mcc-92-pdts} to find
+E uses \emph{perfect discrimination trees} \cite{mcc-92-pdts} to find
 generalizations of the query term (i.e., terms of which the query term is an instance).
 This data structure is a trie
 that indexes terms by representing them in a serialized, flattened form.
@@ -639,7 +641,7 @@ that indexes terms by representing them in a serialized, flattened form.
 The left branch from the root in Figure \ref{fig:pdt} shows how the first-order terms
 $\cst{f}\, \cst{a} \, X$ and $\cst{f}\, \cst{a} \, \cst{a}$ are stored.
 In Ehoh, this data structure is extended to support partial application
-and applied variables \cite{section-ehoh}.
+and applied variables (Sect.~\ref{sec:ehoh:indexing}).
 
 \begin{figure}[tb]
 \centering
@@ -701,8 +703,9 @@ them their own nodes.
 \newcommand{\tstack}{\ensuremath{\texttt{term\_stack}}}
 \newcommand{\tproc}{\ensuremath{\texttt{term\_proc}}}
 
+\looseness=-1
 Following the notation from the extension of perfect discrimination trees to
-$\lambda$-free higher-order logic \cite{section-ehoh}, we now describe how enumeration of
+$\lambda$-free higher-order logic (Sect. \ref{sec:ehoh:indexing}), we now describe how enumeration of
 generalizations is performed. To traverse the tree, \ehohii{} begins at the root
 node and maintains two stacks:\ \tstack{} and \tproc{}, where \tstack{} contains the
 subterms of the query term that have to be matched, and \tproc{} contains
