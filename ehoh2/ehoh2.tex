@@ -1039,4 +1039,70 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   \end{figure}
   
 
+  \section{Discussion and Related Work} %---0.5p
+  \label{sec:ehoh2:discussion}
   
+  \looseness=-1
+  On the trajectory to \ehohii{}, we developed, together with colleagues, three
+  superposition calculi:\ \lfsup{} for $\lambda$-free higher-order logic
+  \cite{bbcw-21-lfho}, \lsup{} for a higher-order logic with
+  $\lambda$-abstra\-ction but no Booleans \cite{bbtvw-21-sup-lam}, and \osup{}
+  for full higher-order logic \cite{bbtvw-21-sup-lam}. These milestones allowed
+  us to carefully estimate how the increased reasoning capabilities of each
+  calculus influence its performance. We also developed a complete and efficient
+  unification algorithm (Chapter \ref{ch:unif}) which can easily be customized
+  to trade bits of its completeness for efficiency. Practically oriented work
+  described in Chapters \ref{ch:bools} and \ref{ch:ho-techniques},
+  helped us gauge how much reasoning power we lose by using more intuitive and
+  more easily controllable incomplete rules. Both the theoretical and the
+  practical lines of our work met in this chapter, resulting in a prover that
+  outperforms the competition on the benchmarks from proof assistants.
+  
+  Extending first-order provers with higher-order reasoning capabilities has been
+  attempted by other researchers as well.
+  Barbosa et al.\ extended
+  the SMT solvers CVC4 (now cvc5) and veriT to higher-order logic in an incomplete
+  way \cite{brotb-19-ho-smt}.
+  Bhayat and Reger first extended Vampire to
+  higher-order logic using combinatory unification \cite{br-19-restricted-unif},
+  an incomplete approach, before they designed and implemented a complete
+  higher-order superposition calculus based on \textsf{SKBCI}-com\-binators \cite{br-20-full-sup-w-combs}.
+  The advantage is that combinators can be supported as a thin layer on top of
+  $\lambda$-free terms.
+  This calculus is also implemented in Zipperposition.
+  However, in unpublished experiments, we found that $\lambda$-superposition
+  performs substantially better, corroborating the CASC results, so we decided to
+  make a more profound change to Ehoh and implement $\lambda$-superposition.
+  \pagebreak[2]
+
+  Possibly the only actively maintained higher-order prover built from the bottom
+  up as a higher-order prover is Leo-III \cite{sb-21-leo3}, as the long-time
+  winner of CASC higher-order division, Satallax \cite{cb-12-satallax}, is no
+  longer maintained. We give a further overview of other traditional higher-order
+  provers and the calculi they are based in Sect.~\ref{sec:ehoh:discussion-and-related-work}.
+  
+  \section{Conclusion} %---0.5p
+  \label{sec:ehoh2:conclusion}
+  
+  In 2019, the reviewers of our paper introducing Ehoh \cite{vbss-19-ehoh1} were
+  skeptical that extending it with support for full higher-order logic would be
+  feasible. One of them wrote:
+  %
+  \begin{quote}
+  A potential criticism could be that this step from E to Ehoh is just extending
+  FOL by those aspects of HOL that are easily in reach with rather straightforward
+  extensions (none of the extensions is indeed very complicated), and that the
+  difficult challenges of fully supporting HOL have yet to be confronted.
+  \end{quote}
+  %
+  We ended up addressing the theoretical ``difficult challenges'' in other work
+  with colleagues. In this chapter, we faced the practical challenges pertaining to the extension
+  of Ehoh's data structures and algorithms to support full higher-order logic and
+  demonstrated that such an extension is possible. \NumberOK{Our evaluation} shows
+  that this extension makes \ehohii{} the best higher-order prover on
+  benchmarks coming from interactive theorem proving practice, which has been our goal since 2016. \ehohii{}'s
+  performance lags slightly behind Zipperposition on TPTP problems, possibly because Zipperposition
+  does not assume a clausal structure and can perform subtle formula-level
+  inferences. In the future, we plan to implement the same features in \ehohii{}.
+  We have also only started tuning \ehohii{}'s heuristics on higher-order
+  problems.
