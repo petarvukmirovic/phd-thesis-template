@@ -7,14 +7,6 @@
 \includeversion{noqle}
 \excludeversion{qle}
 \newcommand{\paper}[0]{chapter}
-
-\newcommand{\eqlit}[2]{\ensuremath{#1 \eq #2}}
-\newcommand{\neqlit}[2]{\ensuremath{#1 \noteq #2}}
-% \newcommand{\eqneqlit}[2]{\ensuremath{#1 \mathrel{\dot{\eq}} #2}}
-\newcommand{\pospredlit}[1]{{#1}}
-\renewcommand{\neglit}[1]{\neg{\kern.2ex #1}}
-\newcommand{\negpredlit}[1]{\neglit{#1}}
-\newcommand{\arbpredlit}[1]{(\neg)\kern.2ex\pospredlit{#1}}
 \newcommand{\cor}{\ensuremath{\mathrel{\lor}}}
 \newcolumntype{d}{D{.}{.}{0}}
 \definecolor{light-gray}{gray}{0.925}
@@ -151,7 +143,7 @@ in Sect.~\ref{sec:pre:clauses}. In this section we use the uppercase letter $L$
 to denote literals, as this is more customary in the related literature for
 propositional logic. Recall that predicate literals  are encoded as
 (dis)equations with equality. To simplify the notation in this chapter we write
-predicate literals in unencoded form: positive literal $\eqlit{s}{\itrue}$ is
+predicate literals in unencoded form: Positive literal $\eqlit{s}{\itrue}$ is
 written as $s$ and negative literal $\neqlit{s}{\top}$ is written as
 $\negpredlit{s}$. Literals $\eqlit{s}{t}$ where neither $s$ nor $t$ have the
 type $o$ are called \emph{functional}. Given a literal $L$, we overload notation

@@ -202,3 +202,22 @@
 
 \renewcommand{\models}{\vDash}
 
+\newcommand{\db}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\internallam}{\ensuremath{\texttt{LAM}}}
+\newcommand{\internalat}{\ensuremath{\texttt{@}}}
+
+\newcommand{\lambdabf}{\pmb{\lambda}} %%% TYPESETTING
+\newcommand{\betabf}{\pmb{\beta}} %%% TYPESETTING
+\newcommand{\etabf}{\pmb{\eta}} %%% TYPESETTING
+
+\newcommand{\comb}[1]{\ensuremath{\mathsf{#1}}}
+
+
+
+\newcommand{\eqlit}[2]{\ensuremath{#1 \eq #2}}
+\newcommand{\neqlit}[2]{\ensuremath{#1 \noteq #2}}
+% \newcommand{\eqneqlit}[2]{\ensuremath{#1 \mathrel{\dot{\eq}} #2}}
+\newcommand{\pospredlit}[1]{{#1}}
+\renewcommand{\neglit}[1]{\neg{\kern.2ex #1}}
+\newcommand{\negpredlit}[1]{\neglit{#1}}
+\newcommand{\arbpredlit}[1]{(\neg)\kern.2ex\pospredlit{#1}}

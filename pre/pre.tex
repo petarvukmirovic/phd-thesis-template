@@ -224,9 +224,8 @@ An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em
 literal} $l$ is an equation $s \eq t$ or its negation (disequation) $s \noteq
 t$. A clause $C$ is a finite multiset of literals, interpreted and written
 disjunctively:\ $l_1 \llor \cdots \llor l_n$. Free variables of clauses are
-implicitly universally quantified. Note that $\llor$ denoting disjunction in
-clauses is different from the formula-building $\ior$. In general,
-formula-building logical connectives are written in boldface. In standard,
+implicitly universally quantified. Note that clause-level operators ($\llor, \eq, \noteq$) are not typeset in bold
+to distinguish them from term-building symbols ($\ior, \ieq, \ineq, \iand, \iforall, \ldots$) which are typeset in bold. In standard,
 non-clausal first-order logic, an atom is either predicate or equational. For
 uniformity, and to stay close to the implementation, we encode predicate atoms
 as equations with $\itrue$. Negative literals are encoded as disequations. For

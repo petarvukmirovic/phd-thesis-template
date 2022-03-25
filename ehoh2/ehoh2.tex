@@ -26,16 +26,16 @@ the necessary E expertise.}
 
 \newpage
 
-\section{Introduction}
+\section{Introduction and Background}
 \label{sec:ehoh2:introduction}
 
-We began this thesis by introducing Ehoh, a rather conservative extension of
-state-of-the-art first-order prover to a fragment of higher-order logic. This
+In Chapter~\ref{ch:ehoh} of this thesis we introduced Ehoh, a rather conservative extension of
+state-of-the-art first-order prover to a fragment of higher-order logic devoid of $\lambda$-abstraction. This
 extension gave us a flavor of the difficulties that we might encounter on the
 way to full higher-order logic. In chapters that precede this one,
 we discussed many ways in which those difficulties can be overcome.
 In this chapter, we fulfill a promise we gave in the beginning of the thesis: We present the extension of
-Ehoh to full higher-order logic (Sect.~\ref{sec:ehoh2:logic}) using incomplete variants
+Ehoh to full higher-order logic using incomplete variants
 of $\lambda$-superposition. We call this prover \ehohii.
 
 %
@@ -57,7 +57,7 @@ One of the main challenges we faced was retrofitting $\lambda$-terms in Ehoh's
 term representation (Sect.~\ref{sec:ehoh2:terms}). Furthermore, Ehoh's main inference
 engine was designed with the assumption that it will be used with
 inferences that compute a most general unifier. We
-implementd a higher-order unification procedure (Chapter \ref{ch:unif})
+implemented a higher-order unification procedure (Chapter \ref{ch:unif})
 that can return multiple unifiers (Sect.~\ref{sec:ehoh2:unif-match-index}) and
 integrated it in the inference engine. Finally, we extended and adapted the
 superposition rule, resulting in an incomplete, pragmatic variant of
@@ -76,4 +76,293 @@ We also compared the performance of \ehohii{} with E on first-order
 %%% check if you agree. --JB
 problems and found that little overhead has been introduced by the
 extension to higher-order logic.
+
+\ourpara{Background} The logic \ehohii{} targets is the monomorphic higher-order
+logic described in Sect.~\ref{sec:pre:hol}. We reuse all the notions from this
+section, with the corresponding notations. Like in the previous chapter, we
+simplify the notation by writing predicate literals in unencoded form: Positive
+literal $\eqlit{s}{\itrue}$ is written as $s$ and negative literal
+$\neqlit{s}{\top}$ is written as $\negpredlit{s}$.   This chapter discusses
+three tightly related provers E, Ehoh and \ehohii{}, which are disambiguated as
+follows:
+
+\begin{itemize}
+  \item E is a state-of-the-art first-order prover based on superposition. It is described in
+  Sect.~\ref{sec:pre:theorem-provers}.
+  \item Ehoh is an extension of E to support $\lambda$-free higher-order logic. Chapter \ref{ch:ehoh}
+  is dedicated to Ehoh.
+  \item \ehohii{} further builds on Ehoh to support full higher-order logic. It is the latest prover
+  described in this chapter.
+\end{itemize}
+
+\section{Terms}
+\label{sec:ehoh2:terms}
+
+\looseness=-1
+E has been designed around perfect term sharing %or exa
+\cite{ls-01-shared}, a design that we carried on to  Ehoh and \ehohii{}: Any two structurally identical terms are
+guaranteed to be the same object in memory. This is achieved through term
+\emph{cells}, which represent individual terms. Each cell has (among other fields)
+(1)~\texttt{f\_code}, an integer corresponding to the symbol at the head of the term (negative
+if the head is a free variable, positive otherwise); (2)~\texttt{num\_args},
+corresponding to the number of arguments applied to the head; and (3)~\texttt{args},
+a size-\texttt{num\_args} array of pointers to argument terms. We
+use the first-order notation $\cst{f}(s_1, \ldots, s_n)$ to denote a cell whose
+\texttt{f\_code} corresponds to $\cst{f}$, \texttt{num\_args} equals $n$, and
+\texttt{args} points to the cells for $s_1, \ldots s_n$.
+
+Ehoh represents $\lambda$-free higher-order terms using flattened, spine notation
+(Sect.~\ref{sec:ehoh:types-and-terms}).
+Thus, the terms $\cst{f}$, $\cst{f} \, \cst{a}$ and $\cst{f} \, \cst{a} \,
+\cst{b}$ are represented by the cells $\cst{f}$,
+$\cst{f}(\cst{a})$, and $\cst{f}(\cst{a}, \cst{b})$, respectively.
+To ensure free variables are
+perfectly shared, Ehoh treats applied free variables differently: arguments are
+not applied directly to a free variable, but using an internal symbol
+\internalat{} of variable arity. For example, the term $X \, \cst{a} \, \cst{b}$ is
+represented by the cell $\internalat(X, \cst{a}, \cst{b})$. This ensures that
+two different occurrences of the free variable $X$ correspond to the same object,
+which makes substitutions more efficient.
+%%% @PETAR(read): This tries to explain an invisible problem. Either we need to explain
+%%% it better, or we just omit it (my favorite option). It's old Ehoh stuff anyway. --JB
+%Yet, to
+%efficiently access variable arguments we do not use binary application symbol,
+%but flattened representation.
+
+\ourpara{Representation of $\lambdabf$-Terms} To support full
+higher-order logic, Ehoh's $\lambda$-free cell data structure must
+be extended to support the $\lambda$ binder. We use the locally nameless
+representation \cite{ac-12-locally-nameless} for this purpose: De Bruijn indices
+%%% @PETAR(checked): Double-check "possibly loose".
+represent (possibly loose) bound variables, whereas we keep the current
+representation for free (and applied) variables.
+
+%%% @PETAR(read): Sounds odd---we wouldn't be extending the term representation of an
+%%% already HO prover. --JB
+%Unlike other higher-order provers, most of which are written in functional
+%programming languages,
+Extending the term representation of Ehoh with a new term
+kind involves intricate manipulation of the cell data structure. De Bruijn
+indices must be represented as other cells with either negative or positive
+\texttt{f\_code}. However, this has to be done in such a way that De Bruijn
+index can never be mistaken for a function symbol or a variable.
+
+Other than possibly being instantiated during $\beta$-reduction, De Bruijn
+indices mostly behave as constants. Therefore, we decided to represent De
+Bruijn indices using positive \texttt{f\_code}s: The De Bruijn index of value $i$
+will have $i$ as the~\verb|f_code|. To ensure De Bruijn indices are not
+mistaken for function symbols, we use the \texttt{properties} bitfield of the
+cell, which holds precomputed properties of %shared cell
+%%% @PETAR(checked, you are right): I don't understand why you wrote "shared cell". Please double-check. --JB
+the cell. We introduce the
+property \texttt{IsDBVar} to denote that the cell represents a De
+Bruijn index. Any attempt to create a De Bruijn index is performed through
+a dedicated library function that sets \texttt{IsDBVar} property for every term it
+returns. When given the same De Bruijn index and type, this function is
+guaranteed to always return the same object. Finally, we have guarded all the
+functions and macros that manipulate function codes with the check if the
+property \texttt{IsDBVar} is set. To ensure perfect sharing of every occurrence
+of De Bruijn indices, arguments to De Bruijn indices are applied like for free
+variables, using \internalat{}.
+
+Extending cells to support $\lambda$-abstraction is easier. Each
+$\lambda$-ab\-strac\-tion has the distinguished function code \internallam{} as the head
+symbol and two arguments:\ (1)~a De Bruijn index 0 of the type of abstracted variable;
+(2)~the body %(matrix)
+of the $\lambda$-abstraction. Consider
+the term $\lambda x. \, \lambda y.\, \cst{f}\, x \, x$, where both $x$ and $y$ have
+the type~$\iota$. This term is represented as $\lambda\,\lambda\, \cst{f} \,
+\db{1} \, \db{1}$ in locally nameless representation, where bold numbers
+represent De Bruijn indices. In \ehohii{}, the same term is represented by the cell
+$\internallam(\db{0}, \internallam(\db{0}, \cst{f}(\db{1}, \db{1})))$,
+where all De Bruijn variables have type~$\iota$. 
+
+The first argument of $\internallam$ is
+redundant, since it can be deduced from the type of the $\lambda$-abstraction.
+However, basic $\lambda$-term manipulation operations often require access to
+this term. We store it explicitly to avoid creating it repeatedly.
+
+\ourpara{Efficient $\betabf$-Reduction}
+Terms are stored in $\beta\eta$-reduced form. As these two reductions are
+performed very often, they ought to be efficient. \ehohii{}
+performs $\beta$-reduction by reducing the leftmost outermost $\beta$-redex
+first. To represent $\beta$-redexes, it uses the \internalat{} symbol. Thus,
+the term $(\lambda
+x.\, \lambda y.\,  (x \, y)) \, \cst{f} \, \cst{a}$ is represented by
+$\internalat(\internallam(\db{0}, \internallam(\db{0}, \internalat(\db{1}, \db{0}))),
+\cst{f}, \cst{a})$. Another option would have been to add arguments applied to
+$\lambda$-term directly to the $\lambda$ representation (as in
+$\internallam(\db{0}, \internallam(\db{0}, \allowbreak \internalat(\db{1}, \db{0})),
+\cst{f}, \cst{a})$), but this would break the invariant
+that $\internallam$ has two arguments. Furthermore, replacing free
+variables with $\lambda$-abstractions (e.g., replacing $X$ with $\lambda
+x. \, x$ in $\internalat(X, \cst{a})$) would require additional normalization.
+
+A term can be $\beta$-reduced as follows: When a cell of the
+form $ \internalat(\internallam(\db{0}, s),t)$ is encountered, the field
+\texttt{binding} (normally used to record the substitution for a free variable) of the
+cell $\db{0}$ is set to $t$. Then $s$ is traversed to instantiate every
+loose occurrence of $\db{0}$ in $s$ with \texttt{binding}, whose loosely
+bound De Bruijn indices are shifted by the number of $\lambda$ binders above
+the occurrence of $\db{0}$ in $s$ \cite{fk-01-deBruijn}. Next, the same
+procedure is performed on the resulting term and its subterms, in
+leftmost outermost fashion.
+
+\ehohii{}'s basic $\beta$-normalization mechanism works in this way, but it
+features a few optimizations.
+First, \ehohii{} recognizes terms of the form $(\lam{\overline{x}_n}{s}) \,\overline{t}_n$ 
+and performs parallel replacement of the bound variables $x_i$ with
+$t_i$. Since intermediate terms are not constructed, this reduces the number of
+recursive function calls and calls to the cell allocator.
+
+Second, in line with the gracefulness principle, we want \ehohii{} to incur
+little (if any) overhead on first-order problems and to
+excel on higher-order problems with a large first-order component. If
+$\beta$-reduction is implemented naively, finding a $\beta$-redex involves
+traversing the entire term. On purely first-order terms, $\beta$-reduction
+is then a complete waste of time.
+
+To avoid this, we use Ehoh's perfectly shared
+terms and their \texttt{properties} field.
+%
+We introduce the property \texttt{HasBetaReducibleSubterm} which is set if
+%%% @PETAR(is is good): "is" or "may be" below? (Overapproximation?) --JB
+a cell is $\beta$-reducible.
+Whenever a new cell that contains a
+$\beta$-reducible term as a direct subterm is shared, the property is set.
+Setting of the property is inductively continued when further superterms are
+shared. For example, in the term $t = \cst{f} \, \cst{a} \, (\cst{g} ((\lambda x.\,
+x)\,\cst{a}))$, the cells for $(\lambda x.\, x)\,\cst{a}$,
+$\cst{g}\,((\lambda x.\, x)\,\cst{a})$, and $t$ itself have the property
+\texttt{HasBetaReducibleSubterm} set.
+%
+When it needs to find $\beta$-reducible subterms, \ehohii{} will visit only the
+cells with this property set. This further means that on first-order
+subterms, a single bit masking operation is enough to determine that no subterm
+should be visited.
+
+Along similar lines, we added a property \texttt{HasDBSubterm} that
+caches whether the cell contains a De Bruijn subterm. This
+%% @PETAR(you are right): Why "also"? What's the other thing?
+%also
+makes
+instantiating De Bruijn indices during $\beta$-norma\-lization faster, since only the
+subterms that contain De Bruijn indices must be visited. Similarly, some other
+operations such as shifting De Bruijn indices or determining whether a term is closed
+(i.e., it contains no loose bound variables) can be sped up or even avoided
+if the term is first-order.
+
+\ourpara{Efficient $\etabf$-Reduction}
+The term $\lambda x.\, s \, x$ is $\eta$-reduced to $s$ whenever $x$ does not appear
+unbound in $s$. Caching the property of $\eta$-reducibility of the term is not
+as beneficial as the one for $\beta$-reducibility, because checking this
+property at the term's top level is done in $O(|s|)$, compared with constant time
+for $\beta$-reducibility.
+However, we use the observation that a term cannot be $\eta$-reduced if it has
+no $\lambda$-abstraction subterms and introduce a property \texttt{HasLambda}
+that notes the presence of $\lambda$-abstraction in a term. Only
+terms with this property are visited during $\eta$-reduction.
+
+\ehohii{} performs parallel $\eta$-reduction: It recognizes terms of the form
+$\lam{\overline{x}_n}{s \, \overline{x}_n } $ such that none of $x_i$
+occurs unbound in $s$. If done naively, reducing terms of this kind requires up to $n$
+traversals of $s$ to check if each $x_i$ occurs in $s$. In \ehohii{}, exactly one
+traversal of $s$ is required.
+
+\looseness=-1
+More specifically, when $\eta$-reducing a cell $\internallam(\db{0}, s)$,
+\ehohii{} considers all $\lambda$ binders in $s$ as well. In general,
+the cell will be of the form
+$\internallam(\db{0}, \dotsc,\allowbreak \internallam(\db{0}, t) \ldots)$,
+where $t$ is not a
+$\lambda$-abstraction, and $l$ is the number of $\internallam$ symbols above $t$. Then \ehohii{} breaks down the body~$t$ into a maximal
+decomposition $u\, (\dbvar{n}\db{{}-1}) \, \ldots \, \db{1} \, \db{0}$.
+If $n = 0$, the cell is not $\eta$-reducible.
+Otherwise, $u$ is traversed to determine the
+minimal index~$\dbvar{j}$ of a loose De Bruijn index,
+taking $\dbvar{j} = \infty$ if no such index exists.
+%%% @PETAR(I prefer leftmost as we are going top level left-to-right and not
+%bottom-up as innermost can suggest): Check "innermost".
+%%% @PETAR(you are right, but I will add righmost outermost to be more precise): But it's rightmost then not leftmost! In the example, the very first
+%%% binder remains (the one to which the 2's point). --JB
+We can then remove the $k = \min\{j,l,n\}$ rightmost outermost $\lambda$ binders in $\internallam(\db{0},
+\ldots, \internallam(\db{0}, t) \ldots)$ and replace %the body
+$t$ by the variant of
+$u \allowbreak\, (\dbvar{n}\db{{}-1}) \allowbreak\, \ldots \, (\dbvar{k}\db{{}+1}) \, \dbvar{k}$
+obtained by shifting the loose De Bruijn indices right by~$k$.
+
+To better understand this convoluted De Bruijn arithmetic, consider the
+term $\lambda x. \, \lambda y. \, \lambda z.\,\allowbreak \cst{f} \, x \, x \, y
+\, z$. This term is represented by the cell $\internallam(\db{0},
+\internallam(\db{0}, \internallam(\db{0},\allowbreak \cst{f}(\db{2}, \db{2}, \db{1},
+\db{0}))))$. \ehohii{} splits $\cst{f}(\db{2}, \db{2}, \db{1}, \db{0})$ into
+two parts:\ $u = \cst{f} \, \db{2}$ and the arguments $\db{2}, \db{1},
+\db{0}$. Since the minimal index in $u$ is $\db{2}$, we can
+omit the De Bruijn indices $\db{1}$ and $\db{0}$ and their $\lambda$ binders,
+yielding the $\eta$-reduced cell $\internallam(\db{0}, \cst{f}(\db{0},
+\db{0}))$.
+
+The use of the \texttt{HasLambda} property ensures that $\eta$-reduction is not
+tried on first-order or $\lambda$-free higher-order terms, whereas parallel
+$\eta$-reduction both speeds up $\eta$-reduction and avoids creating a linear
+number of intermediate terms. For finding the minimal loose De Bruijn index,
+optimizations such as the \texttt{HasDBSub\-term} property are used.
+
+\ourpara{Representation of Boolean Terms}
+Ehoh represents Boolean terms using
+cells whose \texttt{f\_code}s correspond to internal codes reserved
+for logical symbols. Quantified formulas are represented by cells in which the
+first argument is the quantified variable and the second one is the body of the
+quantified formula. For example, the term $\iforall x.\, \cst{p} \, x$ corresponds
+to the cell $\iforall(X, \cst{p}(X))$, where $X$ is a regular free variable.
+% as Ehoh has no concept of a bound variable.
+
+This representation is convenient for parsing formulas and clausification, which
+is what Ehoh uses it for, but it
+causes $\alpha$-normalization issues during the actual proof search: In
+full higher-order logic, Boolean terms can appear as subterms in clauses, as in
+$\cst{q}(X) \llor \cst{p}(\iforall(X, \cst{r}(X)))$;
+instantiating $X$ in the first literal should not influence $X$ in the second
+literal.
+
+To avoid this issue, in \ehohii{} we use $\lambda$ binders to represent quantified formulas.
+Thus, $\iforall x. \, s$ is represented by $\iforall \, (\lambda x. \, s)$.
+Quantifiers are then unary symbols that do not directly bind
+the variables but delegate this responsibility to a $\lambda$-abstraction.
+%
+Since \ehohii{} represents bound variables using De Bruijn indices, this solves the
+$\alpha$-conversion issues. However, this solution is incompatible with
+thousands of decades-old lines of clausification code that assumes the Ehoh
+representation of
+quantified formulas. Therefore, \ehohii{} converts quantified
+formulas only after clausification, for Boolean terms that appear in a
+higher-order context (e.g., as argument to a function symbol).
+
+\ourpara{New Term Orders}
+The $\lambda$-superposition calculus is parameterized by a term order that is
+used to break symmetries in the search space.
+We implemented the versions of the Knuth--Bendix order (KBO) and lexicographic
+path order (LPO) for higher-order terms with $\lambda$-abstractions described by
+Bentkamp et al.~\cite{bbtv-21-full-ho-sup}. These orders encode
+encode $\lambda$-terms as first-order terms and then invoke the standard KBO or
+LPO. %Trading elegance for efficiency, our
+%implementation does not compute the first-order translation.
+%Rather,
+For efficiency, we implemented separate KBO and
+LPO functions that compute the order directly, intertwining the encoding and
+the order computation.
+%%% @PETAR(yes): Irrelevant detail?
+%We kept the
+%implementation of $\lambda$-free KBO as \ehohii{} can be run in $\lambda$-free mode.
+
+Ehoh cells contain a \verb|binding| field that can be used to store the
+substitution for a free variable. Substitutions can then be applied by following
+the \texttt{binding} pointers, replacing each free variable with its instance.
+Thus, when Ehoh needs to perform a KBO or LPO comparison of an instantiated term,
+it needs only follow the \texttt{binding} pointers.
+In full higher-order logic, however, instantiating a variable can trigger a
+series of $\beta\eta$-reductions,
+changing the shape of the term dramatically. To pevent this, \ehohii{}
+computes the $\beta\eta$-reduced instance of the terms
+before comparing them using KBO or LPO.
 
