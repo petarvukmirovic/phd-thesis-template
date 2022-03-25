@@ -1104,20 +1104,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
 % ** Describe the indexing
 
 \section{Preprocessing, Calculus, and Extensions}
-
 \label{sec:ehoh2:calculus}
-% \begin{itemize}  
-  % \item The main goal is simplicity, efficiency and maximal compatibility with
-  %     FO superposition.
-  % \item More or less the same as LFHOL sup, but now computes CSUs instead
-  %     of LFHOL MGUs (and (potentially) uses new orders).
-  % \item Out of Boolean rules we have Boolean simplification and black-box clausification.
-  %     Most importantly -- we have no Boolean hoisting rules : everything is dealt with
-  %     ext-sup, and FOOL clausification! It simply works as good as Boolean hoisting.
-  % \item IMPORTANT: Prefix optimization is disabled, now we rely on ArgCong and NegExt.
-  % \item Many extensions:  ExtSup (With the same indexing), leibniz elimination, predicate enumeration,
-  %     FlexElim, Choice instantiation, recognition of induction.
-  % \end{itemize}
 
 Ehoh's simple $\lambda$-free higher-order calculus performed well on
 Sledgehammer problems and formed a promising stepping stone to full higher-order
@@ -1274,7 +1261,7 @@ $\cst{g} \, (\cst{f} \, \cst{p}) \noteq \cst{b}$, the abstracting version of
 superposition rule would result in $\cst{g} \, \cst{a} \noteq \cst{b} \llor (\cst{p}
 \iand \cst{q}) \noteq \cst{p}$. In this way, the Boolean structure bubbles up to
 the top level and is further processed by clausification. We noticed that this
-aleviates the need for the other Boolean rules in practice.
+alleviates the need for the other Boolean rules in practice.
 
 
 \section{Evaluation}
@@ -1336,7 +1323,7 @@ Zipperposition underwent in the last two years.
 
 Remarkably, there is a substantial disparity in the set of problems solved by
 \ehohii{} and Zipperposition-coop. The raw data show thats \ehohii{} solves
-\NumberNOK{166} SH problems and \NumberNOK{21} TPTP problems that Zipperposition-coop
+\NumberOK{166} SH problems and \NumberOK{21} TPTP problems that Zipperposition-coop
 does not. The lower number of uniquely solved TPTP problems is most likely 
 due to Zipperposition's being heavily optimized on TPTP.
 
@@ -1346,7 +1333,7 @@ designed for users that are interested only in E's first-order capabilities and
 care a lot about performance.
 To answer the second
 evaluation question, about assessing overhead of \ehohii{},
-we chose all the \NumberNOK{1138} unique problems used at CASC
+we chose all the \NumberOK{1138} unique problems used at CASC
 from 2019 to 2021 in first-order theorem division and ran Ehoh and \ehohii{}
 both in this first-order (FO) mode and in higher-order (HO) mode.
 

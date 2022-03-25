@@ -749,3 +749,294 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   \tstack{:} & [\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{f} \, \cst{a} \, \cst{b}, \cst{c}]                & [\cst{c}]                                                                                  & [] \\
   \tproc{:}  & []                                                      & [\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{f} \, \cst{a} \, \cst{b}{,}\; \cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{c}{,}\;\cst{f} \, \cst{a} \, \cst{b}{,}\; \cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}]
   \end{array}\]
+
+  \section{Preprocessing, Calculus, and Extensions}
+  \label{sec:ehoh2:calculus}
+  
+  Ehoh's simple $\lambda$-free higher-order calculus performed well on
+  Sledgehammer problems and formed a promising stepping stone to full higher-order
+  logic (Sect.~\ref{sec:ehoh:evaluation}). When implementing support for full higher-order
+  logic, we were guided by efficiency and gracefulness with respect to Ehoh's calculus rather
+  than completeness. Whereas Zipperposition provides both complete and incomplete
+  modes, \ehohii{} only offers incomplete modes.
+  
+  \ourpara{Preprocessing} Our experience with Zipperposition showed the importance
+  of flexibility in preprocessing the higher-order problems
+  (Sect.~\ref{sec:ho-tech:preprocessing}). Therefore, we implemented a flexible
+  preprocessing module in \ehohii{}. 
+  
+  To maintain compatibility with Ehoh, \ehohii{} can optionally transform all
+  $\lambda$-abstractions into named functions. This process is called
+  \emph{$\lambda$-lifting} \cite{rjmh-82-lifting}. \ehohii{} also removes all
+  occurrences of Boolean subterms (other than $\itrue, \ifalse$, and free variables)
+  in higher-order contexts using a FOOL-like transformation \cite{kotelnikov-16-fool}.
+  For example, the formula $\cst{f}(\cst{p} \iand \cst{q}) \ieq \cst{a}$ becomes
+  $(\cst{p} \iand \cst{q} \iimplies \cst{f}(\itrue) \ieq \cst{a}) \iand
+  (\inot(\cst{p} \iand \cst{q}) \iimplies \cst{f}(\ifalse) \ieq \cst{a})$.
+  
+  \looseness=-1
+  Many TPTP problems use the \texttt{definition} role to denote the definitions of
+  symbols. \ehohii{} can treat the definition axioms as rewrite rules, and replace
+  all occurrences of defined symbols during preprocessing. Furthermore, during
+  SInE \cite{hv-2011-sine} axiom selection, it can always
+  include the defined symbol in the trigger relation.
+  
+  \ourpara{Calculus} \ehohii{} implements the same superposition
+  calculus as Ehoh with three important changes. First, wherever Ehoh requires
+  the most general unifier of terms, \ehohii{} enumerates unifiers from a finite subset of the CSU, as explained in
+  Sect.~\ref{sec:ehoh2:unif-match-index}. Second, \ehohii{} uses versions of the KBO and
+  LPO orders designed for $\lambda$-terms.
+  % as described by Bentkamp et al.\ \cite{bbtv-21-full-ho-sup}.
+  
+  %TODO: @JASMIN: How do we cite the STTT article?
+  The third difference is more subtle. One of the main features of Ehoh is
+  \emph{prefix optimization} (Sect.~\ref{sec:ehoh:introduction}): A method which, given a demodulator $s \eq t$, allows
+  to replace both applied and unapplied occurrences of $s$ by $t$ 
+  by traversing only first-order subterms of a rewritable term. In $\lambda$-free setting this
+  optimization is useful, but in presence of $\beta\eta$-normalization, shapes of
+  terms can change drastically, making it much harder to
+  track prefixes of terms. This is why we disabled the prefix optimization in \ehohii{}.
+  To counterbalance this removal, we introduced
+  the argument congruence rule \infname{AC} %(also called \infname{ArgCong})
+  in \ehohii{}
+  and enabled positive and negative functional extensionality (\infname{PE} and
+  \infname{NE}) by default:
+  
+  \vskip\abovedisplayskip
+  
+  \noindent\hbox{}\hfill
+    \namedinference{AC}{s \eq t \llor C}{s \, X \eq t \, X \llor C}%
+  \hfill
+    \namedinference{NE}{s \noteq t \llor C}{s \; (\cst{sk} \; \overline{X}) \noteq t \; (\cst{sk} \; \overline{X}) \llor C}%
+  \hfill
+    \namedinference{PE}{s \; X \eq t \; X \llor C}{s \eq t \llor C}%
+  \hfill\hbox{}
+  
+  \vskip\belowdisplayskip
+  
+  \noindent
+  \infname{AC} and \infname{NE} assume that $s$ and $t$ are of function
+  type. In \infname{NE}, $\overline{X}$ denote all the free variables occurring in $s$ and
+  $t$, and $\cst{sk}$ is a fresh Skolem symbol of the appropriate type. \infname{PE}
+  has a side condition that $X$ may not appear in $s$, $t$, or $C$.
+  
+  \ourpara{Saturation} E's saturation procedure is based on the assumption that
+  each attempt to perform an inference will either result in a single clause or
+  fail due to one of the inference side conditions. Unification procedures that
+  produce multiple substitutions break this invariant, and the saturation
+  procedure needed to be adjusted.
+  
+  In Sect.~\ref{sec:ho-tech:infinite-branching}, we described a variant of the saturation
+  procedure that elegantly supports interleaving computation of unifiers and
+  scheduling
+  inferences to be performed. Since completeness was
+  not one of the \ehohii{} design goals, we did not implement this version of the
+  saturation procedure. Instead, in places where previously a single unifier was
+  expected, \ehohii{} consumes all elements of the iterator used for enumerating a
+  unifier, converting them to clauses. 
+  
+  \ourpara{Reasoning about Formulas} Even though most of the Boolean structure is
+  removed during preprocessing, formulas can reappear at the top level of
+  clauses during saturation. For example, after replacing $X$ with $\lambda x.
+  \, \lambda y.\, x \iand y$, the clause $X \, \cst{p} \, \cst{q} \llor \cst{a}
+  \eq \cst{b}$ becomes $(\cst{p} \iand \cst{q}) \llor \cst{a} \eq \cst{b}$. \ehohii{}
+  converts every clause of the form $\varphi \llor C$, where $\varphi$ has a logic symbol
+  as its head (or it is a (dis)equation between two formulas different than $\itrue$),
+  to an explicitly quantified formula. Then, the clausification algorithm
+  is invoked on the formula to restore the clausal structure. Zipperposition features
+  more dynamic clausification modes, but for simplicity we decided
+  not to implement them in \ehohii{}.
+  
+  The \osup{} calculus
+  \cite{bbtv-21-full-ho-sup} includes many rules that act on Boolean subterms,
+  which are necessary for completeness. Other than Boolean simplification rules,
+  which use simple tautologies such as $\cst{p} \iand \itrue \iequiv\cst{p}$ to simplify terms, we
+  have implemented none of the Boolean rules of this calculus in \ehohii{}. First, we have
+  observed that complicated rules such as \infname{FluidBoolHoist} and
+  \infname{FluidLoobHoist} are hardly ever useful in practice and usually only
+  contribute to an uncontrolled increase in the proof state size. Second, simpler
+  rules such as \infname{BoolHoist} can usually be simulated by pragmatic rules
+  that perform Boolean and functional extensionality reasoning, described below.
+  
+  To make up for excluding Boolean rules, we use an incomplete, but more
+  easily controllable and intuitive rule, called \emph{primitive instantiation}. This
+  rule instantiates free predicate variables with approximations of formulas
+  that are ground instances of this variable. We described this rule in Sect.~\ref{sect:bool:native}.
+  In \ehohii{} it is implemented in a similar manner.
+  
+  \ehohii{}'s handling of the Hilbert choice operator is inspired by Leo-III's
+  \cite{sb-21-leo3}. \ehohii{}
+  recognizes clauses of the form $\neg P \, X \lor P \, (\cst{f} \, P)$ which
+  essentially denote that $\cst{f}$ is a choice symbol. Then, when subterm
+  $\cst{f} \, s$ is found during saturation, $s$ is used to instantiate the choice
+  axiom for $\cst{f}$. 
+  %
+  Similarly, Leibniz equality is eliminated by
+  recognizing clauses of the form  $\neg P \, \cst{a} \llor P \, \cst{b} \llor C$. These clauses are then
+  instantiated with $P \mapsto \lambda x. \, x \eq \cst{a}$ and $P \mapsto \lambda
+  x. \, x\noteq\cst{b}$, which results in $\cst{a} \eq \cst{b} \lor C$. Both rules
+  are described in Sect.~\ref{sect:bool:native} in more detail.
+  
+  Finally, \ehohii{} treats induction axioms specially. Just like
+  Zipperposition (Sect.~\ref{sec:ho-tech:formulas}), it abstracts literals
+  from the goal clauses and uses these abstractions to instantiate induction
+  axioms. Since Zipperposition supports dynamic calculus-level clausification,
+  instantiation of induction axioms happens during saturation, when these axioms
+  are processed. In \ehohii{}, this instantiation is performed statically,
+  immediately after clausification. After \ehohii{} collects all the abstractions,
+  it traverses the clauses and instantiates those that have applied variable of
+  the same type as the abstraction.
+  
+  \ourpara{Extensionality} \ehohii{} takes a pragmatic approach to reason about
+  functional and Boolean extensionality: It uses \emph{abstracting} rules (\infname{Abs} rules of Sect.~\ref{sect:bool:native}) 
+  which simulate basic superposition calculus rules,
+  but do not require unifiability of the partner terms in the inference. More
+  precisely, assume a core inference needs to be performed between two
+  $\beta$-reduced terms $u$ and $v$, such that they can be represented as
+  $u=C[s_1, \ldots, s_n]$ and $v=C[t_1, \ldots, t_n]$, where $C$ is the most general
+  common context (more precisely, green common context that does not go into the structure of $\lambda$-abstraction or applied variables \cite{bbtvw-21-sup-lam}) of $u$ and $v$, not all of
+  $s_i$ and $t_j$ are free variables, and for at least one $i$, $s_i \not= t_i$,
+  $s_i$ and $t_i$ are not (applied) free variables, and they are of Boolean or
+  function type. Then, the conclusion is formed by taking the conclusion $D$ of
+  the core inference rule (which would be created if $s$ and $t$ are unifiable)
+  and adding literals $s_1 \noteq t_1 \llor \cdots \llor s_n \noteq t_n$.
+  
+  These rules are particularly useful because \ehohii{} has no rules that dynamically
+  process Booleans in FOOL-like fashion, such as \infname{BoolHoist}. For example,
+  given the clauses $\cst{f} \, (\cst{p} \iand \cst{q}) \eq \cst{a}$ and
+  $\cst{g} \, (\cst{f} \, \cst{p}) \noteq \cst{b}$, the abstracting version of
+  superposition rule would result in $\cst{g} \, \cst{a} \noteq \cst{b} \llor (\cst{p}
+  \iand \cst{q}) \noteq \cst{p}$. In this way, the Boolean structure bubbles up to
+  the top level and is further processed by clausification. We noticed that this
+  alleviates the need for the other Boolean rules in practice.
+
+  \section{Evaluation}
+  \label{sec:ehoh2:eval}
+  
+  In this section, we try to answer two questions about \ehohii{}: \emph{How does
+  \ehohii{} compare against other higher-order provers (including Ehoh)?} \emph{Does
+  \ehohii{} introduce any overhead compared with Ehoh?} To answer
+  these questions, we ran provers on problems from the TPTP library \cite{gs-17-tptp} and on
+  benchmarks generated by Sledgehammer (SH) \cite{pb-12-sh}.
+  The experiments were carried out on StarExec Miami
+  \cite{sst-14-starexec} nodes equipped with Intel Xeon E5-2620 v4 CPU clocked at
+  2.10~GHz. For the TPTP part, we used the CASC-28\footnote{\url{http://www.tptp.org/CASC/28/}} time limits:\ 120~s
+  wallclock and 960~s CPU. For SH benchmarks and to answer the other question, we used Sledgehammer's
+  default time limit:\ 30~s wallclock and CPU.
+  
+  \ourpara{Comparison with Other Provers}
+  To answer the first question, we let
+  \ehohii{} compete with the top contenders in the higher-order division of
+  CASC-28:\ cvc5 \NumberOK{0.0.7},\footnote{\url{https://cvc5.github.io/}}
+  Ehoh 2.7, Leo-III \NumberOK{1.6.6} \cite{sb-21-leo3}, Vampire 4.6
+  \cite{br-20-full-sup-w-combs}, and Zipperposition 2.1 (Chapter~\ref{ch:ho-techniques}). 
+  We also include Satallax 3.5
+  \cite{cb-12-satallax}. We used all \NumberOK{2899} higher-order
+  theorems in TPTP 7.5.0 as well as 5000 SH higher-order benchmarks
+  originating from the Seventeen benchmark suite \cite{desharnais-et-al-202x}.
+  On SH benchmarks,
+  cvc5, Ehoh, \ehohii{}, Vampire, and Zipperposition were run using custom schedules provided by
+  their developers, optimized for single-core usage and low timeouts.
+  Otherwise, we used the corresponding CASC configurations.
+  Note that Ehoh 2.7 is an updated version of Ehoh described in Chapter
+  \ref{ch:ehoh}, which can parse not only $\lambda$-free but also full
+  higher-order. It is only a syntactic extension as $\lambda$-abstractions are supported using $\lambda$-lifting \cite{rjmh-82-lifting}.
+  We included two versions of Zipperposition:\ \emph{coop} uses Ehoh 2.7 as a backend to finish proof attempts,
+  whereas \emph{uncoop} does not use this feature. The results
+  are shown in Figure \ref{fig:all-provers}.
+  
+  Both Ehoh and \ehohii{} were run in the automatic scheduling mode. Compared to Ehoh,
+  \ehohii{} features a redesigned module for automatic scheduling, it
+  can use multiple CPU cores, and its heuristics have been trained better on higher-order problems.
+  
+  \ehohii{} dramatically improves the higher-order reasoning capabilities
+  compared to Ehoh. It solves \NumberOK{20\%} more problems on TPTP benchmarks
+  and \NumberOK{6\%} more problems on SH benchmarks, where Ehoh was already very
+  successful.
+  
+  \ehohii{} was mainly designed as efficient backed to proof assistants. As such it 
+  excels on SH benchmarks, outperforming the competition. On TPTP, it outperforms all higher-order provers other than Zipperposition-coop.
+  If Zipperposition's Ehoh backend is disabled,
+  \ehohii{} outperforms Zipperposition by a wide margin.
+  This comparison is arguably fairer; after all,
+  \ehohii{} does not use an older version of Zipperposition
+  as a backend.
+  %
+  These results suggest that \ehohii{} already implements most of the necessary features
+  for a high-performance higher-order prover
+  but could benefit from the kind of fine-tuning that
+  Zipperposition underwent in the last two years.
+  
+  Remarkably, there is a substantial disparity in the set of problems solved by
+  \ehohii{} and Zipperposition-coop. The raw data show thats \ehohii{} solves
+  \NumberOK{166} SH problems and \NumberOK{21} TPTP problems that Zipperposition-coop
+  does not. The lower number of uniquely solved TPTP problems is most likely 
+  due to Zipperposition's being heavily optimized on TPTP.
+  
+  \ourpara{Comparison with the First-Order E} Both Ehoh and \ehohii{} can be compiled
+  in a mode that disables most of the higher-order reasoning. This mode is
+  designed for users that are interested only in E's first-order capabilities and
+  care a lot about performance.
+  To answer the second
+  evaluation question, about assessing overhead of \ehohii{},
+  we chose all the \NumberOK{1138} unique problems used at CASC
+  from 2019 to 2021 in first-order theorem division and ran Ehoh and \ehohii{}
+  both in this first-order (FO) mode and in higher-order (HO) mode.
+  
+  We fixed a single
+  configuration of options, because Ehoh and \ehohii{}'s
+  automatic scheduling methods could select different configurations
+  and we would not be measuring the overhead but the quality of the chosen
+  configurations. We chose the \emph{boa} configuration (Sect.~\ref{sec:ehoh:heuristics}),
+  which is the configuration that E~2.2 used the most often in its automatic scheduling mode.
+  The results are shown in Figure~\ref{fig:ehoh}.
+  
+  Counterintuitively, the higher-order versions of both provers outperform
+  the first-order counterparts. However, the differerence is so small that it can
+  be attributed to the changes to memory layout that affect the order in which
+  clauses are chosen. Similar effects are seen when comparing the first-order versions.
+  We would expected the less heavily modified version of E, Ehoh, to perform better,
+  but due to subtle effects \ehohii{} wins.
+  
+  
+  \begin{figure}[t]
+    \noindent\hbox{}\hfill
+    \begin{minipage}[ht!]{.66\linewidth}
+      \centering
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{l@{\hskip 1em}@{\hskip 0.5em}c@{\hskip 1em}c} \toprule
+               
+                              & TPTP       & SH        \\
+        \midrule
+        cvc5                  & 1931       & 2577      \\
+        Ehoh                  & 2105       & 2611      \\
+        \ehohii{}             & 2523       & {\bf 2766}\\
+        Leo-III               & 2282       & 1601      \\
+        Satallax              & 2320       & 1719      \\
+        Vampire               & 2203       & 2240      \\
+        Zipperposition-coop   & {\bf 2583} & 2754      \\
+        Zipperposition-uncoop & 2483       & 2181      \\
+        \bottomrule
+      \end{tabular}}
+      \caption{Comparison of higher-order provers}
+      \label{fig:all-provers}
+    \end{minipage}\hfill\hfill
+    \begin{minipage}[ht!]{.30\linewidth}
+      \centering
+      \def\arraystretch{1.1}%
+      \relax{\begin{tabular}{l@{\hskip 1em}@{\hskip 0.5em}c} \toprule
+                        & TPTP     \\
+        \midrule
+        Ehoh -- FO      & 535      \\
+        Ehoh -- HO      & 538      \\
+        \ehohii{} -- FO & {\bf 539}\\
+        \ehohii{} -- HO & {\bf 539}\\
+        \bottomrule
+      \end{tabular}}
+      \caption{Evaluation of \ehohii{}'s overhead}
+      \label{fig:ehoh}
+    \end{minipage}\hfill\hfill
+  \end{figure}
+  
+
+  
