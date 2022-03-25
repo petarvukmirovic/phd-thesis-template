@@ -366,3 +366,383 @@ changing the shape of the term dramatically. To pevent this, \ehohii{}
 computes the $\beta\eta$-reduced instance of the terms
 before comparing them using KBO or LPO.
 
+\section{Unification, Matching, and Term Indexing}
+\label{sec:ehoh2:unif-match-index}
+
+
+Standard superposition crucially depends on the concept of a most general
+unifier (MGU). In higher-order logic, such a unifier does not in general exist,
+and the concept
+%%% @PETAR: CSU, infinite
+is replaced by that of a complete set of unifiers (CSU), which may be infinite.
+In Chapter \ref{ch:unif}, we described an efficient procedure to enumerate a CSU
+for a term pair. It is implemented in Zipperposition, together with some
+extensions to term indexing. In \ehohii{}, we further improve the performance of
+this procedure by implementing a terminating, incomplete variant. We also
+introduce a new indexing data structure.
+
+\subsection{The Unification Procedure} 
+% Two main guiding principles behind our
+% unification procedure are laziness and redundancy elimination. The first one is
+% embodied in the fact that the procedure makes sure that it never fully
+% normalizes the terms or fully applies the substitution if that is not necessary.
+% Redundancy elimination is achieved through \emph{oracles}
+% \cite{unif-section}: the procedures that solve the unification
+% problem for a subclass of higher-order terms on which unification is decidable,
+% and for \ehohii{}, unary. If those procedures determine that the given terms
+% belong to their class of terms, they will return the most general unifier,
+% avoiding redundant computations and in some cases even non-termination.
+The unification procedure works by maintaining a list of unification pairs to be solved.
+After choosing a pair, it first normalizes it by $\beta$-reducing and
+instantiating the heads of both terms in the pair. Then, if either head is a
+variable, it computes an appropriate binding for this variable, thereby
+approximating the solution.
+
+Unlike in first-order and $\lambda$-free higher-order unification, in full
+higher-order case there may be many bindings that lead to a solution. To reduce
+this mostly blind guessing of bindings, the procedure features support for
+\emph{oracles} (Sect.~\ref{sec:unif:the-unification-procedure}). These are
+procedures that solve the unification problem for a subclass of higher-order
+terms on which unification is decidable and, in the case of \ehohii{}, unary. Oracles help
+increase performance, avoid nontermination, and avoid redundant bindings.
+
+\looseness=-1
+In Chapter \ref{ch:unif}, the unification procedure is described as a transition system. In
+\ehohii{}, the procedure is implemented nonrecursively, and the unifiers are
+enumerated using an iterator object that encapsulates the unifier
+search state. The iterator consists of five fields:
+\begin{enumerate}
+  \item \vn{constraints}, which holds the unification
+  constraints
+  \item \vn{bt\_state}, a stack that contains information necessary to backtrack
+  to a previous state
+  \item \vn{branch\_iter}, which stores how far we
+  are in exploring different possibilities from the current search node
+  \item \vn{steps}, which remembers how many different unification bindings (such as
+  imitation, projection, and identification) are applied
+  \item \vn{subst},
+  a stack storing the variables bound so far
+\end{enumerate}
+\pagebreak[2]
+\newcommand{\cn}[1]{\ensuremath{\textsc{#1}}} %const name
+\newcommand{\fc}[1]{\ensuremath{\textsc{#1}}} %function call
+\algrenewcommand\alglinenumber[1]{{\color{gray} \tiny #1}}
+
+The iterator is initialized to hold the original problem in \vn{constraints},
+and all other fields are initially empty. The unifiers are retrieved one by one by
+calling the function \fc{ForwardIter}. It returns \fc{True} if the iterator made
+progress, in which case the unifier can be read via the iterator's
+$\vn{subst}$ field. Otherwise, no more unifiers can be found, and the iterator is
+no longer valid. The function's pseudocode is given below, including two
+auxiliary functions \fc{NormalizeHead} and \fc{BacktrackIter}:
+
+\vspace{\jot}
+\begin{algorithmic}[]
+  \Function{ForwardIter}{$\vn{iter}$}
+  \State $\vn{forward} \gets \neg \vn{iter.constraints.empty()} \lor \fc{BacktrackIter}(\vn{iter})$
+  \While{$\vn{forward} \land \neg \vn{iter.constraints.empty()}$}
+    \State $(\vn{lhs}, \vn{rhs}) \gets $ pop pair from $\vn{iter.constraints}$
+    \State $\vn{lhs} \gets \fc{NormalizeHead}(\vn{lhs})$
+    \State $\vn{rhs} \gets \fc{NormalizeHead}(\vn{rhs})$
+    \State normalize and discard the $\lambda$ prefix of $\vn{lhs}$ and $\vn{rhs}$
+
+    \If{$\neg\vn{lhs.head.is\_var()} \land \vn{rhs.head.is\_var()}$}
+      \State swap $\vn{lhs}$ and $\vn{rhs}$
+    \EndIf
+
+    \If{$\vn{lhs.head.is\_var()}$}
+      \State $\vn{oracle\_res} \gets \fc{Fixpoint}(\vn{lhs, rhs, iter.subst}) $
+      \If{$\vn{oracle\_res} = \cn{NotInFragment}$}
+        \State $\vn{oracle\_res} \gets \fc{Pattern}(\vn{lhs, rhs, iter.subst}) $
+      \EndIf
+
+      \If{$\vn{oracle\_res} = \cn{NotUnifiable}$}
+        \State $\vn{forward} \gets \fc{BacktrackIter(iter)}$
+      \ElsIf{$\vn{oracle\_res} = \cn{NotInFragment}$}
+        \State $\vn{n\_steps}, \vn{n\_branch\_iter}, \vn{n\_binding} \gets$
+        \State $\quad \fc{NextBinding}(\vn{lhs}, \vn{rhs}, \vn{iter.steps}, \vn{iter.branch\_iter})$
+        
+        \If{$\vn{n\_branch\_iter} \not= \fc{BindEnd}$ }
+          \State push pair $(\vn{lhs},\vn{rhs})$ back to \vn{iter.constraints}
+          \State push quadruple $(\vn{iter.constraints}, \vn{n\_branch\_iter}, $
+          \State                  $\quad \vn{iter.steps}, \vn{iter.subst})$ onto $\vn{iter.bt\_state}$
+          \State extend $\vn{iter.subst}$ with $\vn{n\_binding}$
+          \State $\vn{iter.steps} \gets \vn{n\_steps}$
+          \State $\vn{iter.branch\_iter} \gets \cn{BindBegin}$
+        \ElsIf{\vn{lhs.head = rhs.head}}
+          \State create constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
+          \State $\quad$ and push them to \vn{iter.constrants}
+          \State $\vn{iter.branch\_iter} \gets \cn{BindBegin}$
+        \EndIf
+      \EndIf
+    \ElsIf{$\vn{lhs.head} = \vn{rhs.head}$}
+      \State create constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
+      \State $\quad$ and push them to \vn{iter.constrants}
+    \Else{} \State $\vn{forward} \gets \fc{BacktrackIter(\vn{iter})}$
+    \EndIf
+  \EndWhile
+  \State \Return $\vn{forward}$
+  \EndFunction
+  
+  \newpage
+  
+  \Function{NormalizeHead}{$\vn{t}$}
+    \If{$\vn{t.head} = \internalat \land \vn{t.args}[0].\vn{is\_lambda}()$}
+      \State reduce the top-level $\beta$-redex in $t$
+      \State \Return $\fc{NormalizeHead}(t)$
+    \ElsIf{$\vn{t.head.is\_var()} \land \vn{t.head.binding} \not= \cn{nil}$}
+      \State $\vn{t.head} \gets \vn{t.head.binding}$
+      \State \Return $\fc{NormalizeHead}(t)$
+    \Else{}
+      \State \Return $t$
+    \EndIf
+  \EndFunction
+  
+  \vspace{\jot}
+  \Function{BacktrackIter}{$\vn{iter}$}
+    \If{\vn{iter.bt\_state.empty()}}
+      \State clear all fields in \vn{iter}
+      \State \Return \cn{False}
+    \Else
+    \State pop $(\vn{constraints}, \vn{branch\_iter}, \vn{steps}, \vn{subst})$ from $\vn{iter.bt\_state}$
+    \State set the corresponding fields of $\vn{iter}$
+    \State \Return \cn{True}
+    \EndIf
+  \EndFunction
+  \vspace{\jot}
+  
+\end{algorithmic} 
+
+\looseness=-1
+\fc{ForwardIter} begins by backtracking if the previous attempt was successful (i.e., 
+all constraints were solved). If it finds a state from which it can continue,
+it takes term pairs from $\vn{constraints}$ until
+there are no more constraints or it is determined that no unifier exists. The terms
+are normalized by instantiating the head variable with its binding and then
+reducing the potential top-level $\beta$-redex that appears. This instantiation
+and reduction process is repeated
+until there are no more top-level $\beta$-redexes and the head is
+not a variable bound to some term. Then the term with shorter
+$\lambda$ prefix is expanded (only on the top-level) so that both have the
+same length of $\lambda$ prefix. Finally, the $\lambda$ prefix is ignored, and we
+focus only on the body. In this way, we avoid fully substituting
+and normalizing terms and perform just enough operations
+to determine the next step of the procedure.
+
+If either term of the constraint is flex, we first invoke oracles to solve the
+constraint. \ehohii{} implements the most efficient oracles implemented in
+Zipperposition:\ fixpoint and pattern oracle (Sect.~\ref{sec:unif:implementation}). An oracle can return three results:
+(1)~there is an MGU for the pair (\cn{Unifiable}), which is recorded in
+\emph{subst}, and the next pair in $\emph{constraints}$ is tried;
+(2)~no MGU exists
+for the pair (\cn{NotUnifiable}), which causes the iterator to backtrack;
+% to previous state;
+(3)~if the pairs do not belong to the subclass that oracle
+can solve (\cn{NotInFragment}), we generate possible variable bindings---that is,
+we guess the approximate form of the solution.
+
+\ehohii{} has a special module that generates bindings (\cn{NextBinding}). This
+module is given the current constraint and the values of \emph{branch\_iter} and
+\emph{steps}, and it either returns the next binding and the new values of
+\emph{branch\_iter} and \emph{steps} or reports that all different variable
+bindings are exhausted. The bindings that \ehohii{}'s unification procedure creates
+are imitation, Huet-style projection, identification, and elimination (one
+argument at a time) (Sect.~\ref{sec:unif:the-unification-procedure}). A limit on the
+total number of applied binding rules can be set, as well as a limit on the
+number of individual rule applications. The binding module checks whether limits
+are reached using the iterator's \vn{steps} field.
+
+Computing bindings is the only point in the procedure where the search tree
+branches and different possibilities are explored. Thus, when \ehohii{} follows
+the branch indicated by the binding module, it records the state to which it
+needs to return, should the followed branch be backtracked. Therese are values
+of $\vn{constraints}, \vn{steps}$, and $\vn{subst}$ before the branch is followed
+and the value of the \vn{branch\_iter} that points past the followed branch. The
+values of \vn{branch\_iter} are either \cn{BindBegin}, which denotes that no
+binding was created, intermediate values that \cn{NextBinding} uses to remember
+how far through bindings it is, and \cn{BindEnd}, which indicates that all
+bindings are exhausted.
+
+If all bindings are exhausted, the procedure checks whether the pair is
+flex--flex and both sides have the same head. If so, the pair is decomposed and
+constraints are derived from the arguments of the pair. Otherwise, the iterator
+backtracks.
+% @PETAR(actually the procedure applies bindings to same-head flex-flex pairs,
+% so the text is OK -- we do get "stuck" enumerating those flex-flex pairs. The
+% limits help here): Maybe explain here that you don't want a pragmatic prover
+% like lambdaE to get stuck in wildly explosive flex-flex pairs? --JB
+%
+If the constraint is rigid--rigid, for unification to succeed the heads of both
+sides of the constraint must be the same. Unification then continues
+with new constraints derived from the arguments. Otherwise, the iterator must be
+backtracked.
+
+\ourpara{Matching} In Ehoh, the matching algorithm is mostly used inside
+simplification rules such as demodulation and subsumption \cite{ss-02-brainiac}.
+As these rules must be efficiently performed, using any complex matching
+algorithm is not a viable option. Instead, we implemented a matching algorithm
+for the pattern class of terms \cite{tn-93-patterns} to complement Ehoh's
+$\lambda$-free higher-order matching algorithm \cite[Sect.~4]{section-ehoh}.
+A term is a \emph{pattern} if each of its free variables either
+has no arguments (as in first-order logic) or is applied to distinct De Bruijn
+indices.
+
+To determine which of the two algorithms to call (pattern or $\lambda$-free), we
+added a cached property \texttt{HasNonPatternVar}, which is set for terms of the
+form $X \,
+\overline{s}_n$ where $n>0$ and either there exists some $s_i$ that is not a De Bruijn
+index or there exist indices $i < j$ such that $s_i = s_j$ is
+a De Bruijn index. This property is propagated to the superterms when they are
+perfectly shared. This allows later checks if a term belongs to the pattern
+class to be performed in constant time.
+
+% When we need to determine if one term matches the other one we first check if
+% any of them has a non-pattern applied variables. If so, $\lambda$-free
+% higher-order matching is tried. This algorithm is adjusted to treat $\lambda$ prefixes
+% as above in unification algorithm (ensuring that $\beta$-redexes can never occur)
+% and that free variables are never bound to terms that have loose bound variables.
+% Else if the terms have only pattern variables,
+% pattern matching algorithm is tried. Note that in this sense, first-order order
+% terms behave as pattern terms and thus pattern matching algorithm is run on
+% them. For example, on terms $(X \, \cst{b}, \cst{f} \, \cst{a} \, \cst{b})$
+% $\lambda$-free matching algorithm is invoked; on $(\cst{f} \, (\lambda x. \,
+% \lambda y.\, X \, x), \cst{f} \, \cst{g})$ pattern matching is tried.
+
+We have modified the $\lambda$-free higher-order matching algorithm to treat
+$\lambda$ prefixes as above in unification procedure---by bringing the prefixes
+to the same length and ignoring them afterwards. This ensures that the
+algorithm will never try to match a free variable to a $\lambda$-abstraction,
+making sure that $\beta$-redexes never appear (as in original $\lambda$-free
+higher-order matching). We also modified the algorithm to ensure that free variables
+are never bound to terms that have loose bound variables. This algorithm cannot
+find many complex matching substitutions (matchers), but it can
+efficiently determine whether two terms are variable renamings of each other
+or whether a simple matcher can be used as in the case of $(X \, (\lambda x. \,x) \,
+\cst{b}, \cst{f} \, (\lambda x. \,x) \, \cst{b})$, where ${X \mapsto \cst{f}}$ is
+usually the desired matcher. If this algorithm does not find a matcher and both
+terms are patterns, pattern matching is tried.
+
+\ourpara{Indexing} Ehoh, like other modern theorem provers, efficiently retrieves
+unifiable or matchable pairs of terms using indexing data structures. To find
+terms unifiable with a query term or instances of a query term it uses
+\emph{fingerprint indexing} \cite{ss-12-fp-indexing}. We extended this data
+structure to support (full) higher-order terms in Zipperposition
+\cite[Sect.~6]{unif-section}. We used the same approach in \ehohii{},
+and we extended feature vector indices \cite{ss-2013-feature-vector}
+in the same way.
+
+Ehoh uses \emph{perfect discrimination trees} \cite{mcc-92-pdts} to find
+generalizations of the query term (i.e., terms of which the query term is an instance).
+This data structure is a trie
+that indexes terms by representing them in a serialized, flattened form.
+%\begin{rep}, where each node corresponds to a symbol in a term\end{rep}.
+The left branch from the root in Figure \ref{fig:pdt} shows how the first-order terms
+$\cst{f}\, \cst{a} \, X$ and $\cst{f}\, \cst{a} \, \cst{a}$ are stored.
+In Ehoh, this data structure is extended to support partial application
+and applied variables \cite{section-ehoh}.
+
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}[level distance=3em, sibling distance=7.5em,
+  %  edge from parent path={(\tikzparentnode.south) -- ++(0,-0.5em)
+  %   -| (\tikzchildnode.north)},
+    every node/.style = {shape=rectangle, rounded corners=.75em, minimum size=1.75em, draw, align=center}]
+    \node {\phantom{x}}
+      child { node {$\cst{f}$}
+        child[sibling distance=2.5em] { node %[fill=verylightgray]
+          {$\cst{a}$}
+          child {node {$X$}}
+          child {node {$\cst{a}$}} }
+      }
+      child { node {$\cst{g}$}
+        child {node {$X \, \cst{a} \, \cst{b}$}
+               child {node {$\cst{c}$}}}
+      }
+      child { node {$\cst{h}$}
+        child {node {$\internallam_\iota$}
+          child {node {$\internallam_\iota$}
+            child {node {$X \, \db{0} \, \db{1}$}}
+          }
+      }}
+      ;
+\end{tikzpicture}
+\caption{First-order, $\lambda$-free higher-order, and higher-order pattern
+  terms in a perfect discrimination tree}
+\label{fig:pdt}
+\end{figure}
+
+In \ehohii{}, we extended this structure to support $\lambda$-abstractions and
+the higher-order pattern matching algorithm.
+To this end, we changed the way in which terms are
+serialized. First, we require that all terms are fully $\eta$-expanded (except
+for arguments of variables applied in patterns). Then, when the term is serialized,
+we dedicate a separate node for applied variable terms $X \, \overline{s}_n$,
+instead of the node for $X$ followed by nodes for serialization of arguments
+$\overline{s}_n$. We serialize $\lambda$-abstraction $\lambda x.\, s$ using
+a special node $\internallam_\tau$, where $\tau$ is the type of $x$,
+followed by the serialization of $s$. Other than these two changes, serialization
+remains as in Ehoh, following the gracefulness principle.
+Figure \ref{fig:pdt} shows how $\cst{g} \,
+(X\,\cst{a}\,\cst{b}) \, \cst{c}$ and $\cst{h} \, (\lambda x. \, \lambda y. \, X
+\, y \, x)$ are serialized.
+
+Since the terms are stored in serialized form, it is hard to manipulate
+$\lambda$ prefixes of stored terms during matching. Performing $\eta$-expansion
+when serializing terms makes sure that matchable terms have
+$\lambda$ prefixes of the same length.
+
+We have dedicated separate nodes for applied variables because access to arguments
+of applied variable is necessary for the pattern matching algorithm. Even though
+arguments can be obtained by querying the arity $n$ of the variable and taking
+next $n$ arguments in the serialization, this is both inefficient and inelegant.
+As for De Bruijn indices, we treat them the same as function symbols and assign
+them their own nodes.
+
+\newcommand{\tstack}{\ensuremath{\texttt{term\_stack}}}
+\newcommand{\tproc}{\ensuremath{\texttt{term\_proc}}}
+
+Following the notation from the extension of perfect discrimination trees to
+$\lambda$-free higher-order logic \cite{section-ehoh}, we now describe how enumeration of
+generalizations is performed. To traverse the tree, \ehohii{} begins at the root
+node and maintains two stacks:\ \tstack{} and \tproc{}, where \tstack{} contains the
+subterms of the query term that have to be matched, and \tproc{} contains
+processed terms that are used to backtrack to previous states. Initially,
+\tstack{} contains the query term, the current matching substitution
+$\sigma$ is empty, and the successor node is chosen among the child nodes as
+follows:
+
+\begin{enumerate}
+\item[A.] If the node is labeled with a symbol $\xi$ (where
+  $\xi$ is either a De Bruijn index or a constant) and the top item $t$
+  of \tstack{} is of the form $\xi \, \overline{t}_n$, replace $t$ by
+  $n$~new items $t_1,\dots,t_n$, and push $t$ onto \tproc{}.
+\smallskip
+\item[B.] If the node is labeled with a symbol $\internallam_\tau$ and the top
+  item $t$ of \tstack{} is of the form $\lambda x.\, s$ and the type of $x$ is
+  $\tau$, replace $t$ by $s$, and push $t$ onto \tproc{}.
+\smallskip
+\item[C.] If the node is labeled with a possibly applied variable $X \, \overline{s}_n$
+  (where $n \geq 0$), and the top item of \tstack{} is $t$, the 
+  matching algorithm described above is run on $X \, \overline{s}_n$ and $t$.
+  The algorithm takes into account $\sigma$ built so far and extends it
+  if necessary. If the algorithm succeeds, pop $t$ from \tstack{}, push it onto \tproc{},
+  and save the original value of $\sigma$ in the node.
+\end{enumerate}
+  
+Backtracking works in the opposite direction: If the current node is labeled with a De
+Bruijn index or function symbol node of arity $n$, pop $n$ terms from \tstack{} and move
+top of \tproc{} to \tstack{}. If the node is labeled with
+$\internallam_\tau$, pop the top of \tstack{} and move the top of \tproc{} to
+\tstack{}. Finally, if the node is labeled with a possibly applied variable, move top of the
+\tproc{} to \tstack{} and restore the value of $\sigma$.
+
+As an example of how finding a generalization works, consider the following
+states of stacks and substitutions, which emerge when looking for generalizations of 
+$\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \ref{fig:pdt}:
+%
+\[\begin{array}{@{}l@{\kern1em}l@{\kern1em}l@{\kern1em}l@{\kern1em}l@{}}
+             & \epsilon                                                & \cst{g}                                                 & \cst{g}.(X \, \cst{a} \, \cst{b})                                                          & \cst{g}.(X \, \cst{a} \, \cst{b}).\cst{c} \\[.5\jot]
+  \sigma{:}  & \emptyset                                               & \emptyset                                               & \{X \mapsto \cst{f}\}                                                                      & \{X \mapsto \cst{f}\} \\
+  \tstack{:} & [\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{f} \, \cst{a} \, \cst{b}, \cst{c}]                & [\cst{c}]                                                                                  & [] \\
+  \tproc{:}  & []                                                      & [\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{f} \, \cst{a} \, \cst{b}{,}\; \cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}] & [\cst{c}{,}\;\cst{f} \, \cst{a} \, \cst{b}{,}\; \cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}]
+  \end{array}\]

@@ -713,25 +713,7 @@ before comparing them using KBO or LPO.
 
 \section{Unification, Matching, and Term Indexing}
 \label{sec:ehoh2:unif-match-index}
-% \begin{itemize}
-%   \item Procedure that implements a variant of the algo described in Efficient
-%   HO Unif paper.
-%   \item Two oracles -- fixpoint and pattern unif (solid not implemented as
-%   complexity/gain ratio is quite negative)
-%   \item It is implemented iteratively, with subtle optimizations
-%   \item Its iterator is completely contained -- iterators can be stored and
-%   later waked up similarly to what we do in Zipperposition.
-%   \item Mention that so far the prover fares extremely well with complicated
-%   unification problems and that we do not consider implementing more complex
-%   given clause algo in Ehoh.
-%   \item Matching works only with algorithms that return a single matcher:
-%   pattern matching and LFHOL matching : main optimization from E is preserved.
-%   PDT algorithm also works with both kinds of terms LFHOL and pattern. Check if
-%   something is a pattern is efficient!
-%   \item Fingerprints and feature vectors as in Zipperposition.
-%   \item To avoid huge refactorings iterator is used even if the problem to be
-%   solved is first-order.  
-% \end{itemize}
+
 
 Standard superposition crucially depends on the concept of a most general unifier
 (MGU).
