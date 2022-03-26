@@ -20,7 +20,7 @@ the necessary E expertise.}
   higher-order features. Building on our extension of E to $\lambda$-free
   higher-order logic, we now extend E to full higher-order logic.
   The resulting prover is the \NumberOK{strongest} one on benchmarks coming from a
-  proof assistant, and the second best on TPTP benchmarks.
+  proof assistant, and the \NumberOK{second strongest} on TPTP benchmarks.
     %It also incurs no overhead on first-order problems.  -- sounds like a detail --JB
 \end{abstract}
 
@@ -66,8 +66,8 @@ $\lambda$-superposition (Sect.~\ref{sec:ehoh2:calculus}).
 We \NumberOK{evaluated} \ehohii{} on a selection of proof assistants benchmarks
 as well as all higher-order theorems in the TPTP library \cite{gs-17-tptp}
 (Sect.~\ref{sec:ehoh2:eval}). We found
-that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on
-proof assistant benchmarks; on TPTP benchmarks it ended up second only 
+that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on the
+proof assistant benchmarks; on the TPTP benchmarks it ended up second only 
 to the cooperative version of Zipperposition, which employs Ehoh as a
 backend. An arguably fairer comparison without the backend puts \ehohii{} in the
 first place for both benchmark suites.
@@ -225,7 +225,7 @@ is then a complete waste of time.
 To avoid this, we use Ehoh's perfectly shared
 terms and their \texttt{properties} field.
 %
-We introduce the property \texttt{HasBetaReducibleSubterm} which is set if
+We introduce the property \texttt{HasBetaReducibleSubterm}, which is set if
 %%% @PETAR(is is good): "is" or "may be" below? (Overapproximation?) --JB
 a cell is $\beta$-reducible.
 Whenever a new cell that contains a
@@ -289,7 +289,7 @@ We can then remove the $k = \min\{j,l,n\}$ rightmost outermost $\lambda$ binders
 \ldots, \internallam(\db{0}, t) \ldots)$ and replace %the body
 $t$ by the variant of
 $u \allowbreak\, (\dbvar{n}\db{{}-1}) \allowbreak\, \ldots \, (\dbvar{k}\db{{}+1}) \, \dbvar{k}$
-obtained by shifting the loose De Bruijn indices right by~$k$.
+obtained by shifting the loose De Bruijn indices down by~$k$.
 
 To better understand this convoluted De Bruijn arithmetic, consider the
 term $\lambda x. \, \lambda y. \, \lambda z.\,\allowbreak \cst{f} \, x \, x \, y
@@ -555,9 +555,10 @@ are reached using the iterator's \vn{steps} field.
 Computing bindings is the only point in the procedure where the search tree
 branches and different possibilities are explored. Thus, when \ehohii{} follows
 the branch indicated by the binding module, it records the state to which it
-needs to return, should the followed branch be backtracked. It saves the values
+needs to return, should the followed branch be backtracked. The state consists of
+the values
 of $\vn{constraints}, \vn{steps}$, and $\vn{subst}$ before the branch is followed
-and the value of the \vn{branch\_iter} that points past the followed branch. The
+and the value of \vn{branch\_iter} that points past the followed branch. The
 values of \vn{branch\_iter} are either \cn{BindBegin}, which denotes that no
 binding was created, intermediate values that \cn{NextBinding} uses to remember
 how far through bindings it is, and \cn{BindEnd}, which indicates that all
@@ -790,7 +791,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   %TODO: @JASMIN: How do we cite the STTT article?
   The third difference is more subtle. One of the main features of Ehoh is
-  \emph{prefix optimization} (Sect.~\ref{sec:ehoh:introduction}): A method which, given a demodulator $s \eq t$, allows
+  \emph{prefix optimization} (Sect.~\ref{sec:ehoh:introduction}): a method that, given a demodulator $s \eq t$, allows
   to replace both applied and unapplied occurrences of $s$ by $t$ 
   by traversing only first-order subterms of a rewritable term. In $\lambda$-free setting this
   optimization is useful, but in presence of $\beta\eta$-normalization, shapes of
@@ -921,8 +922,8 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   The experiments were carried out on StarExec Miami
   \cite{sst-14-starexec} nodes equipped with Intel Xeon E5-2620 v4 CPU clocked at
   2.10~GHz. For the TPTP part, we used the CASC-28\footnote{\url{http://www.tptp.org/CASC/28/}} time limits:\ 120~s
-  wallclock and 960~s CPU. For SH benchmarks and to answer the other question, we used Sledgehammer's
-  default time limit:\ 30~s wallclock and CPU.
+  wall-clock and 960~s CPU. For SH benchmarks and to answer the other question, we used Sledgehammer's
+  default time limit:\ 30~s wall-clock and CPU.
   
   \ourpara{Comparison with Other Provers}
   To answer the first question, we let
@@ -954,7 +955,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   and \NumberOK{6\%} more problems on SH benchmarks, where Ehoh was already very
   successful.
   
-  \ehohii{} was mainly designed as efficient backed to proof assistants. As such it 
+  \ehohii{} was mainly designed as an efficient backed to proof assistants. As such it 
   excels on SH benchmarks, outperforming the competition. On TPTP, it outperforms all higher-order provers other than Zipperposition-coop.
   If Zipperposition's Ehoh backend is disabled,
   \ehohii{} outperforms Zipperposition by a wide margin.
@@ -1027,10 +1028,10 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
       \relax{\begin{tabular}{l@{\hskip 1em}@{\hskip 0.5em}c} \toprule
                         & TPTP     \\
         \midrule
-        Ehoh -- FO      & 535      \\
-        Ehoh -- HO      & 538      \\
-        \ehohii{} -- FO & {\bf 539}\\
-        \ehohii{} -- HO & {\bf 539}\\
+        Ehoh FO      & 535      \\
+        Ehoh HO      & 538      \\
+        \ehohii{} FO & {\bf 539}\\
+        \ehohii{} HO & {\bf 539}\\
         \bottomrule
       \end{tabular}}
       \caption{Evaluation of \ehohii{}'s overhead}
@@ -1100,8 +1101,8 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   of Ehoh's data structures and algorithms to support full higher-order logic and
   demonstrated that such an extension is possible. \NumberOK{Our evaluation} shows
   that this extension makes \ehohii{} the best higher-order prover on
-  benchmarks coming from interactive theorem proving practice, which has been our goal since 2016. \ehohii{}'s
-  performance lags slightly behind Zipperposition on TPTP problems, possibly because Zipperposition
+  benchmarks coming from interactive theorem proving practice, which was our goal. \ehohii{}
+  lags slightly behind Zipperposition on TPTP problems, possibly because Zipperposition
   does not assume a clausal structure and can perform subtle formula-level
   inferences. In the future, we plan to implement the same features in \ehohii{}.
   We have also only started tuning \ehohii{}'s heuristics on higher-order
