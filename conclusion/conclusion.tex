@@ -1,4 +1,94 @@
 \chapter{Conclusion}
 \setheader{Conclusion}
 \label{ch:conclusion}
+ 
+As we bring this thesis to an end, I would like to use these last pages to
+reflect not only on the work I have done in the last four years, but also on the
+many bumps on the road that I did not get to describe in the preceding chapters.
+When it comes to reflections, the  performance art piece Rhythm 10, performed by
+Marina Abramovi\'c,  one of the greatest Yugoslav artists, comes to mind. The
+photograph on the cover of this thesis was taken when it was first performed, in
+Edinburgh, in 1973. Its instructions read:
 
+\begin{quote}
+    \underline{Preparation} \\[1\jot]
+    I place a sheet of white paper on the floor.\\
+    I lay 20 knives of different sizes and shapes on the floor.\\
+    I place 2 tape recorders with microphones on the floor.
+    
+    \underline{Performance} \\[1\jot]
+    I turn on the first tape recorder.\\
+    I take the first knife and stab in between the fingers of my left hand as
+    fast as possible.\\
+    Every time I cut myself, I change to a different knife. \\
+    When I've used all of the knives (all the rhythms), I rewind the tape
+    recorder. \\ 
+    I listen to the recording of the first part of the performance. \\ I
+    concentrate. \\
+    I repeat the first part of the performance. \\
+    I take the knives in the same order, follow to the same order, follow to the
+    same rhythm and cut myself in the same places. \\
+    In this performance, the mistakes of time past and time present are
+    synchronized.\\
+    I rewind the second tape recorder and listen to the double rhythm of the
+    knives.\\
+    I leave.
+\end{quote}
+
+Just like this performance, the work that I have done in the Matryoshka project
+was cyclic: It consists of three phases (three stops as we described them in
+Chapter \ref{ch:intro}), each of which has the same parts: theory (calculus and
+algorithms), engineering (implementation) and optimization (heuristics). While
+the calculi were mostly developed by Alexander Bentkamp
+\cite{bbcw-21-lfho,bbtvw-21-sup-lam,bbtv-21-full-ho-sup}, the task of developing
+algorithms for indexing or unification, as well as the tasks of implementing and
+optimizing the implementation were mainly mine.
+
+Structuring the project cyclically turned out to be a great idea. When I first
+started doing the research which will later form the basis of Chapter
+\ref{ch:ehoh}, I was overwhelmed by the scope of the project and felt uncertain
+if E could ever fully support $\lambda$-free higher-order logic. Many of the
+extensions described in the  later chapters were even larger in scope. However,
+as each extension relied on the previous one, I quickly developed a feeling of
+where the possible pitfalls are and how to avoid them. This gave me an invaluable
+source of encouragement, without which I could hardly arrive at the end of the
+project.
+
+The work in Chapter~\ref{ch:ehoh} completed the first cycle. Soon after the
+original paper introducing Ehoh \cite{vbss-19-ehoh1} was published, Ehoh found
+its use as the backend of Sledgehammer and Satallax, showing that even when limited
+to a fragment of higher-order logic, efficient higher-order reasoning is in
+demand.
+
+The goal of the next cycle was to support $\lambda$-abstraction. When we first
+implemented \lsup{}, calculus that achieves this goal, we quickly realized that
+one of its main flaws was that it relies on enumerating full unifiers rather
+than preunifiers, like some older resolution-based higher-order calculi do. This
+is why we focused on developing a full unification procedure that removes the
+redundancy present in other procedures and that implements all the advancements
+and optimizations described in the unification literature after the introduction
+of the most influential full unification procedure, Jensen-Pietrzykowski's
+procedure. We also made sure that this procedure can easily be customized to
+trade bits of its completeness for substantially improved performance. This
+procedure, described in Chapter~\ref{ch:unif}, transformed the \lfsup{} calculus
+into a competitive higher-order calculus.
+
+Even though \lfsup{} became competitive, its implementation in Zipperposition
+still still lagged behind the competition. To investigate why this is the case,
+we manually analyzed hundreds of benchmarks on which the competition proves, but
+on which Zipperposition fails. This analysis forms the basis of work that is
+described in Chapters \ref{ch:bools} and \ref{ch:ho-techniques}. The main
+conclusion was that the competition, most notably tableaux-based Satallax,
+reasons better with formulas. Tableaux inferences are more intuitive than the
+ones that superposition or resolution provers perform and are more in line with
+how a mathematician structures a proof. Even though fitting these kind of
+inferences into the superposition context was challenging, it proved very
+successful. After they were implemented in Zipperposition, it took its first
+victory at higher-order division of CASC.
+
+Our extension of \lfsup{} was guided by performance, rather than completeness
+with respect to full higher-order logic. After the first victory, we were left
+wondering what were the kind of problems that our implementation can not
+solve, and started looking for complete full higher-order calculus. At the end,
+we designed \osup{} which gave us the precise answer in the form of problems that
+cannot be solved and the rules which are necessary to solve them. 
