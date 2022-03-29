@@ -164,6 +164,18 @@ convertible with respect to any of the rules form equivalence classes. Thus, we
 also say that $\alpha$($\beta\eta$)-convertible terms are
 $\alpha$($\beta\eta$)-equivalent. 
 
+In practice, many implementations of $\lambda$-terms avoid named representation
+of bound variables described above by using \emph{locally nameless
+representation} \cite{ac-12-locally-nameless}. In this representation, free
+variables retain their names, while abstractions are simply represented by a
+$\lambda$ symbol, without any names. Further, bound variables are represented
+using \emph{De Bruijn indices}. A bound variable with De Bruijn index
+$\dbvar{i}$ is bound by the $i+1$-th enclosing $\lambda$-binder. For example,
+the term $\lambda x. \cst{f} \, (\lambda y z. \cst{g} \, y \, x)$ is represented
+as $\lambda\, \cst{f} \, (\lambda \lambda\, \cst{g} \, \db{0} \, \db{2})$.
+Locally nameless representation reduces the $\alpha$-equivalence test to 
+the syntactic equality test. 
+
 \looseness=-1
 As hinted in previous definitions, higher-order substitutions
 ($\sigma,\varrho,\ldots$) are functions from both free and bound variables to
@@ -211,15 +223,15 @@ quantification over types only on top-level and not inside literals.
 \label{sec:pre:clauses}
 
 The standard resolution and superposition calculi do not work directly on formulas, but
-on their normal forms, {\em clauses}. Thus, the initial problem, expressed as a
+on normal forms, {\em clauses}. Thus, the initial problem, expressed as a
 set of formulas, must be transformed into a set of clauses. For propositional
 and first-order logic, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}. In higher-order logic,
 formulas are first-class citizens and higher-order calculi can in general work
 with nonnormalized problem, in its original form. However, resolution and
 superposition-based higher-order calculi still perform best when the problem is clausified
-using transformation similar to the one used in the first-order case. We have analyzed
-different approaches to clausification in higher-order context \cite{bbtv-21-full-ho-sup}.
+using a transformation similar to the one used in the first-order case. We have analyzed
+different approaches to clausification in a higher-order context \cite{bbtv-21-full-ho-sup}.
 
 \looseness=-1
 An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em
