@@ -170,8 +170,8 @@ representation} \cite{ac-12-locally-nameless}. In this representation, free
 variables retain their names, while abstractions are simply represented by a
 $\lambda$ symbol, without any names. Further, bound variables are represented
 using \emph{De Bruijn indices}. A bound variable with De Bruijn index
-$\dbvar{i}$ is bound by the $i+1$-th enclosing $\lambda$-binder. For example,
-the term $\lambda x. \cst{f} \, (\lambda y z. \cst{g} \, y \, x)$ is represented
+$\dbvar{i}$ is bound by the $i+1$-th enclosing $\lambda$ binder. For example,
+the term $\lambda x. \, \cst{f} \, (\lambda y z. \, \cst{g} \, z \, x)$ is represented
 as $\lambda\, \cst{f} \, (\lambda \lambda\, \cst{g} \, \db{0} \, \db{2})$.
 Locally nameless representation reduces the $\alpha$-equivalence test to 
 the syntactic equality test. 
@@ -409,6 +409,8 @@ superposition are as follows:
 \end{tabular}
 
 \medskip
+Note that with \emph{superposition rule} we refer to both \infname{SN} and \infname{SP}
+rules.
 Let us give some intuition behind how these rules are applied in practice. The
 \infname{ER} rule is used to replace equals by equals within a clause.
 Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In

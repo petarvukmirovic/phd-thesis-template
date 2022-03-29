@@ -10,8 +10,8 @@
 Jasmin~Blanchette and Stephan~Schulz}
 
 
-\blfootnote{In this work I designed, implemented and evaluated all changes to
-term representation, algorithms and indexing data structures. Jasmin Blanchette
+\blfootnote{In this work I designed, implemented, and evaluated all changes to
+term representation, algorithms, and indexing data structures. Jasmin Blanchette
 did the daily supervision. Stephan Schulz provided
 the necessary E expertise.}
 
@@ -60,11 +60,11 @@ do not impact the strong first-order performance of E and $\lambda$-free higher-
 One of the main challenges we faced was retrofitting $\lambda$-terms in Ehoh's
 term representation (Sect.~\ref{sec:ehoh2:terms}). Furthermore, Ehoh's main inference
 engine was designed with the assumption that it will be used with
-inferences that compute a most general unifier. We
+inferences that compute an MGU. We
 implemented a higher-order unification procedure (Chapter \ref{ch:unif})
 that can return multiple unifiers (Sect.~\ref{sec:ehoh2:unif-match-index}) and
 integrated it in the inference engine. Finally, we extended and adapted the
-superposition rule, resulting in an incomplete, pragmatic variant of
+rules of superposition calculus, resulting in an incomplete, pragmatic variant of
 $\lambda$-superposition (Sect.~\ref{sec:ehoh2:calculus}).
 
 We \NumberOK{evaluated} \ehohii{} on a selection of proof assistants benchmarks
@@ -73,7 +73,7 @@ as well as all higher-order theorems in the TPTP library \cite{gs-17-tptp}
 that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on the
 proof assistant benchmarks; on the TPTP benchmarks it ended up second only 
 to the cooperative version of Zipperposition, which employs Ehoh as a
-backend. An arguably fairer comparison without the backend puts \ehohii{} in the
+backend. An arguably fairer comparison without the backend puts \ehohii{} in
 first place for both benchmark suites.
 We also compared the performance of \ehohii{} with E on first-order
 %%% @PETAR: I made this slightly sentence shorter and more forceful. Please
@@ -87,7 +87,7 @@ section, with the corresponding notations. Like in the previous chapter, we
 simplify the notation by writing predicate literals in unencoded form: Positive
 literal $\eqlit{s}{\itrue}$ is written as $s$ and negative literal
 $\neqlit{s}{\top}$ is written as $\negpredlit{s}$.   This chapter discusses
-three tightly related provers E, Ehoh and \ehohii{}, which are disambiguated as
+three tightly related provers E, Ehoh, and \ehohii{}, which are disambiguated as
 follows:
 
 \begin{itemize}
@@ -117,7 +117,7 @@ use the first-order notation $\cst{f}(s_1, \ldots, s_n)$ to denote a cell whose
 
 Ehoh represents $\lambda$-free higher-order terms using flattened, spine notation
 (Sect.~\ref{sec:ehoh:types-and-terms}).
-Thus, the terms $\cst{f}$, $\cst{f} \, \cst{a}$ and $\cst{f} \, \cst{a} \,
+Thus, the terms $\cst{f}$, $\cst{f} \, \cst{a}$, and $\cst{f} \, \cst{a} \,
 \cst{b}$ are represented by the cells $\cst{f}$,
 $\cst{f}(\cst{a})$, and $\cst{f}(\cst{a}, \cst{b})$, respectively.
 To ensure free variables are
@@ -148,7 +148,7 @@ representation for free (and applied) variables.
 Extending the term representation of Ehoh with a new term
 kind involves intricate manipulation of the cell data structure. De Bruijn
 indices must be represented as other cells with either negative or positive
-\texttt{f\_code}. However, this has to be done in such a way that De Bruijn
+\texttt{f\_code}. However, this has to be done in such a way that a De Bruijn
 index can never be mistaken for a function symbol or a variable.
 
 Other than possibly being instantiated during $\beta$-reduction, De Bruijn
@@ -161,7 +161,7 @@ cell, which holds precomputed properties of %shared cell
 the cell. We introduce the
 property \texttt{IsDBVar} to denote that the cell represents a De
 Bruijn index. Any attempt to create a De Bruijn index is performed through
-a dedicated library function that sets \texttt{IsDBVar} property for every term it
+a dedicated library function that sets the \texttt{IsDBVar} property for every term it
 returns. When given the same De Bruijn index and type, this function is
 guaranteed to always return the same object. Finally, we have guarded all the
 functions and macros that manipulate function codes with the check if the
@@ -171,7 +171,7 @@ variables, using \internalat{}.
 
 Extending cells to support $\lambda$-abstraction is easier. Each
 $\lambda$-ab\-strac\-tion has the distinguished function code \internallam{} as the head
-symbol and two arguments:\ (1)~a De Bruijn index 0 of the type of abstracted variable;
+symbol and two arguments:\ (1)~a De Bruijn index 0 of the type of the abstracted variable;
 (2)~the body %(matrix)
 of the $\lambda$-abstraction. Consider
 the term $\lambda x. \, \lambda y.\, \cst{f}\, x \, x$, where both $x$ and $y$ have
@@ -237,7 +237,7 @@ $\beta$-reducible term as a direct subterm is shared, the property is set.
 Setting of the property is inductively continued when further superterms are
 shared. For example, in the term $t = \cst{f} \, \cst{a} \, (\cst{g} ((\lambda x.\,
 x)\,\cst{a}))$, the cells for $(\lambda x.\, x)\,\cst{a}$,
-$\cst{g}\,((\lambda x.\, x)\,\cst{a})$, and $t$ itself have the property
+$\cst{g}\,((\lambda x.\, x)\,\cst{a})$ and $t$ itself have the property
 \texttt{HasBetaReducibleSubterm} set.
 %
 When it needs to find $\beta$-reducible subterms, \ehohii{} will visit only the
@@ -257,8 +257,8 @@ operations such as shifting De Bruijn indices or determining whether a term is c
 if the term is first-order.
 
 \ourpara{Efficient $\etabf$-Reduction}
-The term $\lambda x.\, s \, x$ is $\eta$-reduced to $s$ whenever $x$ does not appear
-unbound in $s$. Caching the property of $\eta$-reducibility of the term is not
+The term $\lambda x.\, s \, x$ is $\eta$-reduced to $s$ whenever $x$ is not a loose bound variable
+in $s$. Caching the property of $\eta$-reducibility of the term is not
 as beneficial as the one for $\beta$-reducibility, because checking this
 property at the term's top level is done in $O(|s|)$, compared with constant time
 for $\beta$-reducibility.
@@ -268,8 +268,8 @@ that notes the presence of $\lambda$-abstraction in a term. Only
 terms with this property are visited during $\eta$-reduction.
 
 \ehohii{} performs parallel $\eta$-reduction: It recognizes terms of the form
-$\lam{\overline{x}_n}{s \, \overline{x}_n } $ such that none of $x_i$
-occurs unbound in $s$. If done naively, reducing terms of this kind requires up to $n$
+$\lam{\overline{x}_n}{s \, \overline{x}_n } $ such that none of the $x_i$
+occurs loose bound in $s$. If done naively, reducing terms of this kind requires up to $n$
 traversals of $s$ to check if each $x_i$ occurs in $s$. In \ehohii{}, exactly one
 traversal of $s$ is required.
 
@@ -313,8 +313,8 @@ number of intermediate terms. For finding the minimal loose De Bruijn index,
 optimizations such as the \texttt{HasDBSub\-term} property are used.
 
 \ourpara{Representation of Boolean Terms}
-Ehoh represents Boolean terms using
-cells whose \texttt{f\_code}s correspond to internal codes reserved
+E represents Boolean terms using
+term cells whose \texttt{f\_code}s correspond to internal codes reserved
 for logical symbols. Quantified formulas are represented by cells in which the
 first argument is the quantified variable and the second one is the body of the
 quantified formula. For example, the term $\iforall x.\, \cst{p} \, x$ corresponds
@@ -322,7 +322,7 @@ to the cell $\iforall(X, \cst{p}(X))$, where $X$ is a regular free variable.
 % as Ehoh has no concept of a bound variable.
 
 This representation is convenient for parsing formulas and clausification, which
-is what Ehoh uses it for, but it
+is what E uses it for, but it
 causes $\alpha$-normalization issues during the actual proof search: In
 full higher-order logic, Boolean terms can appear as subterms in clauses, as in
 $\cst{q}(X) \llor \cst{p}(\iforall(X, \cst{r}(X)))$;
@@ -336,7 +336,7 @@ the variables but delegate this responsibility to a $\lambda$-abstraction.
 %
 Since \ehohii{} represents bound variables using De Bruijn indices, this solves the
 $\alpha$-conversion issues. However, this solution is incompatible with
-thousands of decades-old lines of clausification code that assumes the Ehoh
+thousands of decades-old lines of clausification code that assumes the E
 representation of
 quantified formulas. Therefore, \ehohii{} converts quantified
 formulas only after clausification, for Boolean terms that appear in a
@@ -347,7 +347,7 @@ The $\lambda$-superposition calculus is parameterized by a term order that is
 used to break symmetries in the search space.
 We implemented the versions of the Knuth--Bendix order (KBO) and lexicographic
 path order (LPO) for higher-order terms with $\lambda$-abstractions described by
-Bentkamp et al.~\cite{bbtv-21-full-ho-sup}. These orders encode
+Bentkamp et al.~\cite{bbtv-21-full-ho-sup}. These orders
 encode $\lambda$-terms as first-order terms and then invoke the standard KBO or
 LPO. %Trading elegance for efficiency, our
 %implementation does not compute the first-order translation.
@@ -366,16 +366,15 @@ Thus, when Ehoh needs to perform a KBO or LPO comparison of an instantiated term
 it needs only follow the \texttt{binding} pointers.
 In full higher-order logic, however, instantiating a variable can trigger a
 series of $\beta\eta$-reductions,
-changing the shape of the term dramatically. To pevent this, \ehohii{}
-computes the $\beta\eta$-reduced instance of the terms
+changing the shape of the term dramatically. To prevent this, \ehohii{}
+computes the $\beta\eta$-reduced instances of the terms
 before comparing them using KBO or LPO.
 
 \section{Unification, Matching, and Term Indexing}
 \label{sec:ehoh2:unif-match-index}
 
 
-Standard superposition crucially depends on the concept of a most general
-unifier (MGU). In higher-order logic, such a unifier does not in general exist,
+Standard superposition crucially depends on the concept of an MGU. In higher-order logic, such a unifier does not in general exist,
 and the concept
 %%% @PETAR: CSU, infinite
 is replaced by that of a complete set of unifiers (CSU), which may be infinite.
@@ -402,7 +401,7 @@ instantiating the heads of both terms in the pair. Then, if either head is a
 variable, it computes an appropriate binding for this variable, thereby
 approximating the solution.
 
-Unlike in first-order and $\lambda$-free higher-order unification, in full
+Unlike in first-order and $\lambda$-free higher-order unification, in the full
 higher-order case there may be many bindings that lead to a solution. To reduce
 this mostly blind guessing of bindings, the procedure features support for
 \emph{oracles} (Sect.~\ref{sec:unif:the-unification-procedure}). These are
@@ -448,7 +447,7 @@ auxiliary functions \fc{NormalizeHead} and \fc{BacktrackIter}:
     \State $(\vn{lhs}, \vn{rhs}) \gets $ pop pair from $\vn{iter.constraints}$
     \State $\vn{lhs} \gets \fc{NormalizeHead}(\vn{lhs})$
     \State $\vn{rhs} \gets \fc{NormalizeHead}(\vn{rhs})$
-    \State normalize and discard the $\lambda$ prefix of $\vn{lhs}$ and $\vn{rhs}$
+    \State normalize and discard the $\lambda$ prefixes of $\vn{lhs}$ and $\vn{rhs}$
 
     \If{$\neg\vn{lhs.head.is\_var()} \land \vn{rhs.head.is\_var()}$}
       \State swap $\vn{lhs}$ and $\vn{rhs}$
@@ -527,15 +526,15 @@ reducing the potential top-level $\beta$-redex that appears. This instantiation
 and reduction process is repeated
 until there are no more top-level $\beta$-redexes and the head is
 not a variable bound to some term. Then the term with shorter
-$\lambda$ prefix is expanded (only on the top-level) so that both have the
-same length of $\lambda$ prefix. Finally, the $\lambda$ prefix is ignored, and we
+$\lambda$ prefix is expanded (only on the top-level) so that $\lambda$ prefixes have the
+same length. Finally, the $\lambda$ prefix is ignored, and we
 focus only on the body. In this way, we avoid fully substituting
 and normalizing terms and perform just enough operations
 to determine the next step of the procedure.
 
 If either term of the constraint is flex, we first invoke oracles to solve the
 constraint. \ehohii{} implements the most efficient oracles implemented in
-Zipperposition:\ fixpoint and pattern oracle (Sect.~\ref{sec:unif:implementation}). An oracle can return three results:
+Zipperposition:\ fixpoint and pattern (Sect.~\ref{sec:unif:implementation}). An oracle can return three results:
 (1)~there is an MGU for the pair (\cn{Unifiable}), which is recorded in
 \emph{subst}, and the next pair in $\emph{constraints}$ is tried;
 (2)~no MGU exists
@@ -577,7 +576,7 @@ backtracks.
 % limits help here): Maybe explain here that you don't want a pragmatic prover
 % like lambdaE to get stuck in wildly explosive flex-flex pairs? --JB
 %
-If the constraint is rigid--rigid, for unification to succeed the heads of both
+If the constraint is rigid--rigid, for unification to succeed, the heads of both
 sides of the constraint must be the same. Unification then continues
 with new constraints derived from the arguments. Otherwise, the iterator must be
 backtracked.
@@ -616,7 +615,7 @@ class to be performed in constant time.
 % \lambda y.\, X \, x), \cst{f} \, \cst{g})$ pattern matching is tried.
 
 We have modified the $\lambda$-free higher-order matching algorithm to treat
-$\lambda$ prefixes as above in unification procedure---by bringing the prefixes
+$\lambda$ prefixes as above in the unification procedure---by bringing the prefixes
 to the same length and ignoring them afterwards. This ensures that the
 algorithm will never try to match a free variable to a $\lambda$-abstraction,
 making sure that $\beta$-redexes never appear (as in original $\lambda$-free
@@ -624,14 +623,14 @@ higher-order matching). We also modified the algorithm to ensure that free varia
 are never bound to terms that have loose bound variables. This algorithm cannot
 find many complex matching substitutions (matchers), but it can
 efficiently determine whether two terms are variable renamings of each other
-or whether a simple matcher can be used as in the case of $(X \, (\lambda x. \,x) \,
+or whether a simple matcher can be used, as in the case of $(X \, (\lambda x. \,x) \,
 \cst{b}, \cst{f} \, (\lambda x. \,x) \, \cst{b})$, where ${X \mapsto \cst{f}}$ is
 usually the desired matcher. If this algorithm does not find a matcher and both
 terms are patterns, pattern matching is tried.
 
 \subsection{Indexing} E, like other modern theorem provers, efficiently retrieves
 unifiable or matchable pairs of terms using indexing data structures. To find
-terms unifiable with a query term or instances of a query term it uses
+terms unifiable with a query term or instances of a query term, it uses
 \emph{fingerprint indexing} \cite{ss-12-fp-indexing}. We extended this data
 structure to support (full) higher-order terms in Zipperposition (Sect.~\ref{sec:unif:indexing}). 
 We used the same approach in \ehohii{},
@@ -699,9 +698,9 @@ when serializing terms makes sure that matchable terms have
 $\lambda$ prefixes of the same length.
 
 We have dedicated separate nodes for applied variables because access to arguments
-of applied variable is necessary for the pattern matching algorithm. Even though
+of applied variables is necessary for the pattern matching algorithm. Even though
 arguments can be obtained by querying the arity $n$ of the variable and taking
-next $n$ arguments in the serialization, this is both inefficient and inelegant.
+the next $n$ arguments in the serialization, this is both inefficient and inelegant.
 As for De Bruijn indices, we treat them the same as function symbols and assign
 them their own nodes.
 
@@ -738,10 +737,10 @@ follows:
 \end{enumerate}
   
 Backtracking works in the opposite direction: If the current node is labeled with a De
-Bruijn index or function symbol node of arity $n$, pop $n$ terms from \tstack{} and move
+Bruijn index or function symbol node of arity $n$, pop $n$ terms from \tstack{} and move the
 top of \tproc{} to \tstack{}. If the node is labeled with
 $\internallam_\tau$, pop the top of \tstack{} and move the top of \tproc{} to
-\tstack{}. Finally, if the node is labeled with a possibly applied variable, move top of the
+\tstack{}. Finally, if the node is labeled with a possibly applied variable, move the top of the
 \tproc{} to \tstack{} and restore the value of $\sigma$.
 
 As an example of how finding a generalization works, consider the following
@@ -788,7 +787,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   \ourpara{Calculus} \ehohii{} implements the same superposition
   calculus as Ehoh with three important changes. First, wherever Ehoh requires
-  the most general unifier of terms, \ehohii{} enumerates unifiers from a finite subset of the CSU, as explained in
+  the MGU of terms, \ehohii{} enumerates unifiers from a finite subset of the CSU, as explained in
   Sect.~\ref{sec:ehoh2:unif-match-index}. Second, \ehohii{} uses versions of the KBO and
   LPO orders designed for $\lambda$-terms.
   % as described by Bentkamp et al.\ \cite{bbtv-21-full-ho-sup}.
@@ -797,8 +796,8 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   The third difference is more subtle. One of the main features of Ehoh is
   \emph{prefix optimization} (Sect.~\ref{sec:ehoh:introduction}): a method that, given a demodulator $s \eq t$, allows
   to replace both applied and unapplied occurrences of $s$ by $t$ 
-  by traversing only first-order subterms of a rewritable term. In $\lambda$-free setting this
-  optimization is useful, but in presence of $\beta\eta$-normalization, shapes of
+  by traversing only first-order subterms of a rewritable term. In a $\lambda$-free setting this
+  optimization is useful, but in the presence of $\beta\eta$-normalization, shapes of
   terms can change drastically, making it much harder to
   track prefixes of terms. This is why we disabled the prefix optimization in \ehohii{}.
   To counterbalance this removal, we introduced
@@ -821,7 +820,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   \noindent
   \infname{AC} and \infname{NE} assume that $s$ and $t$ are of function
-  type. In \infname{NE}, $\overline{X}$ denote all the free variables occurring in $s$ and
+  type. In \infname{NE}, $\overline{X}$ denotes all the free variables occurring in $s$ and
   $t$, and $\cst{sk}$ is a fresh Skolem symbol of the appropriate type. \infname{PE}
   has a side condition that $X$ may not appear in $s$, $t$, or $C$.
   
@@ -832,7 +831,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   procedure needed to be adjusted.
   
   In Sect.~\ref{sec:ho-tech:infinite-branching}, we described a variant of the saturation
-  procedure that elegantly supports interleaving computation of unifiers and
+  procedure that elegantly supports interleaving computations of unifiers and
   scheduling
   inferences to be performed. Since completeness was
   not one of the \ehohii{} design goals, we did not implement this version of the
@@ -908,9 +907,9 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   These rules are particularly useful because \ehohii{} has no rules that dynamically
   process Booleans in FOOL-like fashion, such as \infname{BoolHoist}. For example,
-  given the clauses $\cst{f} \, (\cst{p} \iand \cst{q}) \eq \cst{a}$ and
-  $\cst{g} \, (\cst{f} \, \cst{p}) \noteq \cst{b}$, the abstracting version of
-  superposition rule would result in $\cst{g} \, \cst{a} \noteq \cst{b} \llor (\cst{p}
+  given the clauses $\cst{f} \, (\cst{p} \iand \cst{q})\allowbreak \eq \cst{a}$ and
+  $\cst{g} \, (\cst{f} \, \cst{p}) \noteq \cst{b}$, the abstracting version of the
+  superposition rules \infname{SP} and \infname{SN} (Sect.~\ref{sec:pre:rules}) would result in $\cst{g} \, \cst{a} \noteq \cst{b} \llor (\cst{p}
   \iand \cst{q}) \noteq \cst{p}$. In this way, the Boolean structure bubbles up to
   the top level and is further processed by clausification. We noticed that this
   alleviates the need for the other Boolean rules in practice.
@@ -936,7 +935,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   CASC-28:\ cvc5 \NumberOK{0.0.7},\footnote{\url{https://cvc5.github.io/}}
   Ehoh 2.7, Leo-III \NumberOK{1.6.6} \cite{sb-21-leo3}, Vampire 4.6
   \cite{br-20-full-sup-w-combs}, and Zipperposition 2.1 (Chapter~\ref{ch:ho-techniques}). 
-  We also include Satallax 3.5
+  We also included Satallax 3.5
   \cite{cb-12-satallax}. We used all \NumberOK{2899} higher-order
   theorems in TPTP 7.5.0 as well as 5000 SH higher-order benchmarks
   originating from the Seventeen benchmark suite \cite{desharnais-et-al-202x}.
@@ -960,7 +959,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   and \NumberOK{6\%} more problems on SH benchmarks, where Ehoh was already very
   successful.
   
-  \ehohii{} was mainly designed as an efficient backed to proof assistants. As such it 
+  \ehohii{} was mainly designed as an efficient backend to proof assistants. As such it 
   excels on SH benchmarks, outperforming the competition. On TPTP, it outperforms all higher-order provers other than Zipperposition-coop.
   If Zipperposition's Ehoh backend is disabled,
   \ehohii{} outperforms Zipperposition by a wide margin.
@@ -986,15 +985,15 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   To answer the second
   evaluation question, about assessing overhead of \ehohii{},
   we chose all the \NumberOK{1138} unique problems used at CASC
-  from 2019 to 2021 in first-order theorem division and ran Ehoh and \ehohii{}
+  from 2019 to 2021 in the first-order theorem division and ran Ehoh and \ehohii{}
   both in this first-order (FO) mode and in higher-order (HO) mode.
   
   We fixed a single
-  configuration of options, because Ehoh and \ehohii{}'s
+  configuration of options, because Ehoh's and \ehohii{}'s
   automatic scheduling methods could select different configurations
   and we would not be measuring the overhead but the quality of the chosen
   configurations. We chose the \emph{boa} configuration (Sect.~\ref{sec:ehoh:heuristics}),
-  which is the configuration that E~2.2 used the most often in its automatic scheduling mode.
+  which is the configuration that E~2.2 used most often in its automatic scheduling mode.
   The results are shown in Figure~\ref{fig:ehoh}.
   
   Counterintuitively, the higher-order versions of both provers outperform
@@ -1057,7 +1056,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   us to carefully estimate how the increased reasoning capabilities of each
   calculus influence its performance. We also developed a complete and efficient
   unification algorithm (Chapter \ref{ch:unif}) which can easily be customized
-  to trade bits of its completeness for efficiency. Practically oriented work
+  to trade bits of its completeness for efficiency. Practically oriented work,
   described in Chapters \ref{ch:bools} and \ref{ch:ho-techniques},
   helped us gauge how much reasoning power we lose by using more intuitive and
   more easily controllable incomplete rules. Both the theoretical and the
@@ -1076,7 +1075,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   The advantage is that combinators can be supported as a thin layer on top of
   $\lambda$-free terms.
   This calculus is also implemented in Zipperposition.
-  However, in unpublished experiments, we found that $\lambda$-superposition
+  However, in informal experiments, we found that $\lambda$-superposition
   performs substantially better, corroborating the CASC results, so we decided to
   make a more profound change to Ehoh and implement $\lambda$-superposition.
   \pagebreak[2]
@@ -1084,8 +1083,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   Possibly the only actively maintained higher-order prover built from the bottom
   up as a higher-order prover is Leo-III \cite{sb-21-leo3}, as the long-time
   winner of CASC higher-order division, Satallax \cite{cb-12-satallax}, is no
-  longer maintained. We give a further overview of other traditional higher-order
-  provers and the calculi they are based in Sect.~\ref{sec:ehoh:discussion-and-related-work}.
+  longer maintained. A further overview of other traditional higher-order provers and the calculi they are based on can be found in Sect.~\ref{sec:ehoh:discussion-and-related-work}.
   
   \section{Conclusion} %---0.5p
   \label{sec:ehoh2:conclusion}
