@@ -5,16 +5,14 @@
 \begin{abstract}
     In this chapter we lay out the basic prerequisites for the remaining
     chapters. We begin by describing the three logics that we work with in this
-    thesis: propositional logic, monomorphic first-order logic and simply typed
-    higher-order logic. Then, we explain the clausal structure which is the
-    backbone of many calculi for automated provers. We finish with the
-    description of the superposition calculus. As this thesis discusses practical
-    aspects of theorem proving, we define only the fundamental notions, while
-    more advanced notions are intuitively described with references to rigorous
-    definitions. The text of this chapter is
-    partially based on the preliminaries sections of the publications listed in
-    Chapter \ref{ch:intro}.
-    
+    thesis: propositional logic, first-order logic and higher-order logic. Then,
+    we explain the clausal structure which is the backbone of many calculi for
+    automated provers. We finish with the description of the superposition
+    calculus. As this thesis discusses practical aspects of theorem proving, we
+    define only the fundamental notions, while more advanced notions are
+    intuitively described with references to rigorous definitions. The text of
+    this chapter is partly based on the preliminaries sections of the
+    publications listed in Chapter \ref{ch:intro}.
 \end{abstract}
       
 \newpage
@@ -76,7 +74,7 @@ combined using logical connectives to build formulas just like in propositional
 logic. Additionally, first-order formulas are built using quantifiers: if $\phi$
 is a formula and $x$ is a variable, then $\iforall x.\, \phi$, as well as
 $\iexists x.\, \phi$ are formulas. The first formula requires that $\phi$ holds
-for any value of $x$, while the second one requires that there is some $x$ for
+for every value of $x$, while the second one requires that there is some $x$ for
 which $\phi$ holds. As soon as there is a single functional symbol with arity
 greater than 0, there are infinitely many terms that can be substituted for a
 free variable. Furthermore, in first-order logic, it does not suffice to assign
@@ -85,25 +83,25 @@ necessary to interpret the symbols. Therefore, it is obvious that the propositio
 technique for deciding satisfiability does not work in the first-order case.
 
 Even though we do not formally define the semantics of logic, we assume the natural
-extensions of domain, valuation, interpretation and model (as defined by Fitting
+extensions of domain, valuation, interpretation, and model (as defined by Fitting
 \cite{mf-1996-fol}) from unsorted to many-sorted logic. The models we consider are
 \emph{normal}, i.e., they interpret $\eq$ as an equality relation. Usual notions
 of (un)satisfiability and (in)validity are assumed. We write
 $\ourmodel~\models_\xi~N$ to denote that a model $\ourmodel$ satisfies a clause
 set $N$, for a variable assignment $\xi$. If $\ourmodel$ is a model of $N$
 (i.e., $\ourmodel$ satisfies it under every variable assignment), we simply write
-$\ourmodel \models N.$  Abusing notation, we write $M \models N$ to denote that
+$\ourmodel \models N.$  Overloading notation, we write $M \models N$ to denote that
 $M$ \emph{entails} $N$, i.e., that every model of $M$ is a model of $N.$
 
-A {\em position} in a term is a tuple of natural numbers, with $\varepsilon$ denoting
-the empty tuple. {\em Subterms} and positions are inductively defined as follows. Term
-$t$ is a subterm of itself at position $\varepsilon$. If $s$ is a subterm of
-$t_i$ at position $p$, then $s$ is a subterm of $\cst{f}(\tuplen{t})$ at
-position $i.p$. A {\em context} is a term with zero or more subterms replaced by a
-hole $\square$. We write $C[\overline{u}_n]$ for the term resulting from filling
-in the holes of a context $C$ with the terms $\overline{u}_n$, left to right.
-We say a term is {\em ground} if it has no variables. By $u[s]$
-we denote that $s$ is a subterm of $u$. 
+A {\em position} in a term is a tuple of natural numbers, with $\varepsilon$
+denoting the empty tuple. {\em Subterms} and positions are inductively defined
+as follows. The term $t$ is a subterm of itself at position $\varepsilon$. If
+$s$ is a subterm of $t_i$ at position $p$, then $s$ is a subterm of
+$\cst{f}(\tuplen{t})$ at position $i.p$. A {\em context} is a term with zero or
+more subterms replaced by a hole $\square$. We write $C[\overline{u}_n]$ for the
+term resulting from filling in the holes of a context $C$ with the terms
+$\overline{u}_n$, from left to right. We say a term is {\em ground} if it has no
+variables. By $u[s]$ we denote that $s$ is a subterm of $u$. 
 
 \looseness=-1
 {\em Substitutions} $\sigma, \varrho, \ldots$ are total mappings from variables to
@@ -126,9 +124,7 @@ This logic corresponds to Henkin's extensional type theory. We additionally use
 some variations of this logic, clearly stating the differences. Assuming a set of
 base types $T$ and a set of symbols $\Sigma$, let us define terms and types.
 Types are either base types $\tau \in T$, or function types $\tau \rightarrow
-\upsilon$ where both $\tau$ and $\upsilon$ are types. When we write $\tau_1
-\rightarrow \cdots \rightarrow \tau_n \rightarrow \upsilon$ we assume $\upsilon$
-to be a base type ($\upsilon \in T$), by convention. Each symbol $\cst{f} \in
+\upsilon$ where both $\tau$ and $\upsilon$ are types. Each symbol $\cst{f} \in
 \Sigma$ is assigned a type.
 
 Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
@@ -138,14 +134,15 @@ Terms are defined as free variables $F, X, \ldots$, bound variables $x, y, z,
 Lastly, if $x$ is a bound variable of type $\tau$ and $s$ is a term of type
 $\upsilon$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau
 \rightarrow \upsilon$. The syntactic distinction between free and bound
-variables gives rise to \emph{loose bound variables} (e.g., $y$ in $\lamx{y \,
-\cst{a}}$) \cite{tn-93-patterns}. Note that there is no requirement that a
+variables gives rise to \emph{loose bound variables} \cite{tn-93-patterns},
+bound variables that appear without enclosing $\lambda$ binder  (e.g., $y$ in
+$\lamx{y \, \cst{a}}$). Note that there is no requirement that a
 symbol is not applied to terms of Boolean type as in first-order logic.
 Furthermore, all logical connectives are symbols present in the set $\Sigma$.
 This means that higher-order logic does not distinguish between terms and
 formulas. For example, $\cst{p} \iand \cst{q}$ and $\cst{f} \, (\cst{p} \iand
 \cst{q})$ are well-formed terms of higher-order logic. For convenience, we still
-call terms of Boolean type \emph{formulas}. Our logic also supports Hilbert
+call terms of Boolean type \emph{formulas}. Our logic also supports the Hilbert
 choice operator $\varepsilon$. Intuitively, this operator chooses an arbitrary value that
 satisfies a predicate and it is axiomatized as follows: $\iforall p. \, (\iexists
 x. \, p \, x) \iimplies p \, (\varepsilon \, p)$.
@@ -153,7 +150,7 @@ x. \, p \, x) \iimplies p \, (\varepsilon \, p)$.
 
 \looseness=-1
 With $\alpha$-conversion we assume the rule $(\lambda x. \, s) \longrightarrow
-\lambda y. \, \{x \mapsto y\}(s)$ where $y$ does not occur loosely bound in $s$
+\lambda y. \, \{x \mapsto y\}(s)$ where $y$ does not occur as a loose bound variable in $s$
 and $y$ is not bound in $s$. Application of a substitution to a term,
 implicitly $\alpha$-renames bound variables to avoid capture.  For example, $\{X
 \mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$. The
@@ -161,7 +158,7 @@ $\beta$-reduction rule, roughly speaking, corresponds to passing arguments in a
 function call: $(\lambda x. s) \, t \longrightarrow \{x \mapsto t\} (s)$, where
 the bound variables in $s$ are renamed to avoid capture. Lastly,
 $\eta$-reduction is defined as $\lambda x.\, s \, x \longrightarrow s$ under the
-condition that $x$ is not loosely bound in $x$. We write $s \equi t$ if terms
+condition that $x$ is not loose bound in $x$. We write $s \equi t$ if terms
 $s$ and $t$ are equal modulo $\alpha\beta\eta$-conversion. Terms that are
 convertible with respect to any of the rules form equivalence classes. Thus, we
 also say that $\alpha$($\beta\eta$)-convertible terms are
@@ -182,7 +179,7 @@ and $\lam{\overline{x}_n}{s}$ for $\lambda x_1. \ldots \lambda x_n. \> s$,
 omitting the length $n \geq 0$ when it is not important or it can be inferred. Every
 $\beta$-reduced term can be written as $\lam{\tuple{x}{m}}{a \, \tuplen{t}}$,
 where $a$ is not an application; we call $a$ the \emph{head} of the term. By
-convention, $a, b$ and $\zeta$ denote heads. If $a$ is a free variable, we call the term
+convention, $a, b$, and $\zeta$ denote heads. If $a$ is a free variable, we call the term
 \emph{flex}; otherwise, the term is \emph{rigid}.
 
 Deviating from the standard notion of higher-order subterm, we define subterms
@@ -194,12 +191,12 @@ definition of subterm gracefully generalizes the corresponding first-order
 notion: $\cst{a}$ is a subterm of $\cst{f} \, \cst{a} \, \cst{b}$ at position 1,
 but $\cst{f}$ and $\cst{f} \, \cst{a}$ are not subterms of $\cst{f} \, \cst{a}
 \, \cst{b}$. We say a term is ground if it has no free variables, and closed
-if it has no loosely bound variables.
+if it has no loose bound variables.
 
 
 Throughout this thesis, we consider completeness of higher-order calculi only
 with respect to Henkin semantics \cite{bm-14-automation-ho}. Note that no
-complete calculus exists for higher-order calculi with standard (full)
+complete, consistent calculus can exist for higher-order calculi with standard (full)
 semantics.
 
 Some of the approaches described in this thesis are based on {\em rank-1
@@ -213,11 +210,16 @@ quantification over types only on top-level and not inside literals.
 \section{Clausal Forms}
 \label{sec:pre:clauses}
 
-The resolution and superposition calculi do not work directly on formulas, but
-on their simplified forms, {\em clauses}. Thus, the initial problem, expressed as a
-set of formulas, must be transformed into a set of clauses. For all three
-discussed logics, there exists such a transformation that does not affect
-satisfiability of the problem \cite{nw-01-small-cnf}.
+The standard resolution and superposition calculi do not work directly on formulas, but
+on their normal forms, {\em clauses}. Thus, the initial problem, expressed as a
+set of formulas, must be transformed into a set of clauses. For propositional
+and first-order logic, there exists such a transformation that does not affect
+satisfiability of the problem \cite{nw-01-small-cnf}. In higher-order logic,
+formulas are first-class citizens and higher-order calculi can in general work
+with nonnormalized problem, in its original form. However, resolution and
+superposition-based higher-order calculi still perform best when the problem is clausified
+using transformation similar to the one used in the first-order case. We have analyzed
+different approaches to clausification in higher-order context \cite{bbtv-21-full-ho-sup}.
 
 \looseness=-1
 An {\em equation} $s \eq t$ corresponds to an unordered pair of terms. A {\em
@@ -230,12 +232,11 @@ non-clausal first-order logic, an atom is either predicate or equational. For
 uniformity, and to stay close to the implementation, we encode predicate atoms
 as equations with $\itrue$. Negative literals are encoded as disequations. For
 example, $\cst{even}(x)$ is encoded as $\poslit{\cst{even}(x)}$, and
-$\neg\,\cst{even}(x)$ is encoded as $\neglit{\cst{even}(x)}$. To lighten the
-notation, we sometimes write the predicate literals in non-encoded form.
+$\neg\,\cst{even}(x)$ is encoded as $\cst{even}(x) \not\eq \itrue$. To lighten the
+notation, we sometimes write the predicate literals in nonencoded form.
 Applying a substitution to a literal is reduced to applying it to both sides of
 the (dis)equa\-tion and it is extended pointwise to clauses. We say
-$\sigmacl{C}$ is a ground instance of $C$ if $\sigma$ is a grounding
-substitution.
+$\sigmacl{C}$ is a ground instance of $C$ if $\sigmacl{C}$ has no free variables.
 \pagebreak[2]
 
 \section{Superposition}
@@ -251,10 +252,11 @@ given problem, we first must negate its conjecture and clausify the whole
 problem using some of the clausification algorithms
 \cite{nw-01-small-cnf,rsv-16-vcnf}. The calculus then applies its inference
 rules to the clauses, adding results of the inferences to the working set of
-clauses. As this process is quite prolific it also uses the term order to determine
+clauses. As this process is quite prolific it also uses an order on terms which gives an indication of
+term's ``simplicity'' to determine
 if some clauses can be simplified or eliminated from the working set.
 Superposition is refutationally complete: This means that, if results of all
-inferences are computed in a systematic, fair manner, empty clause ($\bot$) will
+inferences are computed in a systematic, fair manner, the empty clause ($\bot$) will
 eventually be derived for a provable problem. As first-order logic is
 undecidable, no guarantees are given for unprovable problems.
 Before introducing the rules of the calculus, we provide definitions of these and other
@@ -262,17 +264,17 @@ background concepts.
 
 \subsection{Term Order and Selection}
 \label{sec:pre:order}
-Superposition calculus is parameterized by a {\em reduction ordering} $\succ$, an
-ordering on terms that has the following properties:
+Superposition calculus is parameterized by a
+term order $\succ$ with the following properties:
 
 \noindent\begin{tabular}{p{\dimexpr 0.3\linewidth-2\tabcolsep}p{\dimexpr 0.7\linewidth-2\tabcolsep}}
     \textit{Irreflexive} & For all terms $s$, $s \not\succ s$ \\
     \textit{Transitive} & For all terms $s, t, u$,  if $s\succ t$ and $t \succ u$ then $s \succ u$ \\ 
     \textit{Subterm property} & For all terms $s$ and contexts $C$, $C[s] \succ s$ \\
     \textit{Respects substitutions} & For all terms $s, t$ and substitutions $\sigma$, $s \succ t$ implies $\sigmaterm{s} \succ \sigmaterm{t}$ \\
-    \textit{Respects contexts} & For all terms $s,t$ and contexts $C$, $s \succ t$ implies $C[s] \succ C[t]$ \\
+    \textit{Respects contexts} & For all terms $s,t$ and nonempty contexts $C$, $s \succ t$ implies $C[s] \succ C[t]$ \\
     \textit{Ground total} & For all distinct
-    ground terms $s$ and $t$ either $s \succ t$ or $t \succ s$. \\
+    ground terms $s$ and $t$ either $s \succ t$ or $t \succ s$ \\
     \textit{Well-founded} & There are no infinite chains of the form $s_1 \succ s_2 \succ \cdots$ 
 \end{tabular}
 
@@ -282,11 +284,12 @@ $\succ$. The order is extended to multisets as follows
 and whenever $S_2(x) > S_1(x)$ then there is some $y \succ x$ such that $S_1(y)
 > S_2(y)$. We use the notation $S(x)$ to denote the number of occurrences of $x$ in
 $S$. To use the  multiset extension, positive literals are represented as $ \{ \{s\},
-\{t\} \}$ and negative ones as $\{ \{ s, t \} \}$. Clauses are then represented as 
+\{t\} \}$ and negative ones as $\{ \{ s, t \} \}$, which makes the negative literals slightly greater than the positive ones.
+Clauses are then represented as 
 multisets of such literals. 
 
 Two orders that are commonly used in superposition theorem proving are the
-Knuth-Bendix order (KBO) \cite[Sect.~5.4.4]{bn-98-tr-and-all-that} and the
+Knuth--Bendix order (KBO) \cite[Sect.~5.4.4]{bn-98-tr-and-all-that} and the
 lexicographic path order (LPO) \cite[Sect.~5.4.2]{bn-98-tr-and-all-that}.
 KBO assigns integer weights to symbols and uses precedence between symbols to
 break eventual ties. LPO entirely relies on precedence and inspects term
@@ -310,7 +313,8 @@ such that $\varrho = \theta\sigma$.
 A \emph{most general unifier} is a
 unifier $\sigma$, such that for any other unifier $\theta$, there is a
 substitution $\varrho$ such that $\theta = \varrho\sigma$. In first-order logic,
-the most general unifier is unique up to variable renaming. Furthermore,
+the most general unifier is unique up to variable renaming. For example, $\cst{f}(X) \ unif \cst{f}(Y)$ yields the mgu 
+$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. Furthermore,
 first-order logic admits efficient algorithms for computing the most general
 unifier \cite{hv-09-unifalgs}.
 
@@ -330,27 +334,25 @@ a substitution $\sigma$, such that $\sigma(s) \equi \sigma(t)$, for all $s \unif
 set $U$ of $E$'s unifiers along with a set $V$ of \emph{auxiliary variables}
 such that no $s \unif t \in E$ contains variables from $V$ and for every unifier
 $\rho$ of $E$, there exists a $\sigma \in U$ and a substitution $\theta$ such
-that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The most general unifier
-corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
+that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The most general unifier,
+when it exists, corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
 the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
-if two higher-order terms are unifiable, but there exist algorithms
-that enumerate all elements of the CSU for unifiable terms.
+if two higher-order terms are unifiable, but there exist procedures
+that enumerate all elements of the CSU for two terms.
 
 These higher-order concepts gracefully generalize the corresponding first-order
 ones. For example, if $s$ at $t$ are first-order, then there must exist a singleton
-CSU, i.e., the most general unifier. Thus, we will not explicitly qualify
-unifiers as first-order or higher-order and ensure the context provides enough
-information.
+CSU, i.e., the most general unifier. 
 
 \subsection{Inference Rules}
 \label{sec:pre:rules}
 \newcommand{\mgu}{\ensuremath{\mathit{mgu}}}
 
-Before spelling out the inference rules of standard, first-order superposition
+Before spelling out the inference rules of standard, first-order superposition,
 let us introduce some helpful notation, following Schulz \cite{ss-02-brainiac}.
 With $t|_p$ we denote the subterm of $t$ at position $p$ and with $t[p \leftarrow
-t']$ replacement of this subterm with $t'$. Let \selfun{} be a selection function,
-$\succ$ a reduction ordering, $C = l \llor C'$ a clause, and $\sigma$ a
+t']$  we denote the term obtained by replacing this subterm with $t'$. Let \selfun{} be a selection function,
+$\succ$ a term order, $C = l \llor C'$ a clause, and $\sigma$ a
 substitution. We say that \sigmacl{l} is eligible for resolution if: (1) nothing
 is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals in
 \sigmacl{C} or (2) \selfun{} selected some literals and \sigmacl{l} is the maximal
@@ -396,7 +398,7 @@ superposition are as follows:
 
 \medskip
 Let us give some intuition behind how these rules are applied in practice. The
-\infname{ER} rule is used to replace equality with equality within a clause.
+\infname{ER} rule is used to replace equals by equals within a clause.
 Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In
 clausal form it is $X \noteq \cst{2} \llor \cst{even}(X)$. Applying the
 \infname{ER} rule effectively applies the precondition $X \eq \cst{2}$ to the
@@ -408,15 +410,14 @@ Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
 then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
 
 Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what
-mathematicians do when they ``replace equals by equals''. Name paramodulation is
+mathematicians do when they replace equals by equals. The name paramodulation is
 also used for rules that replace equals by equals in calculi preceding superposition.  The left premise intuitively
-states that an equation $s \eq t$ holds under condition $C$ (or more precisely,
-its negation). Similarly, the right premise asserts that a (dis)equation holds
+states that an equation $s \eq t$ holds under condition $C$. Similarly, the right premise asserts that a (dis)equation holds
 under a condition. The superposition rule simply concatenates the conditions for
 both premises and replaces equals by equals in two main inference terms. For
 example given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and
 $\neg \cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition
-between their last literals results in $\neg \cst{even}(X) \llor \neg
+between their last literals results in $\neg \cst{even}(Y) \llor \neg
 \cst{even}(\cst{b}) \llor \cst{g}(\cst{a}) \eq \cst{b}$.
 
 % \[
@@ -456,21 +457,23 @@ between their last literals results in $\neg \cst{even}(X) \llor \neg
 \subsection{The Redundancy Criterion and Simplification Rules}
 
 The rules described above are used to generate new clauses from already derived
-ones. Even though orderings and selection are used to reduce the search space,
+ones. Even though orders and selection are used to reduce the search space,
 it still grows rather fast. To identify unnecessary clauses in the search
 space, superposition features a \emph{redundancy criterion}
 \cite[Sect.~4.2.2]{bg-01-resolution}. We say that a ground clause $C$ is
 {\em redundant} in a ground set of clauses $N$ if it is entailed by a subset of
-clauses in $N$ such that each clause in this subset is smaller than $C$. More
+clauses in $N$ such that each clause in this subset is $\prec$-smaller than $C$. More
 generally, a clause (ground or not) is redundant in set $N$ if every ground
-instance of $C$ is redundant for some grounding of $N$. Removing redundant
+instance of $C$ is redundant for the grounding of $N$. Removing redundant
 clauses does not affect completeness of superposition.
 
 Other than the four generating rules, superposition provers also use
 simplification rules, which are justified using the redundancy criterion. These
-rules replace the premises with conclusions, and we denote them using double
-bars. As an example of such a rule, let us introduce rewriting (demodulation) of
-negative literals (\infname{RN}):
+rules effectively replace the premises with conclusions, and we denote them
+using double bars. In theory, the rules work by adding conclusions and then
+using them to show that premises are redundant, and can thus be eliminated. Asf
+an example of such a rule, let us introduce rewriting (demodulation) of negative
+literals (\infname{RN}):
 
 \[
 \namedsimp{RN}{s \eq t \qquad u \noteq v \llor D}
@@ -500,7 +503,7 @@ $\mathcal{P}$. At each iteration of the procedure's main loop, the prover
 chooses a clause $C$ from $\mathcal{P}$, simplifies it, and moves it to
 $\mathcal{A}$ (i.e., it \emph{activates} it). Then all inferences between $C$ and active clauses are performed.
 The resulting clauses are again simplified and put in $\mathcal{P}$.
-With \emph{proof state} we assume the pair $(\mathcal{P}, \mathcal{A})$.
+We call the pair $(\mathcal{P}, \mathcal{A})$ the \emph{proof state}.
 The provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
@@ -532,26 +535,17 @@ calculus using the same roadmap:
     calculus is called Boolean $\lambda$-superposition, or shortly \osup{}.
 \end{enumerate}
 %
-Note that we use the name $\lambda$-superposition when we refer to both \lsup{}
+Note that we use the name $\lambda$-superposition for both \lsup{}
 and \osup{}.
 
 \subsection{Theorem Provers}
 \label{sec:pre:theorem-provers}
 
 All the techniques described in this thesis are implemented in two superposition
-theorem provers: E \cite{ss-02-brainiac} and Zipperposition
-\cite{sc-15-simon-phd,sc-supind-17}. The latter was used as a testbed for
-prototyping ideas, while the former is the main target of our work as it is more
+theorem provers: Zipperposition
+\cite{sc-15-simon-phd,sc-supind-17} and E \cite{ss-02-brainiac}. The former was used as a testbed for
+prototyping ideas, while the latter is the main target of our work as it is more
 efficient.
-
-\ourpara{E} E is a state-of-the-art first-order prover based on superposition.
-In the last decade, together with its derivatives, it has revolved around the
-second place at the first-order division of CASC theorem prover
-competition \cite{ss-96-casc}. It is open-source, written in C (without using any
-external libraries), and designed around efficient algorithms and data structures
-rather than highly optimized codebase. This makes it a good target for implementing
-successful higher-order techniques.
-
 
 \ourpara{Zipperposition}
 Zipperposition is a higher-order theorem prover that implements \lfsup{},
@@ -564,3 +558,13 @@ far cry from E's. Zipperposition is written in OCaml, and features a modular
 system for adding new rules and techniques to implemented calculi.
 This makes it attractive for fast evaluation of various extensions of
 superposition.
+
+\ourpara{E} E is a state-of-the-art first-order prover based on superposition.
+In the last decade, together with its derivatives, it has revolved around the
+second place at the first-order division of CASC theorem prover
+competition \cite{ss-96-casc}. It is open-source, written in C (without using any
+external libraries), and designed around efficient algorithms and data structures
+rather than highly optimized codebase. This makes it a good target for implementing
+successful higher-order techniques.
+
+
