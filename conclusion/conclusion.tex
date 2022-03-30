@@ -37,8 +37,8 @@ was first performed, in Edinburgh, in 1973. The instructions for the performance
     I leave.
 \end{quote}
 
-The work that I have done for my thesis
-was cyclic: It consists of three phases (three stops as we described them in
+The work described in this thesis
+was cyclic: It consists of three phases (three stops as described in
 Chapter \ref{ch:intro}), each of which has the same parts: theory (calculus and
 algorithms), engineering (implementation) and optimization (heuristics). While
 the calculi were mostly developed by Alexander Bentkamp
@@ -46,11 +46,11 @@ the calculi were mostly developed by Alexander Bentkamp
 algorithms for indexing or unification, as well as the tasks of implementing and
 optimizing the implementation were mainly mine.
 
-Structuring the project cyclically turned out to be a great idea of my
-supervisor. When I first started doing the research which will later form the
+Structuring the project cyclically turned out to be a great idea of Jasmin
+Blanchette. When I first started doing the research which will later form the
 basis of Chapter \ref{ch:ehoh}, I was overwhelmed by the scope of the project
 and felt uncertain if E could ever fully support $\lambda$-free higher-order
-logic. Many of the extensions described in the  later chapters were even larger
+logic. Many of the extensions described in the later chapters were even larger
 in scope. However, as each extension relied on the previous one, I quickly
 developed a feeling of where the possible pitfalls are and how to avoid them.
 This gave me an invaluable source of encouragement, without which I could hardly
@@ -81,7 +81,7 @@ lagged behind the competition. To investigate why this is the case,
 we manually analyzed hundreds of benchmarks which the competition proves, but
 on which Zipperposition fails. This analysis forms the basis of work that is
 described in Chapters \ref{ch:bools} and \ref{ch:ho-techniques}. The main
-conclusion was that the competition, most notably tableaux-based Satallax,
+conclusion was that the competition, most notably the tableaux-based Satallax,
 reasons better with formulas. Tableaux inferences are more intuitive than the
 ones that superposition or resolution provers perform and are more in line with
 how a mathematician structures a proof. Fitting these kind of
@@ -89,40 +89,51 @@ inferences into the superposition context was challenging, but it proved very
 successful. After they were implemented in Zipperposition, it took its first
 victory at higher-order division of CASC.
 
+After its first victory, Zipperposition was successfully integrated in
+Sledgehammer and it is now part of its default installation. We also noticed
+that problems which only Zipperposition can solve do pop up from time to time in
+practice. Antoine Defourné also integrated Zipperposition in TLA+ proof
+assistant and observed that it helps prove some problems that were previously
+out of reach \cite{ad-21-ho-tlaplus}.
+
 Our extension of \lsup{} was guided by performance, rather than completeness
 with respect to full higher-order logic. After the first victory, we were left
 wondering what were the kind of problems that our implementation cannot
 solve, and started looking for complete full higher-order calculus. At the end,
-we designed \osup{} which gave us the precise answer in the form of problems that
+we designed \osup{}, which gave us the precise answer in the form of problems that
 cannot be solved and the rules which are necessary to solve them. 
 
 While preparing for the following year's CASC competition, we found problems
 that occur in practice for which the rules of \osup{} are necessary. However,
 these problems occur in less than one percent of the whole TPTP library.
 Furthermore, some of \osup{}'s rule are so explosive that they are disabled in
-most of CASC portfolio configurations.
+most CASC portfolio configurations.
 
-This lead us to take a radically different approach when extending Ehoh to
+This led us to take a radically different approach when extending Ehoh to
 \ehohii{}. We envisioned \ehohii{} as a prover that excels on problems coming
 from proof assistants. Unlike in TPTP, on these benchmarks hard, hand-crafted mathematical puzzles rarely occur.
 Thus, we conjectured that extending \lfsup{} with the most rudimentary features
-of $\lambda$ superposition such as full higher-order unification and
+of $\lambda$-superposition such as full higher-order unification and
 $\beta$-reduction-aware term orders will help us prove most of higher-order
 problems without the explosion of complete approaches.
 
 While this proved mostly true, we quickly realized that \ehohii{} should
 assimilate most of incomplete Boolean reasoning techniques described in Chapters
 \ref{ch:bools} and \ref{ch:ho-techniques}. All of them were straightforward to
-implement except for dynamic clausification. It is possible that support for
-this technique does not require profound changes to E(hoh)'s formula treatment,
-but due to the lack of time we did not explore this alley.
+implement except for dynamic clausification, which we did not implement. It is
+possible that support for this technique does not require profound changes to
+E(hoh)'s formula treatment, but due to the lack of time we did not explore this
+alley.
 
 This highly pragmatic approach proved successful not only on proof assistant
 benchmarks: \ehohii{} also excels on TPTP benchmarks, trailing slightly behind
-Zipperposition. By manually expecting the TPTP benchmarks that are out of reach
+Zipperposition. In the coming months we plan to replace Ehoh by \ehohii{} in Sledgehammer.
+As Ehoh is already one of the most successful Sledgehammer backends,
+this will further improve the efficiency of hundreds of mathematicians and computer scientists.
+By manually expecting the TPTP benchmarks that are out of reach
 for \ehohii{}, but within the reach of Zipperposition, we realized that lack of
-dynamic clausification might be the weight necessary to tip the scale in the
-favor of \ehohii{} on TPTP benchmarks.
+dynamic clausification might be the weight necessary to tip the scale in
+favor of \ehohii{} on TPTP benchmarks. 
 
 This extension of Ehoh to \ehohii{} finished the third cycle. Inspired by our
 approach of extending techniques designed for weaker logics to work in the
@@ -131,30 +142,32 @@ assimilate the most successful techniques of SAT solving. Extension of hidden
 literals was straightforward, but finding the right way to tame their infinite
 nature in the first-order case, as well as the right way to integrate equality
 in their definition was challenging. Predicate elimination posed challenges in
-terms of finding the exact conditions in which it can be integrated with the
+terms of finding the exact conditions under which it can be integrated with the
 saturation loop. We first observed that blocked clause elimination destroys the
 completeness of superposition calculus when we noticed that Zipperposition does
 not prove some problems when the technique is enabled. After sifting through tens of
-benchmarks and carefully examining the debugging information we realized that
+benchmarks and carefully examining the debugging information, we realized that
 this was not due to a bug in the implementation but due to incompatibility of
 blocked clause elimination with redundancy criterion. In the end, we were left
 somewhat disappointed to learn that SAT techniques do not scale good enough to be used
 as superposition simplification techniques. However, we learned that they are
 very successful as preprocessing techniques.
 
-As it is customary, we will conclude the thesis with some remarks about the future work. \ehohii{} has been brought to the shape
-in which further experimentation with higher-order superposition is possible.
-From the experience gained in Chapters \ref{ch:bools} and
-\ref{ch:ho-techniques}, we can point out dynamic clausification as the main
-feature that is not yet implemented. We plan on implementing it in future.
+As it is customary, we will conclude the thesis with some remarks about the
+future work. \ehohii{} has been brought to the shape in which further
+experimentation with higher-order superposition is possible. From the experience
+gained in Chapters \ref{ch:bools} and \ref{ch:ho-techniques}, we can point out
+dynamic clausification as the main feature that is not yet implemented. We plan
+on implementing it in future.
 
 In Chapter \ref{ch:ho-techniques} we only scratched the surface of finding the
 appropriate heuristics. Now that \ehohii{} implements more advanced higher-order
-reasoning it would be interesting to verify that heuristics that are still not ported are agnostic of
-the version of implemented higher-order superposition calculus. 
+reasoning it would be interesting to verify that heuristics that are still not
+ported are agnostic of the version of implemented higher-order superposition
+calculus. 
 
 Some of the SAT-based techniques described in Chapter~\ref{ch:satfol} are
 implemented in E as well. However, this implementation is still in its early
 phases as it is not properly tested and optimized. Verifying the techniques are
-prover-agnostic would increase the confidence in them. We also started the work of extending
-those techniques to full higher-order logic.
+prover-agnostic would increase the confidence in them. We also started the work
+of extending those techniques to full higher-order logic.

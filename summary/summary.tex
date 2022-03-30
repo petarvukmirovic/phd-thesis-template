@@ -7,7 +7,7 @@ In the last decades, proof assistants were immeasurably useful in formally
 proving validity of hard mathematical theories and correctness of
 safety-critical software. Using these tools one can formally describe a problem
 and produce machine-checkable proofs for statements about it. To make the
-checking phase efficient and trustworthy, proof steps need to be of high
+checking phase efficient and trustworthy, proof steps need to be of fine
 granularity. As a consequence, seemingly simple statements must be proven in
 minute detail, making the use of proof assistants very tedious.
 
@@ -24,20 +24,20 @@ gradually extend it to higher-order logic. As this approach is large in scope,
 we split it in three parts.
 
 The first part extends E to support a fragment of higher-order logic devoid of
-$\lambda$-abstra\-ction, yielding a prover called Ehoh. Even though this extension
-is arguably conservative, Ehoh shows stronger performance on proof assistant
+$\lambda$-abstra\-ction, yielding a prover called Ehoh. Despite this extension is small in scope, 
+Ehoh shows stronger performance on proof assistant
 benchmarks than E.
 
 The second part concerns adding support for $\lambda$-abstraction. The most
 important challenge we faced during this extension is that of higher-order
 unification. At the time we started, state-of-the-art procedure
 for full higher-order unification was developed in 1970s. We designed a new
-procedure inspired by this one that enumerates less redundant unifiers, has many
+procedure inspired by this one that enumerates fewer redundant unifiers, has many
 modern optimizations built-in, and can easily be customized to trade its
 completeness for performance. It is implemented in a
-prototype prover Zipperposition, a less efficient, but more easily extendible
+prototype prover called Zipperposition, a less efficient, but more easily extendible
 prover compared to E. Our evaluation shows that our
-procedure substantially improves on state-of-the-art.
+procedure substantially improves on the state of the art.
 
 The last part concerns adding support for
 first-class Boolean terms. For this part we took inspiration from traditional
