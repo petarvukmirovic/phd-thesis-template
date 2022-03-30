@@ -686,14 +686,16 @@ We generalize this idea to first-order logic.
 \begin{defi}
    \label{def:definition}
    \looseness=-1
-   Let $G$ be a clause set, $\cst{p}$ be a predicate symbol, and
-   $\tupleempty{x}$ be distinct variables.
+   Let $G$ be a clause set and $\cst{p}$ be a predicate symbol.
 %
    The set $G$ is a \emph{definition set} for $\cst{p}$ if
    \begin{enumerate}
       \item $\cst{p}$ is singular for $G$
-      \item $G$ consists of clauses of the form $\arbpredlit{\cst{p}(\tupleempty{x})} \cor C'$ (up to variable renaming)
-      \item the variables in $C'$ are all among $\tupleempty{x}$
+      \item $G$ consists of clauses of the form
+      $\arbpredlit{\cst{p}(\tupleempty{x})} \cor C'$ (up to variable renaming),
+      where the variables $\tupleempty{x}$ are distinct
+      \item the
+      variables in $C'$ are all among $\cst{p}$'s arguments $\tupleempty{x}$
       \item all clauses in $\withpredpos{G}{\cst{p}}
       \flatres_{\!\cst{p}} \withpredneg{G}{\cst{p}}$ are tautologies
       \item $E(\tupleempty{\cst{c}})$ is unsatisfiable, where

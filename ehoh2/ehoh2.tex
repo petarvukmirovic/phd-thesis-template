@@ -49,7 +49,7 @@ extensive experiments with various heuristic choices have been performed
 (Chapter \ref{ch:ho-techniques}). In \ehohii{}'s implementation, we used
 these experiences to choose a set of effective rules that could easily be
 retrofitted into an originally first-order prover. Another principle that guided 
-the design of \ehohii{} was \emph{gracefulness}: we made sure that our changes
+the design of \ehohii{} was \emph{gracefulness}: We made sure that our changes
 do not impact the strong first-order performance of E and $\lambda$-free higher-order performance of Ehoh. 
 
 % We
@@ -70,7 +70,7 @@ $\lambda$-superposition (Sect.~\ref{sec:ehoh2:calculus}).
 We \NumberOK{evaluated} \ehohii{} on a selection of proof assistants benchmarks
 as well as all higher-order theorems in the TPTP library \cite{gs-17-tptp}
 (Sect.~\ref{sec:ehoh2:eval}). We found
-that \ehohii{} clearly outperforms Ehoh on all benchmarks. It outperformed all other higher-order provers on the
+that \ehohii{} clearly outperformed Ehoh on all benchmarks. It outperformed all other higher-order provers on the
 proof assistant benchmarks; on the TPTP benchmarks it ended up second only 
 to the cooperative version of Zipperposition, which employs Ehoh as a
 backend. An arguably fairer comparison without the backend puts \ehohii{} in
@@ -121,7 +121,7 @@ Thus, the terms $\cst{f}$, $\cst{f} \, \cst{a}$, and $\cst{f} \, \cst{a} \,
 \cst{b}$ are represented by the cells $\cst{f}$,
 $\cst{f}(\cst{a})$, and $\cst{f}(\cst{a}, \cst{b})$, respectively.
 To ensure free variables are
-perfectly shared, Ehoh treats applied free variables differently: arguments are
+perfectly shared, Ehoh treats applied free variables differently: Arguments are
 not applied directly to a free variable, but using an internal symbol
 \internalat{} of variable arity. For example, the term $X \, \cst{a} \, \cst{b}$ is
 represented by the cell $\internalat(X, \cst{a}, \cst{b})$. This ensures that
@@ -147,7 +147,7 @@ representation for free (and applied) variables.
 %programming languages,
 Extending the term representation of Ehoh with a new term
 kind involves intricate manipulation of the cell data structure. De Bruijn
-indices must be represented as other cells with either negative or positive
+indices must be represented as other cells with either a negative or a positive
 \texttt{f\_code}. However, this has to be done in such a way that a De Bruijn
 index can never be mistaken for a function symbol or a variable.
 
@@ -237,7 +237,7 @@ $\beta$-reducible term as a direct subterm is shared, the property is set.
 Setting of the property is inductively continued when further superterms are
 shared. For example, in the term $t = \cst{f} \, \cst{a} \, (\cst{g} ((\lambda x.\,
 x)\,\cst{a}))$, the cells for $(\lambda x.\, x)\,\cst{a}$,
-$\cst{g}\,((\lambda x.\, x)\,\cst{a})$ and $t$ itself have the property
+$\cst{g}\,((\lambda x.\, x)\,\cst{a})$, and $t$ itself have the property
 \texttt{HasBetaReducibleSubterm} set.
 %
 When it needs to find $\beta$-reducible subterms, \ehohii{} will visit only the
@@ -473,21 +473,21 @@ auxiliary functions \fc{NormalizeHead} and \fc{BacktrackIter}:
           \State $\vn{iter.steps} \gets \vn{n\_steps}$
           \State $\vn{iter.branch\_iter} \gets \cn{BindBegin}$
         \ElsIf{\vn{lhs.head = rhs.head}}
-          \State create constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
-          \State $\quad$ and push them to \vn{iter.constrants}
+          \State push the constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
+                 to \vn{iter.constraints}
           \State $\vn{iter.branch\_iter} \gets \cn{BindBegin}$
         \EndIf
       \EndIf
     \ElsIf{$\vn{lhs.head} = \vn{rhs.head}$}
-      \State create constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
-      \State $\quad$ and push them to \vn{iter.constrants}
+    \State push the constraint pairs of arguments of $\vn{lhs}$ and $\vn{rhs}$
+           to \vn{iter.constraints}
     \Else{} \State $\vn{forward} \gets \fc{BacktrackIter(\vn{iter})}$
     \EndIf
   \EndWhile
   \State \Return $\vn{forward}$
   \EndFunction
-  
-  \newpage
+  \vspace{2\jot}
+  \pagebreak[2]
   
   \Function{NormalizeHead}{$\vn{t}$}
     \If{$\vn{t.head} = \internalat \land \vn{t.args}[0].\vn{is\_lambda}()$}
@@ -526,7 +526,7 @@ reducing the potential top-level $\beta$-redex that appears. This instantiation
 and reduction process is repeated
 until there are no more top-level $\beta$-redexes and the head is
 not a variable bound to some term. Then the term with shorter
-$\lambda$ prefix is expanded (only on the top-level) so that $\lambda$ prefixes have the
+$\lambda$ prefix is expanded (only on the top level) so that $\lambda$ prefixes have the
 same length. Finally, the $\lambda$ prefix is ignored, and we
 focus only on the body. In this way, we avoid fully substituting
 and normalizing terms and perform just enough operations
@@ -617,7 +617,7 @@ class to be performed in constant time.
 We have modified the $\lambda$-free higher-order matching algorithm to treat
 $\lambda$ prefixes as above in the unification procedure---by bringing the prefixes
 to the same length and ignoring them afterwards. This ensures that the
-algorithm will never try to match a free variable to a $\lambda$-abstraction,
+algorithm will never try to match a free variable with a $\lambda$-abstraction,
 making sure that $\beta$-redexes never appear (as in original $\lambda$-free
 higher-order matching). We also modified the algorithm to ensure that free variables
 are never bound to terms that have loose bound variables. This algorithm cannot
@@ -891,19 +891,22 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   it traverses the clauses and instantiates those that have applied variable of
   the same type as the abstraction.
   
-  \ourpara{Extensionality} \ehohii{} takes a pragmatic approach to reason about
-  functional and Boolean extensionality: It uses \emph{abstracting} rules (\infname{Abs} rules of Sect.~\ref{sect:bool:native}) 
-  which simulate basic superposition calculus rules,
-  but do not require unifiability of the partner terms in the inference. More
-  precisely, assume a core inference needs to be performed between two
-  $\beta$-reduced terms $u$ and $v$, such that they can be represented as
-  $u=C[s_1, \ldots, s_n]$ and $v=C[t_1, \ldots, t_n]$, where $C$ is the most general
-  common context (more precisely, green common context that does not go into the structure of $\lambda$-abstraction or applied variables \cite{bbtvw-21-sup-lam}) of $u$ and $v$, not all of
-  $s_i$ and $t_j$ are free variables, and for at least one $i$, $s_i \not= t_i$,
-  $s_i$ and $t_i$ are not (applied) free variables, and they are of Boolean or
-  function type. Then, the conclusion is formed by taking the conclusion $D$ of
-  the core inference rule (which would be created if $s$ and $t$ are unifiable)
-  and adding literals $s_1 \noteq t_1 \llor \cdots \llor s_n \noteq t_n$.
+  \begin{sloppypar}
+    \ourpara{Extensionality} \ehohii{} takes a pragmatic approach to reasoning about
+    functional and Boolean extensionality: It uses \emph{abstracting} rules (\infname{Abs} rules of Sect.~\ref{sect:bool:native}) 
+    which simulate basic superposition calculus rules,
+    but do not require unifiability of the partner terms in the inference. More
+    precisely, assume a core inference needs to be performed between two
+    $\beta$-reduced terms $u$ and $v$, such that they can be represented as
+    $u=C[s_1, \ldots, s_n]$ and $v=C[t_1, \ldots, t_n]$, where $C$ is the most general
+    common context (more precisely, green common context that does not go into the structure of $\lambda$-abstraction or applied variables \cite{bbtvw-21-sup-lam}) of $u$ and $v$, not all of
+    $s_i$ and $t_j$ are free variables, and for at least one $i$, $s_i \not= t_i$,
+    $s_i$ and $t_i$ are not (possibly applied) free variables, and they are of Boolean or
+    function type. Then, the conclusion is formed by taking the conclusion $D$ of
+    the core inference rule (which would be created if $s$ and $t$ are unifiable)
+    and adding literals $s_1 \noteq t_1 \llor \cdots \llor s_n \noteq t_n$.
+      
+  \end{sloppypar}
   
   These rules are particularly useful because \ehohii{} has no rules that dynamically
   process Booleans in FOOL-like fashion, such as \infname{BoolHoist}. For example,
@@ -997,7 +1000,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   The results are shown in Figure~\ref{fig:ehoh}.
   
   Counterintuitively, the higher-order versions of both provers outperform
-  the first-order counterparts. However, the differerence is so small that it can
+  the first-order counterparts. However, the difference is so small that it can
   be attributed to the changes to memory layout that affect the order in which
   clauses are chosen. Similar effects are seen when comparing the first-order versions.
   We would expected the less heavily modified version of E, Ehoh, to perform better,
