@@ -12,7 +12,7 @@
 \newcommand*{\origrightarrow}{}
 \let\oldarrow\textrightarrow
 \renewcommand*{\textrightarrow}{\fontfamily{cmr}\selectfont\origrightarrow}
-\loadglsentries[main]{glossary}
+% \loadglsentries[main]{glossary}
 
 \usepackage{enumitem}
 
@@ -75,19 +75,16 @@
 \addcontentsline{toc}{chapter}{Bibliography}
 \setheader{Bibliography}
 
-URLs in this thesis have been archived on Archive.org. Their link target in digital editions refers
-to this timestamped version.
-
 % argument is your BibTeX string definitions and bibliography database(s)
 \bibliography{dissertation}
 \bibliographystyle{splncs04}
 
 %% \chapter*{Glossary}
 
-\glsaddall
-\printglossary[type=\acronymtype,title={Glossary}]
-\addcontentsline{toc}{chapter}{Glossary}
-\setheader{Glossary}
+% \glsaddall
+% \printglossary[type=\acronymtype,title={Glossary}]
+% \addcontentsline{toc}{chapter}{Glossary}
+% \setheader{Glossary}
 
 \include{ipa/ipadissertations_2018}
 

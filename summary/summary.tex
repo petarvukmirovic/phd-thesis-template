@@ -2,7 +2,62 @@
 \addcontentsline{toc}{chapter}{Summary}
 \setheader{Summary}
 
-Your summary.
+\looseness=-1
+In the last decades, proof assistants were immeasurably useful in formally
+proving validity of hard mathematical theories and correctness of
+safety-critical software. Using these tools one can formally describe a problem
+and produce machine-checkable proofs for statements about it. To make the
+checking phase efficient and trustworthy, proof steps need to be of high
+granularity. As a consequence, seemingly simple statements must be proven in
+minute detail, making the use of proof assistants very tedious.
+
+In an attempt to automate significant parts of this proving process, assistants
+can invoke automatic theorem provers to finish the proof. However, most
+assistants are based on higher-order logic, while most automatic theorem provers
+are based on first-order logic. This means that the two systems must communicate
+through translations, which obfuscate the problem and likely make it more
+difficult than it originally was.
+
+In this thesis, we try to bridge this translation gap. We start from E, one of the best
+first-order proof assistants backends, based on the superposition calculus, and
+gradually extend it to higher-order logic. As this approach is large in scope,
+we split it in three parts.
+
+The first part extends E to support a fragment of higher-order logic devoid of
+$\lambda$-abstra\-ction, yielding a prover called Ehoh. Even though this extension
+is arguably conservative, Ehoh shows stronger performance on proof assistant
+benchmarks than E.
+
+The second part concerns adding support for $\lambda$-abstraction. The most
+important challenge we faced during this extension is that of higher-order
+unification. At the time we started, state-of-the-art procedure
+for full higher-order unification was developed in 1970s. We designed a new
+procedure inspired by this one that enumerates less redundant unifiers, has many
+modern optimizations built-in, and can easily be customized to trade its
+completeness for performance. It is implemented in a
+prototype prover Zipperposition, a less efficient, but more easily extendible
+prover compared to E. Our evaluation shows that our
+procedure substantially improves on state-of-the-art.
+
+The last part concerns adding support for
+first-class Boolean terms. For this part we took inspiration from traditional
+automatic higher-order provers, based on tableaux. We fitted those techniques in
+superposition context and implemented them in Zipperposition. They
+made Zipperposition the best prover in the higher-order division of the annual CASC
+theorem prover competition for two consecutive years.
+
+After testing out our ideas in Zipperposition, we decided to go back to Ehoh and
+extend it to full higher-order logic, obtaining a prover called \ehohii{}. We
+chose the most successful approaches implemented in Zipperposition that can
+easily be ported to \ehohii{}. The results were once again positive: Our
+evaluation shows that \ehohii{} is the best prover on proof assistant
+benchmarks, and second only to Zipperposition on a standard benchmark set.
+
+We took our idea of porting techniques from weaker to stronger logics one step
+back: We explored SAT simplification techniques that can be implemented in the
+superposition context. We discovered that while some of them can be used during proving,
+most of them work best as preprocessors.
+
 
 \chapter*{Samenvatting}
 \addcontentsline{toc}{chapter}{Samenvatting}
@@ -10,7 +65,7 @@ Your summary.
 
 {\selectlanguage{dutch}
 
-  Samenvatting in het Nederlands.
+
 }
 
 
