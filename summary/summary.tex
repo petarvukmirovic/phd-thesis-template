@@ -5,12 +5,11 @@
 \looseness=-1
 In the last decades, proof assistants were immeasurably useful in formally
 proving validity of hard mathematical theories and correctness of
-safety-critical software. These tools provide a formal language that allows one
-to describe a problem and prove statements about it which are later
-automatically checked. To make the checking phase efficient and trustworthy,
-proof steps need to be of high granularity. As a consequence, seemingly
-simple statements must be proven in minute detail, making the use of proof
-assistants very tedious.
+safety-critical software. Using these tools one can formally describe a problem
+and produce machine-checkable proofs for statements about it. To make the
+checking phase efficient and trustworthy, proof steps need to be of high
+granularity. As a consequence, seemingly simple statements must be proven in
+minute detail, making the use of proof assistants very tedious.
 
 In an attempt to automate significant parts of this proving process, assistants
 can invoke automatic theorem provers to finish the proof. However, most
@@ -49,7 +48,7 @@ theorem prover competition for two consecutive years.
 
 After testing out our ideas in Zipperposition, we decided to go back to Ehoh and
 extend it to full higher-order logic, obtaining a prover called \ehohii{}. We
-choose the most successful approaches implemented in Zipperposition that can
+chose the most successful approaches implemented in Zipperposition that can
 easily be ported to \ehohii{}. The results were once again positive: Our
 evaluation shows that \ehohii{} is the best prover on proof assistant
 benchmarks, and second only to Zipperposition on a standard benchmark set.
