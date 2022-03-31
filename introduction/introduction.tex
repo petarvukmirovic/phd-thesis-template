@@ -242,6 +242,17 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   manageable.
   \pagebreak[2]
 
+  A common thread for extensions of both E and Zipperposition is that we
+  heavily relied on the availability of established higher-order provers and the
+  TPTP benchmark set. Whenever we noticed that there are problems E and Zipperposition
+  cannot solve, but the competition can we tried to come up for an explanation
+  for this issue. This explanation would usually be in the form of missing
+  inference or heuristic. Then we would try to find more problems that have a
+  similar pattern and see if the developed technique is useful on them. If so,
+  we would make it part of the portfolio of approaches tried on every problem.
+  Ideas for our unification procedure (Chapter \ref{ch:unif}) and techniques
+  described in Chapters \ref{ch:bools} and \ref{ch:ho-techniques} have been developed
+  this way.
   
   After spending so much time and energy on developing higher-order provers, we
   took a step back and worked on improving first-order provers. As they form the
