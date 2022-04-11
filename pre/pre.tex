@@ -410,16 +410,23 @@ the set of clauses. In the rest of this thesis we denote generating rules with a
 horizontal bar separating premises and conclusions.
 
 Let us give some intuition behind how these rules are applied in practice. The
-\infname{ER} rule is used to replace equals by equals within a clause.
-Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In
-clausal form it is $X \noteq \cst{2} \llor \cst{even}(X)$. Applying the
-\infname{ER} rule effectively applies the precondition $X \eq \cst{2}$ to the
-conclusion $\cst{even}(X)$ to obtain $\cst{even}(\cst{2})$. The \infname{EF}
-rule can be used to find instances of the clause that can be further simplified.
-Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
-\cst{p}(X, Y)$. Applying \infname{EF} to its first two literals yields $\cst{a}
-\noteq \cst{a} \llor \cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ (with $\sigma = \{ Y \mapsto X \}$). This clause
-then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
+\infname{ER} rule is used to establish reflexivity of equality---the property
+that each term is equal to itself. Consider the formula $\iforall x.\,  x \eq
+\cst{2} \iimplies \cst{even}(x)$. In clausal form it is $X \noteq \cst{2} \llor
+\cst{even}(X)$. Applying the \infname{ER} rule effectively applies the
+precondition $X \eq \cst{2}$ to the conclusion $\cst{even}(X)$ to obtain
+$\cst{even}(\cst{2})$. 
+
+Similarly to the factoring rule in the standard resolution calculus, the
+\infname{EF} rule can be used to find instances of the clause that duplicate
+some literals.
+Additionally, it takes care of some rarely occurring edge cases that are a consequence of restrictive
+side-conditions of other rules of the calculus. Consider the clause $\cst{f}(X)
+\eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor \cst{p}(X, Y)$. Applying
+\infname{EF} to its first two literals yields $\cst{a} \noteq \cst{a} \llor
+\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ (with $\sigma = \{ Y \mapsto X \}$).
+This clause then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X,
+X)$ using \infname{ER}.
 
 Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what
 mathematicians do when they replace equals by equals. In calculi preceding
