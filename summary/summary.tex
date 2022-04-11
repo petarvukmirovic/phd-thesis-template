@@ -24,24 +24,23 @@ gradually extend it to higher-order logic. As this approach is large in scope,
 we split it in three parts.
 
 The first part extends E to support a fragment of higher-order logic devoid of
-$\lambda$-abstra\-ction, yielding a prover called Ehoh. Despite this extension is small in scope, 
-Ehoh shows stronger performance on proof assistant
-benchmarks than E.
+$\lambda$-abstra\-ction, yielding a prover called Ehoh. Despite this extension being small in scope, 
+Ehoh shows a stronger performance on proof assistant benchmarks than E.
 
 The second part concerns adding support for $\lambda$-abstraction. The most
 important challenge we faced during this extension is that of higher-order
-unification. At the time we started, state-of-the-art procedure
+unification. At the time we started, the state-of-the-art procedure
 for full higher-order unification was developed in 1970s. We designed a new
 procedure inspired by this one that enumerates fewer redundant unifiers, has many
 modern optimizations built-in, and can easily be customized to trade its
 completeness for performance. It is implemented in a
-prototype prover called Zipperposition, a less efficient, but more easily extendible
+prototype prover called Zipperposition, a less efficient but more easily extendible
 prover compared to E. Our evaluation shows that our
 procedure substantially improves on the state of the art.
 
 The last part concerns adding support for
 first-class Boolean terms. For this part we took inspiration from traditional
-automatic higher-order provers, based on tableaux. We fitted those techniques in
+automatic higher-order provers, based on tableaux. We fitted those techniques in the
 superposition context and implemented them in Zipperposition. They
 made Zipperposition the best prover in the higher-order division of the annual CASC
 theorem prover competition for two consecutive years.
@@ -49,7 +48,7 @@ theorem prover competition for two consecutive years.
 After testing out our ideas in Zipperposition, we decided to go back to Ehoh and
 extend it to full higher-order logic, obtaining a prover called \ehohii{}. We
 chose the most successful approaches implemented in Zipperposition that can
-easily be ported to \ehohii{}. The results were once again positive: Our
+be ported easily to \ehohii{}. The results were once again positive: Our
 evaluation shows that \ehohii{} is the best prover on proof assistant
 benchmarks, and second only to Zipperposition on a standard benchmark set.
 
@@ -58,6 +57,10 @@ back: We explored SAT simplification techniques that can be implemented in the
 superposition context. We discovered that while some of them can be used during proving,
 most of them work best as preprocessors.
 
+In conclusion, the work described in this thesis shows that first- and
+higher-order provers are much more alike than previously thought. Furthermore,
+we showed that through carefully designed and tuned extension, first-order
+prover can become an award-winning higher-order prover.
 
 \chapter*{Samenvatting}
 \addcontentsline{toc}{chapter}{Samenvatting}
