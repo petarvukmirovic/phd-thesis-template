@@ -5,7 +5,7 @@
 \begin{abstract}
     In this chapter we lay out the basic prerequisites for the remaining
     chapters. We begin by describing the three logics that we work with in this
-    thesis: propositional logic, first-order logic and higher-order logic. Then,
+    thesis: propositional logic, first-order logic, and higher-order logic. Then,
     we explain the clausal structure which is the backbone of many calculi for
     automated provers. We finish with the description of the superposition
     calculus. As this thesis discusses practical aspects of theorem proving, we
@@ -34,7 +34,7 @@ describes an algorithm to decide satisfiability (existence of satisfiable
 assignment for a formula) or validity (if all assignments satisfy the formula).
 
 However, this simple approach is prohibitively expensive and modern tools that
-decide propositional satisfiability problem (SAT solvers) use more advanced
+decide the propositional satisfiability problem (SAT solvers) use more advanced
 approaches such as the CDCL calculus \cite{mss-96-cdcl}. A crucial improvement of
 this calculus compared to more naive approaches is that it does not backtrack
 chronologically when it determines that the partial model constructed for a set
@@ -56,7 +56,7 @@ type $o$, and a set of symbols $\Sigma$. To each symbol $\cst{f} \in \Sigma$ a
 tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
 $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
 \ldots, \tau_{n})$ are \emph{argument types}, $\tau$ is the \emph{return type}, and $n$
-is the \emph{arity} of the symbol $\cst{f}$. If return type of $\cst{f}$ is $o$ we call
+is the \emph{arity} of the symbol $\cst{f}$. If the return type of $\cst{f}$ is $o$ we call
 $\cst{f}$ a \emph{predicate symbol}, otherwise we call it a \emph{function symbol}. Argument types may not be Boolean.
 
 \emph{Terms} are the basic building blocks of first-order logic, built inductively as follows. Variables
@@ -69,7 +69,7 @@ notation, we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$
 or simply $\tuplen{t}$.
 
 Terms are used to build \emph{atoms}. An atom is either a term $t$ of type $o$ (\emph{predicate atom}) or an
-equation $s \eq t$ where terms $t$ and and $s$ are of the same type (\emph{equational atom}). Atoms are
+equation $s \eq t$ where terms $t$ and $s$ are of the same type (\emph{equational atom}). Atoms are
 combined using logical connectives to build formulas just like in propositional
 logic. Additionally, first-order formulas are built using quantifiers: if $\phi$
 is a formula and $x$ is a variable, then $\iforall x.\, \phi$, as well as
@@ -135,7 +135,7 @@ Lastly, if $x$ is a bound variable of type $\tau$ and $s$ is a term of type
 $\upsilon$, then $\lambda$-abstraction $\lamx{s}$ is a term of type $\tau
 \rightarrow \upsilon$. The syntactic distinction between free and bound
 variables gives rise to \emph{loose bound variables} \cite{tn-93-patterns},
-bound variables that appear without enclosing $\lambda$ binder  (e.g., $y$ in
+bound variables that appear without an enclosing $\lambda$ binder  (e.g., $y$ in
 $\lamx{y \, \cst{a}}$). Note that there is no requirement that a
 symbol is not applied to terms of Boolean type as in first-order logic.
 Furthermore, all logical connectives are symbols present in the set $\Sigma$.
@@ -151,7 +151,7 @@ x. \, p \, x) \iimplies p \, (\varepsilon \, p)$.
 \looseness=-1
 With $\alpha$-conversion we assume the rule $(\lambda x. \, s) \longrightarrow
 \lambda y. \, \{x \mapsto y\}(s)$ where $y$ does not occur as a loose bound variable in $s$
-and $y$ is not bound in $s$. Application of a substitution to a term,
+and $y$ is not bound in $s$. Application of a substitution to a term
 implicitly $\alpha$-renames bound variables to avoid capture.  For example, $\{X
 \mapsto x\}(\lamx{X \, \cst{a}})$ results in $\lam{y}{x \, \cst{a}}$. The
 $\beta$-reduction rule, roughly speaking, corresponds to passing arguments in a
@@ -164,16 +164,16 @@ convertible with respect to any of the rules form equivalence classes. Thus, we
 also say that $\alpha$($\beta\eta$)-convertible terms are
 $\alpha$($\beta\eta$)-equivalent. 
 
-In practice, many implementations of $\lambda$-terms avoid named representation
-of bound variables described above by using \emph{locally nameless
+In practice, many implementations of $\lambda$-terms avoid a named representation
+of bound variables described above by using a \emph{locally nameless
 representation} \cite{ac-12-locally-nameless}. In this representation, free
 variables retain their names, while abstractions are simply represented by a
-$\lambda$ symbol, without any names. Further, bound variables are represented
+$\lambda$ symbol, without any names. Further, bound variables can be represented
 using \emph{De Bruijn indices}. A bound variable with De Bruijn index
 $\dbvar{i}$ is bound by the $i+1$-th enclosing $\lambda$ binder. For example,
 the term $\lambda x. \, \cst{f} \, (\lambda y z. \, \cst{g} \, z \, x)$ is represented
 as $\lambda\, \cst{f} \, (\lambda \lambda\, \cst{g} \, \db{0} \, \db{2})$.
-Locally nameless representation reduces the $\alpha$-equivalence test to 
+The locally nameless representation reduces the $\alpha$-equivalence test to 
 the syntactic equality test. 
 
 \looseness=-1
@@ -181,7 +181,7 @@ As hinted in previous definitions, higher-order substitutions
 ($\sigma,\varrho,\ldots$) are functions from both free and bound variables to
 terms. A variable $F$ is mapped by $\sigma$ if $ \sigma(F)\,\not\equi\,F$.
 Substitutions map only finitely many variables. Given a substitution $\varrho$,
-which maps $F$ to $s$, with $\varrho\setminus\{F \mapsto s\}$ we denote a
+which maps $F$ to $s$, with $\varrho\setminus\{F \mapsto s\}$ we denote the
 substitution that does not map $F$ and otherwise coincides with $\varrho$. Given
 substitutions $\varrho$ and $\sigma$, mapping disjoint variable sets, we write
 $\varrho \cup \sigma$ to denote $\varrho\sigma$.
@@ -228,7 +228,7 @@ set of formulas, must be transformed into a set of clauses. For propositional
 and first-order logic, there exists such a transformation that does not affect
 satisfiability of the problem \cite{nw-01-small-cnf}. In higher-order logic,
 formulas are first-class citizens and higher-order calculi can in general work
-with nonnormalized problem, in its original form. However, resolution and
+with the nonnormalized problem, in its original form. However, resolution and
 superposition-based higher-order calculi still perform best when the problem is clausified
 using a transformation similar to the one used in the first-order case. We have analyzed
 different approaches to clausification in a higher-order context \cite{bbtv-21-full-ho-sup}.
@@ -264,7 +264,7 @@ given problem, we first must negate its conjecture and clausify the whole
 problem using some of the clausification algorithms
 \cite{nw-01-small-cnf,rsv-16-vcnf}. The calculus then applies its inference
 rules to the clauses, adding results of the inferences to the working set of
-clauses. As this process is quite prolific it also uses an order on terms which gives an indication of
+clauses. As this process is quite prolific, it also uses an order on terms which gives an indication of a
 term's ``simplicity'' to determine
 if some clauses can be simplified or eliminated from the working set.
 Superposition is refutationally complete: This means that, if results of all
@@ -318,7 +318,7 @@ from a given (multi)set of literals. Superposition requires that at least one of
 Calculi from the resolution family, including superposition, perform inferences
 only on unifiable terms. We say terms $s$ and $t$ are {\em unifiable} if there is a
 substitution $\sigma$ such that $\sigmaterm{s} = \sigmaterm{t}$; we further say
-$\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is a pair of two terms of the same type. 
+$\sigma$ is a unifier. A \emph{unification constraint} $s \unif t$ is a pair of two terms of the same type. 
 We always specify if the constraint should be interpreted as ordered or unordered.
 We say a substitution $\sigma$ is \emph{more general} than $\varrho$ if there exists a substitution $\theta$
 such that $\varrho = \theta\sigma$.
@@ -326,15 +326,14 @@ A \emph{most general unifier} ({MGU}) is a
 unifier $\sigma$, such that for any other unifier $\theta$, there is a
 substitution $\varrho$ such that $\theta = \varrho\sigma$. In first-order logic,
 the MGU is unique up to variable renaming. For example, $\cst{f}(X) \unif \cst{f}(Y)$ yields the MGU 
-$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient algorithms for computing the MGU \cite{hv-09-unifalgs}.
+$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient algorithms for computing MGUs \cite{hv-09-unifalgs}.
 
-In higher-order logic, unification is performed modulo rules of
-$\alpha\beta\eta$-conversion. Under these conditions, the uniqueness of the MGU is not guaranteed. Consider the constraint $X \,
+In higher-order logic, unification is performed modulo
+$\alpha\beta\eta$-equivalence. Under these conditions, the uniqueness of the MGU is not guaranteed. Consider the constraint $X \,
 (\cst{f} \, \cst{a}) \unif \cst{f} \, (X \, \cst{a})$. Any substitution of the
 form $\{ X \mapsto \lamx{\cst{f}^i \, x} \}$ is a unifier, with $\cst{f}^i \, x$
 denoting iterated, $i$-fold application of $\cst{f}$. However, neither of these substitutions
-is more general than the other. To generalize most general
-unifiers to higher-order logic, the concept of the {\em complete sets of unifiers} (CSU) was
+is more general than the other. To generalize MGUs to higher-order logic, the concept of the {\em complete sets of unifiers} (CSU) was
 introduced.
 
 A (higher-order) unifier of a multiset of unification constraints $E$ is
@@ -342,7 +341,7 @@ a substitution $\sigma$, such that $\sigma(s) \equi \sigma(t)$, for all $s \unif
 \in E$. A complete set of unifiers of $E$ is defined as a
 set $U$ of $E$'s unifiers along with a set $V$ of \emph{auxiliary variables}
 such that no $s \unif t \in E$ contains variables from $V$ and for every unifier
-$\rho$ of $E$, there exists a $\sigma \in U$ and a substitution $\theta$ such
+$\rho$ of $E$ there exists a $\sigma \in U$ and a substitution $\theta$ such
 that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The MGU,
 when it exists, corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
 the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
@@ -366,7 +365,7 @@ substitution. We say that \sigmacl{l} is eligible for resolution if: (1) nothing
 is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals in
 \sigmacl{C} or (2) \selfun{} selected some literals and \sigmacl{l} is the maximal
 within either positive or negative selected literals. We say \sigmacl{l} is
-eligible for paramodulation if it is positive, nothing is selected and
+eligible for paramodulation if it is positive, nothing is selected, and
 \sigmacl{l} is the maximal literal within the literals of \sigmacl{C}.  With
 $\mgu(s,t)$ we denote the MGU of $s$ and $t$. Using a horizontal
 line to separate premises and the conclusion, the four inference rules of
@@ -425,12 +424,12 @@ then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \i
 Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what
 mathematicians do when they replace equals by equals. In calculi preceding
 superposition, the name paramodulation is often used for rules that replace
-equals by equals. Note that with \emph{the superposition rule} we refer to both
-\infname{SN} and \infname{SP} rules. The left premise intuitively states that
+equals by equals. Note that with \emph{the superposition rule} we will refer to both
+\infname{SN} and \infname{SP}. The left premise intuitively states that
 an equation $s \eq t$ holds under condition $C$. Similarly, the right premise
 asserts that a (dis)equation holds under a condition. The superposition rule
 simply concatenates the conditions for both premises and replaces equals by
-equals in two main inference terms. For example given clauses $\neg
+equals in two main inference terms. For example, given clauses $\neg
 \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and $\neg \cst{even}(\cst{b}) \llor
 \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition between their last literals
 results in $\neg \cst{even}(Y) \llor \neg \cst{even}(\cst{b}) \llor
@@ -451,11 +450,11 @@ generally, a clause (ground or not) is redundant in set $N$ if every ground
 instance of $C$ is redundant for the grounding of $N$. Removing redundant
 clauses does not affect completeness of superposition.
 
-Other than the four generating rules, superposition provers also use
-simplification rules, which are justified using the redundancy criterion. These
-rules effectively replace the premises with conclusions, and we denote them
+Next to the four generating rules, superposition provers also use
+simplification rules, which are justified by the redundancy criterion. These
+rules effectively replace the pre\-mises with conclusions, and we denote them
 using double bars. In theory, the rules work by adding conclusions and then
-using them to show that premises are redundant, and can thus be eliminated. Asf
+using them to show that premises are redundant, and can thus be eliminated. As
 an example of such a rule, let us introduce rewriting (demodulation) of negative
 literals (\infname{RN}):
 
@@ -463,11 +462,11 @@ literals (\infname{RN}):
 \namedsimp{RN}{s \eq t \qquad u \noteq v \llor D}
               {s \eq t \qquad \sigmacl{u[p \leftarrow \sigma(t)] \eq v \llor C \llor D}}
 \]
-where $\sigma = \mgu(u|_p, s)$, and $\sigma(s) \succ \sigma(t)$.
+where $\sigma = \mgu(u|_p, s)$ and $\sigma(s) \succ \sigma(t)$.
 
 
 Simple rules such as removing duplicate literals, literals of the form $s \noteq
-s$ or tautological clauses are clearly justified by the redundancy criterion.
+s$, or tautological clauses are clearly justified by the redundancy criterion.
 Schulz gives an extensive list of such rules \cite{ss-02-brainiac}. This list
 includes the rule which allows rewriting positive literals but has more side
 conditions than \infname{RN}.
@@ -489,7 +488,7 @@ chooses a clause $C$ from $\mathcal{P}$, simplifies it, and moves it to
 $\mathcal{A}$ (i.e., it \emph{activates} it). Then all inferences between $C$ and active clauses are performed.
 The resulting clauses are again simplified and put in $\mathcal{P}$.
 We call the pair $(\mathcal{P}, \mathcal{A})$ the \emph{proof state}.
-The provers differ in which clauses are used for simplification: Otter-loop
+Provers differ in which clauses are used for simplification: Otter-loop
 \cite{mcw-1997-otter} provers use both active and passive clauses whereas
 DISCOUNT-loop \cite{adf-1995-discount} provers use only active clauses.
 The provers we discuss in this thesis, E and Zipperposition, are both DISCOUNT-loop provers.
@@ -506,12 +505,12 @@ superposition calculus using the same roadmap:
 \begin{enumerate}
     \item Bentkamp, Blanchette, Cruanes, and Waldmann designed a complete
     superposition calculus for higher-order logic devoid of
-    $\lambda$-abstraction and first-class Booleans \cite{bbcw-21-lfho}. This calculus is called \emph{Boolean-free $\lambda$-free higher-order superposition calculus} 
+    $\lambda$-abstraction and first-class Booleans \cite{bbcw-21-lfho}. This calculus is called the \emph{Boolean-free $\lambda$-free higher-order superposition calculus} 
     and we shortly refer to it as \lfsup{}.
     \item \begin{sloppypar}
     Bentkamp, Blanchette, Tourret,  Vukmirović, and Waldmann
     extended this calculus to support $\lambda$-abstraction
-    \cite{bbtvw-21-sup-lam}. They call this new calculus \emph{Boolean-free $\lambda$-superposition calculus},
+    \cite{bbtvw-21-sup-lam}. They call this new calculus the \emph{Boolean-free $\lambda$-superposition calculus},
     and we shortly refer to it as \lsup{}.
     \end{sloppypar}        
     \item Bentkamp, Blanchette, Tourret, and Vukmirovi\'c extended \lsup{} with
@@ -526,14 +525,14 @@ and \osup{}.
 \subsection{Theorem Provers}
 \label{sec:pre:theorem-provers}
 
-All the techniques described in this thesis are implemented in two superposition
+All the techniques described in this thesis have been implemented in two superposition
 theorem provers: Zipperposition
 \cite{sc-15-simon-phd,sc-supind-17} and E \cite{ss-02-brainiac}. The former was used as a testbed for
 prototyping ideas, while the latter is the main target of our work as it is more
 efficient.
 
 \ourpara{Zipperposition}
-Zipperposition is a higher-order theorem prover that implements \lfsup{},
+Zipperposition is a higher-order theorem prover implementing \lfsup{},
 \lsup{}, \osup{}, and other superposition-like calculi (including Bhayat and
 Reger's combinatory superposition \cite{br-20-full-sup-w-combs}). The prover was
 conceived as a testbed for rapidly experimenting with extensions of first-order
@@ -546,10 +545,10 @@ superposition.
 
 \ourpara{E} E is a state-of-the-art first-order prover based on superposition.
 In the last decade, together with its derivatives, it has revolved around the
-second place at the first-order division of CASC theorem prover
+second place at the first-order division of the CASC theorem prover
 competition \cite{ss-96-casc}. It is open-source, written in C (without using any
 external libraries), and designed around efficient algorithms and data structures
-rather than highly optimized codebase. This makes it a good target for implementing
+rather than a highly optimized codebase. This makes it a good target for implementing
 successful higher-order techniques previously evaluated in Zipperposition.
 
 
