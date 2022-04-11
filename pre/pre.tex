@@ -322,17 +322,14 @@ $\sigma$ is the unifier. A \emph{unification constraint} $s \unif t$ is a pair o
 We always specify if the constraint should be interpreted as ordered or unordered.
 We say a substitution $\sigma$ is \emph{more general} than $\varrho$ if there exists a substitution $\theta$
 such that $\varrho = \theta\sigma$.
-A \emph{most general unifier} is a
+A \emph{most general unifier} ({MGU}) is a
 unifier $\sigma$, such that for any other unifier $\theta$, there is a
 substitution $\varrho$ such that $\theta = \varrho\sigma$. In first-order logic,
-the most general unifier is unique up to variable renaming. For example, $\cst{f}(X) \ unif \cst{f}(Y)$ yields the mgu 
-$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. Furthermore,
-first-order logic admits efficient algorithms for computing the most general
-unifier \cite{hv-09-unifalgs}.
+the MGU is unique up to variable renaming. For example, $\cst{f}(X) \unif \cst{f}(Y)$ yields the MGU 
+$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient algorithms for computing the MGU \cite{hv-09-unifalgs}.
 
 In higher-order logic, unification is performed modulo rules of
-$\alpha\beta\eta$-conversion. Under these conditions, the uniqueness of the most
-general unifier is not guaranteed. Consider the constraint $X \,
+$\alpha\beta\eta$-conversion. Under these conditions, the uniqueness of the MGU is not guaranteed. Consider the constraint $X \,
 (\cst{f} \, \cst{a}) \unif \cst{f} \, (X \, \cst{a})$. Any substitution of the
 form $\{ X \mapsto \lamx{\cst{f}^i \, x} \}$ is a unifier, with $\cst{f}^i \, x$
 denoting iterated, $i$-fold application of $\cst{f}$. However, neither of these substitutions
@@ -346,7 +343,7 @@ a substitution $\sigma$, such that $\sigma(s) \equi \sigma(t)$, for all $s \unif
 set $U$ of $E$'s unifiers along with a set $V$ of \emph{auxiliary variables}
 such that no $s \unif t \in E$ contains variables from $V$ and for every unifier
 $\rho$ of $E$, there exists a $\sigma \in U$ and a substitution $\theta$ such
-that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The most general unifier,
+that for all $X\not\in V,$ $\rho(X) = \theta(\sigma(X))$. The MGU,
 when it exists, corresponds to a one-element CSU. A unifier of terms $s$ and $t$ is a unifier of
 the singleton multiset $\{ s \unif t \}$. There is no algorithm to decide
 if two higher-order terms are unifiable, but there exist procedures
@@ -354,7 +351,7 @@ that enumerate all elements of the CSU for two terms.
 
 These higher-order concepts gracefully generalize the corresponding first-order
 ones. For example, if $s$ at $t$ are first-order, then there must exist a singleton
-CSU, i.e., the most general unifier. 
+CSU, i.e., the MGU. 
 
 \subsection{Inference Rules}
 \label{sec:pre:rules}
@@ -371,8 +368,8 @@ is selected by \selfun{} and \sigmacl{l} is $\succ$-maximal within the literals 
 within either positive or negative selected literals. We say \sigmacl{l} is
 eligible for paramodulation if it is positive, nothing is selected and
 \sigmacl{l} is the maximal literal within the literals of \sigmacl{C}.  With
-$\mgu(s,t)$ we denote the most general unifier of $s$ and $t$. Using a horizontal
-line to separate premises and the conclusion, four inference rules of
+$\mgu(s,t)$ we denote the MGU of $s$ and $t$. Using a horizontal
+line to separate premises and the conclusion, the four inference rules of
 superposition are as follows:
 
 \medskip
@@ -409,8 +406,10 @@ superposition are as follows:
 \end{tabular}
 
 \medskip
-Note that with \emph{superposition rule} we refer to both \infname{SN} and \infname{SP}
-rules.
+We call these four rules \emph{generating rules} as their conclusions are added to
+the set of clauses. In the rest of this thesis we denote generating rules with a
+horizontal bar separating premises and conclusions.
+
 Let us give some intuition behind how these rules are applied in practice. The
 \infname{ER} rule is used to replace equals by equals within a clause.
 Consider the formula $\iforall x.\,  x \eq \cst{2} \iimplies \cst{even}(x)$. In
@@ -424,48 +423,19 @@ Consider the clause $\cst{f}(X) \eq \cst{a} \llor \cst{f}(Y) \eq \cst{a} \llor
 then further simplifies to $\cst{f}(X) \eq \cst{a} \llor \cst{p}(X, X)$ using \infname{ER}.
 
 Lastly, the rules \infname{SP} and \infname{SN} are used to simulate what
-mathematicians do when they replace equals by equals. The name paramodulation is
-also used for rules that replace equals by equals in calculi preceding superposition.  The left premise intuitively
-states that an equation $s \eq t$ holds under condition $C$. Similarly, the right premise asserts that a (dis)equation holds
-under a condition. The superposition rule simply concatenates the conditions for
-both premises and replaces equals by equals in two main inference terms. For
-example given clauses $\neg \cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and
-$\neg \cst{even}(\cst{b}) \llor \cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition
-between their last literals results in $\neg \cst{even}(Y) \llor \neg
-\cst{even}(\cst{b}) \llor \cst{g}(\cst{a}) \eq \cst{b}$.
+mathematicians do when they replace equals by equals. In calculi preceding
+superposition, the name paramodulation is often used for rules that replace
+equals by equals. Note that with \emph{the superposition rule} we refer to both
+\infname{SN} and \infname{SP} rules. The left premise intuitively states that
+an equation $s \eq t$ holds under condition $C$. Similarly, the right premise
+asserts that a (dis)equation holds under a condition. The superposition rule
+simply concatenates the conditions for both premises and replaces equals by
+equals in two main inference terms. For example given clauses $\neg
+\cst{even}(X) \llor \cst{f}(X) \eq \cst{a}$ and $\neg \cst{even}(\cst{b}) \llor
+\cst{g}(\cst{f}(Y)) \eq \cst{b}$, superposition between their last literals
+results in $\neg \cst{even}(Y) \llor \neg \cst{even}(\cst{b}) \llor
+\cst{g}(\cst{a}) \eq \cst{b}$.
 
-% \[
-% \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
-% \]
-% where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
-% for resolution; \infname{ER} stands for equality resolution
-
-% \[
-% \namedinference{ER}{s \noteq t \llor C}{\sigmacl{C}}
-% \]
-% where $\sigma = \mgu(s,t)$, and $(s \noteq t)\sigma$ is eligible
-% for resolution; \infname{ER} stands for equality resolution
-
-% \[
-% \namedinference{EF}{s \eq t \llor u \eq v \llor C}{\sigmacl{(t \noteq v \llor u \eq v \llor C)}}
-% \]
-% where $\sigma = \mgu(s,u), \sigma(t) \not\succ \sigma(s)$ and 
-% $(s \eq t)\sigma$ is eligible for paramodulation; \infname{EF} stands for equality factoring
-
-% \[
-% \namedinference{SP}{s \eq t \llor C \qquad u \eq v \llor D}{(u[p \leftarrow t] \eq v \llor C \llor D)\sigma}
-% \]
-% where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-% $(s \eq t)\sigma$ is eligible for paramodulation, just like $(u \eq v)\sigma$ and $u|_p$ is not a variable;
-% \infname{SP} stands for positive superposition 
-
-
-% \[
-% \namedinference{SN}{s \eq t \llor C \qquad u \noteq v \llor D}{(u[p \leftarrow t] \noteq v \llor C \llor D)\sigma}
-% \]
-% where $\sigma = \mgu(u|_p, s), \sigma(t) \not\succ \sigma(s), \sigma(v) \not\succ \sigma(u)$,
-% $(s \eq t)\sigma$ is eligible for paramodulation, $(u \eq v)\sigma$ is eligible for resolution, and $u|_p$ is not a variable;
-% \infname{SN} stands for negative superposition
 \medskip
 
 \subsection{The Redundancy Criterion and Simplification Rules}
@@ -498,8 +468,9 @@ where $\sigma = \mgu(u|_p, s)$, and $\sigma(s) \succ \sigma(t)$.
 
 Simple rules such as removing duplicate literals, literals of the form $s \noteq
 s$ or tautological clauses are clearly justified by the redundancy criterion.
-Schulz gives an extensive list of such rules \cite{ss-02-brainiac}, including rewriting of positive
-literals which has more side conditions.
+Schulz gives an extensive list of such rules \cite{ss-02-brainiac}. This list
+includes the rule which allows rewriting positive literals but has more side
+conditions than \infname{RN}.
 
 We say that a clause $C$ subsumes clause $D$ if there is a substitution $\sigma$
 such that $\sigmacl{C} \subseteq D$. Subsumption is one of the most important
@@ -527,10 +498,10 @@ The provers we discuss in this thesis, E and Zipperposition, are both DISCOUNT-l
 \label{sec:pre:ho-sup-calculi}
 
 \looseness=-1
-In Chapter \ref{ch:intro} we mention that we identified three steps on the road
-to extending efficient superposition provers to higher-order logic. Together with
-our colleagues we did the necessary theoretical work by extending the superposition
-calculus using the same roadmap:
+In Chapter \ref{ch:intro} we described a roadmap (consisting of three steps) to
+extend an efficient superposition prover to higher-order logic. Together with
+our colleagues we did the necessary theoretical work by extending the
+superposition calculus using the same roadmap:
 
 \begin{enumerate}
     \item Bentkamp, Blanchette, Cruanes, and Waldmann designed a complete
@@ -570,7 +541,7 @@ superposition, but over time it has assimilated many of E's techniques and
 heuristics and become quite powerful. Still, its first-order performance is a
 far cry from E's. Zipperposition is written in OCaml, and features a modular
 system for adding new rules and techniques to implemented calculi.
-This makes it attractive for fast evaluation of various extensions of
+This makes it attractive for fast evaluation of various promising extensions of
 superposition.
 
 \ourpara{E} E is a state-of-the-art first-order prover based on superposition.
@@ -579,6 +550,6 @@ second place at the first-order division of CASC theorem prover
 competition \cite{ss-96-casc}. It is open-source, written in C (without using any
 external libraries), and designed around efficient algorithms and data structures
 rather than highly optimized codebase. This makes it a good target for implementing
-successful higher-order techniques.
+successful higher-order techniques previously evaluated in Zipperposition.
 
 
