@@ -271,7 +271,7 @@ Superposition is refutationally complete: This means that, if results of all
 inferences are computed in a systematic, fair manner, the empty clause ($\bot$) will
 eventually be derived for a provable problem. As first-order logic is
 undecidable, no guarantees are given for unprovable problems.
-Before introducing the rules of the calculus, we provide definitions of these and other
+Before introducing the rules of the calculus, we provide definitions of the
 background concepts.
 
 \subsection{Term Order and Selection}
@@ -323,8 +323,7 @@ We always specify if the constraint should be interpreted as ordered or unordere
 We say a substitution $\sigma$ is \emph{more general} than $\varrho$ if there exists a substitution $\theta$
 such that $\varrho = \theta\sigma$.
 A \emph{most general unifier} ({MGU}) is a
-unifier $\sigma$, such that for any other unifier $\theta$, there is a
-substitution $\varrho$ such that $\theta = \varrho\sigma$. In first-order logic,
+unifier $\sigma$, such that for any other unifier $\varrho$, $\sigma$ is more general than $\varrho$. In first-order logic,
 the MGU is unique up to variable renaming. For example, $\cst{f}(X) \unif \cst{f}(Y)$ yields the MGU 
 $\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient algorithms for computing MGUs \cite{hv-09-unifalgs}.
 
@@ -452,7 +451,7 @@ it still grows rather fast. To identify unnecessary clauses in the search
 space, superposition features a \emph{redundancy criterion}
 \cite[Sect.~4.2.2]{bg-01-resolution}. We say that a ground clause $C$ is
 {\em redundant} in a ground set of clauses $N$ if it is entailed by a subset of
-clauses in $N$ such that each clause in this subset is $\prec$-smaller than $C$. More
+clauses in $N$ such that each clause in this subset is $\succ$-smaller than $C$. More
 generally, a clause (ground or not) is redundant in set $N$ if every ground
 instance of $C$ is redundant for the grounding of $N$. Removing redundant
 clauses does not affect completeness of superposition.
@@ -461,7 +460,7 @@ Next to the four generating rules, superposition provers also use
 simplification rules, which are justified by the redundancy criterion. These
 rules effectively replace the pre\-mises with conclusions, and we denote them
 using double bars. In theory, the rules work by adding conclusions and then
-using them to show that premises are redundant, and can thus be eliminated. As
+using them to show that premises are redundant; after this, premises can be eliminated. As
 an example of such a rule, let us introduce rewriting (demodulation) of negative
 literals (\infname{RN}):
 
@@ -480,7 +479,7 @@ conditions than \infname{RN}.
 
 We say that a clause $C$ subsumes clause $D$ if there is a substitution $\sigma$
 such that $\sigmacl{C} \subseteq D$. Subsumption is one of the most important
-operations within a theorem prover. This rule does not adhere to the redundancy
+operations of a theorem prover. This rule does not adhere to the redundancy
 criterion, but can be justified using other mechanisms \cite{wtrb-20-sat-framework}.
 
 \subsection{The Saturation Procedure}
