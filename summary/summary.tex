@@ -15,7 +15,7 @@ In an attempt to automate significant parts of this proving process, assistants
 can invoke automatic theorem provers to finish the proof. However, most
 assistants are based on higher-order logic, while most automatic theorem provers
 are based on first-order logic. This means that the two systems must communicate
-through translations, which obfuscate the problem and likely make it more
+through translations, which obfuscate the conjecture being proved and likely make it more
 difficult than it originally was.
 
 In this thesis, we try to bridge this translation gap. We start from E, one of the best
@@ -30,7 +30,7 @@ Ehoh shows a stronger performance on proof assistant benchmarks than E.
 The second part concerns adding support for $\lambda$-abstraction. The most
 important challenge we faced during this extension is that of higher-order
 unification. At the time we started, the state-of-the-art procedure
-for full higher-order unification was developed in 1970s. We designed a new
+for full higher-order unification was the one developed in 1970s. We designed a new
 procedure inspired by this one that enumerates fewer redundant unifiers, has many
 modern optimizations built-in, and can easily be customized to trade its
 completeness for performance. It is implemented in a
@@ -38,8 +38,8 @@ prototype prover called Zipperposition, a less efficient but more easily extendi
 prover compared to E. Our evaluation shows that our
 procedure substantially improves on the state of the art.
 
-The last part concerns adding support for
-first-class Boolean terms. For this part we took inspiration from traditional
+The last part concerns adding native support for
+Boolean terms. For this part we took inspiration from traditional
 automatic higher-order provers, based on tableaux. We fitted those techniques in the
 superposition context and implemented them in Zipperposition. They
 made Zipperposition the best prover in the higher-order division of the annual CASC

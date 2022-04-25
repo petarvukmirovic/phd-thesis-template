@@ -16,30 +16,32 @@ to make conclusions from initial arguments in a trustworthy manner.
 Though the interest for rigorous and formal reasoning dates back to Aristotle,
 it intensified at the end of 19th and the beginning of 20th century
 \cite{jf-01-modern-logic}. Researchers in that time were mostly interested in
-finding a formal language that is expressive enough to describe complex
+finding a formal language that is expressive enough to describe many
 mathematical theories, yet intuitive and understandable enough to allow
-reasonably simple formal reasoning systems. First-order logic seemed to satisfy
-both requirements.  This formalism not only allows one to model simple
-logical relations such as ``if it rains, the road is muddy'' (or formally
-$\cst{rains} \iimplies \cst{muddy}$), but also to quantify over objects as in ``all
-people are mortal'' ($\iforall x.\, \cst{human}(x) \iimplies \cst{mortal}(x)$).
+reasonably simple formal reasoning systems. Arguably, first-order logic seemed to satisfy
+both requirements.  This formalism not only allows one to model simple logical
+relations such as ``if it rains, the road is muddy'' (or formally $\cst{rains}
+\iimplies \cst{muddy}$), but also to quantify over objects as in ``all people
+are mortal'' ($\iforall x.\, \cst{human}(x) \iimplies \cst{mortal}(x)$).
 
-\paragraph{Automatic Theorem Proving}The initial study of first-order logic and the rules to reason about statements in
-it was very prolific. In 1930 G\"odel \cite{kg-30-completeness-theorem} showed
-that there is a system of inference rules (calculus) such that for any valid
-statement a proof of validity can be constructed in this system. Around the same
-time, the first computers were leaving the imagination of the engineers and
-began automating many complicated processes.  Naturally, the question as to
-whether a computer can decide if a first-order statement is valid (i.e., a
-theorem) arose. Church \cite{ac-36-fol-undecidable} and Turing
-\cite{tm-37-undecidable} answered this question negatively in 1936.
+\paragraph{Automatic Theorem Proving}The initial study of first-order logic and
+the rules to reason about statements in it was prolific. In 1930 G\"odel
+\cite{kg-30-completeness-theorem} showed that there is a system of inference
+rules (calculus) such that for any valid statement (i.e., a theorem) a proof can be
+constructed in this system. Around the same time, the first computers were
+leaving the imagination of the engineers and began automating many complicated
+processes.  Naturally, the question as to whether a computer can decide if a
+first-order statement is valid  arose. Church
+\cite{ac-36-fol-undecidable} and Turing \cite{tm-37-undecidable} answered this
+question negatively in 1936.
 
 Despite this negative result, the prospect of automatically proving theorems of
 first-order logic remained too enticing. In 1960, Davis and Putnam
-\cite{dp-60-dp} described a procedure for checking validity of a
-first-order formula. As first-order logic is undecidable, this procedure
-terminated only on valid formulas. Even though it was efficient enough to prove
-only simple formulas, it was an impressive achievement for the time.
+\cite{dp-60-dp} described a procedure for checking validity of a first-order
+formula. This procedure terminated only on valid formulas, as Church and Turing
+proved no procedure can check validity of an arbitrary (possibly invalid) formula
+in finite time. Even though it was efficient enough to prove only simple
+formulas, it was an impressive achievement for the time.
 
 A bigger breakthrough happened in 1965 when Robinson introduced a calculus that
 would shape the future of automatic reasoning --- the resolution calculus
@@ -162,10 +164,10 @@ objects. Thus, higher-order logic allows us to make a statement ``all functions
 with arguments $0$ and $1$ result in $2$" ($\iforall x. \,  x (\cst{0}, \cst{1}) \eq
 \cst{2}$). Replacing $x$ with the addition function ($\cst{+}$) is enough to
 disprove this statement. The first stop is to extend E to support
-quantification over functions that are already present in the theory.
+quantification over functions that are already present in the original problem.
 
 Higher-order logic also supports expressing functions that are not explicitly
-present in the theory. Suppose we want to prove there is a
+present in the original problem. Suppose we want to prove there is a
 function that returns 4 when given 2 and 5 when given 3 ($\iexists x. x(\cst{2})
 \eq \cst{4} \lland x (\cst{3}) \eq \cst{5} $). An example of such function is
 the function that adds 2 to its argument. In higher-order logic such unnamed
