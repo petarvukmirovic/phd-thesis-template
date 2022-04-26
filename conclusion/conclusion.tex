@@ -1,5 +1,5 @@
-\chapter{Conclusion}
-\setheader{Conclusion}
+\chapter{Conclusion and Future Work}
+\setheader{Conclusion and Future Work}
 \label{ch:conclusion}
  
 As this thesis is brought to an end, I would like to use these last pages to
@@ -154,20 +154,95 @@ somewhat disappointed to learn that SAT techniques do not scale good enough to b
 as superposition simplification techniques. However, we learned that they are
 very successful as preprocessing techniques.
 
-As it is customary, we will conclude the thesis with some remarks about the
-future work. \ehohii{} has been brought to the shape in which further
-experimentation with higher-order superposition is possible. From the experience
-gained in Chapters \ref{ch:bools} and \ref{ch:ho-techniques}, we can point out
-dynamic clausification as the main feature that is not yet implemented. It is planned to implement it in the future.
+% As it is customary, we will conclude the thesis with some remarks about the
+% future work. \ehohii{} has been brought to the shape in which further
+% experimentation with higher-order superposition is possible. From the experience
+% gained in Chapters \ref{ch:bools} and \ref{ch:ho-techniques}, we can point out
+% dynamic clausification as the main feature that is not yet implemented. It is planned to implement it in the future.
 
-In Chapter \ref{ch:ho-techniques} we only scratched the surface of finding
-appropriate heuristics. Now that \ehohii{} implements more advanced higher-order
-reasoning, it would be interesting to verify whether heuristics that are still not
-ported are agnostic of the version of implemented higher-order superposition
-calculus. 
+% In Chapter \ref{ch:ho-techniques} we only scratched the surface of finding
+% appropriate heuristics. Now that \ehohii{} implements more advanced higher-order
+% reasoning, it would be interesting to verify whether heuristics that are still not
+% ported are agnostic of the version of implemented higher-order superposition
+% calculus. 
 
-Some of the SAT-based techniques described in Chapter~\ref{ch:satfol} have been
-implemented in E as well. However, this implementation is still in its early
-phases as it is not properly tested and optimized. Verifying which techniques are
-prover-agnostic would increase the confidence in them. We also started the work
-of extending those techniques to full higher-order logic.
+% Some of the SAT-based techniques described in Chapter~\ref{ch:satfol} have been
+% implemented in E as well. However, this implementation is still in its early
+% phases as it is not properly tested and optimized. Verifying which techniques are
+% prover-agnostic would increase the confidence in them. We also started the work
+% of extending those techniques to full higher-order logic.
+
+\section*{Future Work}
+
+\looseness=-1
+Even though the work in this thesis completes the three-step cycle, there are
+still many unexplored alleys for future work. We separate them by the topic
+explored in one of the earlier chapters:
+
+\ourpara{Higher-Order Unification} The complete variant of unification procedure
+described in Chapter \ref{ch:unif} is proved complete with substantial
+restrictions on the order and kind of applied rules. To further
+remove redundancy, we plan to find alternative, less explosive unification rules
+that do not compromise completeness. Furthermore, we want to investigate if
+there are more combinations of unification rules that lead to redundant unifiers
+and find ways to remove those redundancy-inducing combinations.
+
+We also described only one pragmatic variant of the unification procedure. This
+variant was designed after we sifted through hundreds of benchmarks to get the
+taste of what unifiers occur in practice. It is possible that this pragmatic variant
+can be further tweaked to perform more efficiently without loosing many useful unifiers.
+
+Lastly, we fixed the order in which Zipperposition applies different unification
+rules. It would be interesting to see if applying imitation before projection
+(or vice versa) yields performance improvements on some kinds of problems. 
+We also postponed the application of the most explosive rules such as iteration
+to the very end. However, it would not be surprising that there are many hard hand-crafted
+problems on which applying these rules would lead to a proof more quickly.
+
+\ourpara{Pragmatic Techniques and Heuristics } Many of the Boolean reasoning
+techniques described in Chapter \ref{ch:bools} were either inspired by the ones
+implemented in traditional higher-order theorem provers or by the unsolved TPTP
+benchmarks. Since the work present in Chapter \ref{ch:bools} anticipated the
+complete higher-order calculus that could make these techniques obsolete, we
+implemented only the most successful ones that are easy to port to
+saturation-based provers.  Most notably, unlike Satallax
+\cite{cb-2013-satallax}, Zipperposition does not use the fact that there only
+finitely many functions of a type built only using function type constructor
+($\rightarrow$) and Boolean type ($o$). Implementing techniques for efficient
+enumeration of all Boolean functions of a given type could help Zipperposition
+prove problems that are still out of its reach, but can be solved by Satallax.
+
+In Chapter \ref{ch:ho-techniques} we explored how we keep the explosion inherent
+to \osup{} calculus under control. Due to time and resource
+constraints, in the evaluation of our new given-clause loop we left some
+parameters that control which streams are queried fixed. We plan to tune these
+parameters in the future.  Similarly, we provided only some of the clause
+priority functions that rely on higher-order features. We plan to investigate
+more proofs in detail to create new priority functions that more cautiously
+separate less and more useful higher-order inferences. Lastly, we observed that
+use of Ehoh as a backend greatly improves the performance of Zipperposition. We
+plan to further investigate the proofs that Ehoh returns and find out how
+Zipperposition can find them without the use of a backend.
+
+\ourpara{Further Extensions of \ehohii{}} \ehohii{} outperforms other provers on
+problems coming proof assistants. However, its performance on TPTP problems is
+slightly behind Zipperposition. We plan to further investigate the benchmarks on
+which \ehohii{} fails, but are proved by Zipperposition. One of the first
+features we plan implement is dynamic clausification, which can possibly help
+improve \ehohii{}'s performance on first-order problems as well. We also plan to
+experiment with implementing some of the \osup{} rules necessary for
+completeness such as \infname{FluidSup}. Heuristics of \ehohii{} are trained on
+a subset of Sledgehammer and TPTP problems. We plan to use other benchmark sets
+such as GRUNGE to make \ehohii{} efficient on a wider range of higher-order
+benchmarks.
+
+\ourpara{SAT-inspired eliminations for superposition} We already implemented
+some of the techniques described in Chapter~\ref{ch:satfol} in E. However, this
+implementation is not properly tested and optimized. We plan to put finishing
+touches to this implementation and test the effects of implemented preprocessing
+techniques on E's performance. There are more techniques used in SAT solving,
+notably bounded variable addition \cite{mhb-12-reencoding} and blocked clause
+addition \cite{ok-99-er}, that we did not port to first-order logic. We want to
+investigate if these techniques can be lifted to first-order logic. Lastly, we
+already started work on porting existing techniques to higher-order logic.
+
