@@ -20,7 +20,7 @@
 
 \section{Propositional Logic}
 
-\emph{Atomic formulas} of propositional logic are propositional variables
+\emph{Atomic formulas} (\emph{atoms}) of propositional logic are propositional variables
 $\cst{p}, \cst{q}, \ldots$ and constants $\itrue$ and $\ifalse$. More complex
 formulas are built inductively using logical connectives $\inot, \iand, \ior,
 \iimplies, \allowbreak \iequiv$: if $\phi$ and $\psi$ are formulas, then $\inot \phi, \phi \iand
@@ -33,14 +33,14 @@ variables in a formula, trying all (finitely many) possible variable assignments
 describes an algorithm to decide satisfiability (existence of satisfiable
 assignment for a formula) or validity (if all assignments satisfy the formula).
 
-However, this simple approach is prohibitively expensive and modern tools that
+This simple approach is prohibitively expensive and modern tools that
 decide the propositional satisfiability problem (SAT solvers) use more advanced
 approaches such as the CDCL calculus \cite{mss-96-cdcl}. A crucial improvement of
 this calculus compared to more naive approaches is that it does not backtrack
 chronologically when it determines that the partial model constructed for a set
 of clauses does not satisfy all clauses. Instead, it generates a \emph{learned
 clause} which explains how this conflicting state was reached, which enables
-smarter backtracking.   Modern SAT solvers also heavily preprocess the problem
+smarter backtracking.  Modern SAT solvers also heavily preprocess the problem
 and continue simplifying it during the proving process.
 
 \section{First-Order Logic}
@@ -56,7 +56,7 @@ type $o$, and a set of symbols $\Sigma$. To each symbol $\cst{f} \in \Sigma$ a
 tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
 $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
 \ldots, \tau_{n})$ are \emph{argument types}, $\tau$ is the \emph{return type}, and $n$
-is the \emph{arity} of the symbol $\cst{f}$. If the return type of $\cst{f}$ is $o$ we call
+is the \emph{arity} of the symbol $\cst{f}$. If the return type of $\cst{f}$ is $o$, we call
 $\cst{f}$ a \emph{predicate symbol}, otherwise we call it a \emph{function symbol}. Argument types may not be Boolean.
 
 \emph{Terms} are the basic building blocks of first-order logic, built inductively as follows. Variables
@@ -73,7 +73,7 @@ equation $s \eq t$ where terms $t$ and $s$ are of the same type (\emph{equationa
 combined using logical connectives to build formulas just like in propositional
 logic. Additionally, first-order formulas are built using quantifiers: if $\phi$
 is a formula and $x$ is a variable, then $\iforall x.\, \phi$, as well as
-$\iexists x.\, \phi$ are formulas. The first formula requires that $\phi$ holds
+$\iexists x.\, \phi$ are formulas. Intuitively, the first formula requires that $\phi$ holds
 for every value of $x$, while the second one requires that there is some $x$ for
 which $\phi$ holds. As soon as there is a single functional symbol with arity
 greater than 0, there are infinitely many terms that can be substituted for a
@@ -269,8 +269,8 @@ term's ``simplicity'' to determine
 if some clauses can be simplified or eliminated from the working set.
 Superposition is refutationally complete: This means that, if results of all
 inferences are computed in a systematic, fair manner, the empty clause ($\bot$) will
-eventually be derived for a provable problem. As first-order logic is
-undecidable, no guarantees are given for unprovable problems.
+eventually be derived for a provable (i.e., valid) problem. As first-order logic is
+undecidable, no guarantees are given for unprovable (i.e., invalid) problems.
 Before introducing the rules of the calculus, we provide definitions of the
 background concepts.
 
