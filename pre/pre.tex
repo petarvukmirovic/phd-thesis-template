@@ -68,6 +68,7 @@ abbreviate $\cst{f}(t_1, \ldots, t_n)$ to $\cst{f}(\tuplen{t})$. Using a similar
 notation, we abbreviate a tuple of terms $(t_1, \ldots, t_n)$ as $(\tuplen{t})$
 or simply $\tuplen{t}$.
 
+\looseness=-1
 Terms are used to build \emph{atoms}. An atom is either a term $t$ of type $o$ (\emph{predicate atom}) or an
 equation $s \eq t$ where terms $t$ and $s$ are of the same type (\emph{equational atom}). Atoms are
 combined using logical connectives to build formulas just like in propositional
@@ -93,6 +94,7 @@ set $N$, for a variable assignment $\xi$. If $\ourmodel$ is a model of $N$
 $\ourmodel \models N.$  Overloading notation, we write $M \models N$ to denote that
 $M$ \emph{entails} $N$, i.e., that every model of $M$ is a model of $N.$
 
+\looseness=-1
 A {\em position} in a term is a tuple of natural numbers, with $\varepsilon$
 denoting the empty tuple. {\em Subterms} and positions are inductively defined
 as follows. The term $t$ is a subterm of itself at position $\varepsilon$. If
