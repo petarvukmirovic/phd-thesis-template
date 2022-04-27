@@ -77,7 +77,7 @@ first place for both benchmark suites.
 We also compared the performance of \ehohii{} with E on first-order
 %%% @PETAR: I made this slightly sentence shorter and more forceful. Please
 %%% check if you agree. --JB
-problems and found that little overhead has been introduced by the
+problems and found that no overhead has been introduced by the
 extension to higher-order logic.
 
 \ourpara{Background} The logic \ehohii{} targets is the monomorphic higher-order
@@ -958,7 +958,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   \ehohii{} dramatically improves the higher-order reasoning capabilities
   compared to Ehoh. It solves \NumberOK{20\%} more problems on TPTP benchmarks
-  and \NumberOK{6\%} more problems on SH benchmarks, where Ehoh was already very
+  and \NumberOK{7\%} more problems on SH benchmarks, where Ehoh was already very
   successful.
   
   \ehohii{} was mainly designed as an efficient backend to proof assistants. As such it 
@@ -976,7 +976,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   
   Remarkably, there is a substantial disparity in the set of problems solved by
   \ehohii{} and Zipperposition-coop. The raw data show thats \ehohii{} solves
-  \NumberOK{166} SH problems and \NumberOK{21} TPTP problems that Zipperposition-coop
+  \NumberOK{181} SH problems and \NumberOK{24} TPTP problems that Zipperposition-coop
   does not. The lower number of uniquely solved TPTP problems is most likely 
   due to Zipperposition's being heavily optimized on TPTP.
   
@@ -1017,7 +1017,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
         \midrule
         cvc5                  & 1931       & 2577      \\
         Ehoh                  & 2105       & 2611      \\
-        \ehohii{}             & 2523       & {\bf 2766}\\
+        \ehohii{}             & 2533       & {\bf 2804}\\
         Leo-III               & 2282       & 1601      \\
         Satallax              & 2320       & 1719      \\
         Vampire               & 2203       & 2240      \\
@@ -1036,8 +1036,8 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
         \midrule
         Ehoh FO      & 535      \\
         Ehoh HO      & 538      \\
-        \ehohii{} FO & {\bf 539}\\
-        \ehohii{} HO & {\bf 539}\\
+        \ehohii{}  FO & 537      \\
+        \ehohii{}  HO & {\bf 541}\\
         \bottomrule
       \end{tabular}}
       \caption{Evaluation of \ehohii{}'s overhead}
