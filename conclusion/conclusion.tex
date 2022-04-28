@@ -179,7 +179,7 @@ Even though the work in this thesis completes the three-step cycle, there are
 still many unexplored alleys for future work. We separate them by the topic
 explored in one of the earlier chapters:
 
-\ourpara{Higher-Order Unification} The complete variant of unification procedure
+\ourpara{Higher-Order Unification} The complete variant of the unification procedure
 described in Chapter \ref{ch:unif} is proved complete with substantial
 restrictions on the order and kind of applied rules. To further
 remove redundancy, we plan to find alternative, less explosive unification rules
@@ -188,7 +188,7 @@ there are more combinations of unification rules that lead to redundant unifiers
 and find ways to remove those redundancy-inducing combinations.
 
 We also described only one pragmatic variant of the unification procedure. This
-variant was designed after we sifted through hundreds of benchmarks to get the
+variant was designed after we sifted through hundreds of benchmarks to get a
 taste of what unifiers occur in practice. It is possible that this pragmatic variant
 can be further tweaked to perform more efficiently without loosing many useful unifiers.
 
@@ -197,7 +197,7 @@ rules. It would be interesting to see if applying imitation before projection
 (or vice versa) yields performance improvements on some kinds of problems. 
 We also postponed the application of the most explosive rules such as iteration
 to the very end. However, it would not be surprising that there are many hard hand-crafted
-problems on which applying these rules would lead to a proof more quickly.
+problems on which applying these rules early on would lead to a proof more quickly.
 
 \ourpara{Pragmatic Techniques and Heuristics } Many of the Boolean reasoning
 techniques described in Chapter \ref{ch:bools} were either inspired by the ones
@@ -207,15 +207,15 @@ complete higher-order calculus that could make these techniques obsolete, we
 implemented only the most successful ones that are easy to port to
 saturation-based provers.  Most notably, unlike Satallax
 \cite{cb-2013-satallax}, Zipperposition does not use the fact that there only
-finitely many functions of a type built only using function type constructor
+finitely many functions of a type built using only the function type constructor
 ($\rightarrow$) and Boolean type ($o$). Implementing techniques for efficient
 enumeration of all Boolean functions of a given type could help Zipperposition
 prove problems that are still out of its reach, but can be solved by Satallax.
 
 In Chapter \ref{ch:ho-techniques} we explored how we keep the explosion inherent
-to \osup{} calculus under control. Due to time and resource
-constraints, in the evaluation of our new given-clause loop we left some
-parameters that control which streams are queried fixed. We plan to tune these
+to the \osup{} calculus under control. Due to time and resource
+constraints, in the evaluation of our new given-clause loop we fixed some
+parameters that control which streams are queried. We plan to tune these
 parameters in the future.  Similarly, we provided only some of the clause
 priority functions that rely on higher-order features. We plan to investigate
 more proofs in detail to create new priority functions that more cautiously
@@ -225,15 +225,15 @@ plan to further investigate the proofs that Ehoh returns and find out how
 Zipperposition can find them without the use of a backend.
 
 \ourpara{Further Extensions of \ehohii{}} \ehohii{} outperforms other provers on
-problems coming proof assistants. However, its performance on TPTP problems is
+problems coming from proof assistants. However, its performance on TPTP problems is
 slightly behind Zipperposition. We plan to further investigate the benchmarks on
-which \ehohii{} fails, but are proved by Zipperposition. One of the first
+which \ehohii{} fails, but that are proved by Zipperposition. One of the first
 features we plan implement is dynamic clausification, which can possibly help
 improve \ehohii{}'s performance on first-order problems as well. We also plan to
 experiment with implementing some of the \osup{} rules necessary for
-completeness such as \infname{FluidSup}. Heuristics of \ehohii{} are trained on
+completeness such as \infname{FluidSup}. Heuristics for \ehohii{} are trained on
 a subset of Sledgehammer and TPTP problems. We plan to use other benchmark sets
-such as GRUNGE to make \ehohii{} efficient on a wider range of higher-order
+such as GRUNGE \cite{bgksu-19-grunge} to make \ehohii{} efficient on a wider range of higher-order
 benchmarks.
 
 \ourpara{SAT-Inspired Eliminations for Superposition} We already implemented
