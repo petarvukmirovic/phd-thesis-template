@@ -90,7 +90,8 @@ plants or autonomous vehicles.
 The proofs need to be spelled out in minute detail to be accepted by a proof assistant.
 Even though many proof assistants offer some sort of automation, seemingly simple
 statements cannot be automatically proved. This is one of the reasons why large
-verification projects can take years to finish.
+verification projects can take years to finish. Thus, providing some level of proof automation
+can substantially increase productivity of users of proof assistants.
 
 Integrating proof automation directly into the proof assistant is not an easy task.
 Most proof assistants are based on variants of higher-order logic, which is more
@@ -219,9 +220,10 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   developed a complete higher-order unification algorithm that is more
   efficient and generates fewer redundant unifiers than the state of the art. 
   
+  \looseness=-1
   We also noticed that Zipperposition's support for first-class Booleans
   was lacking compared to competition. We have closely studied the problems on
-  which Zipperposition fails but are easily solved by other provers, and created
+  which Zipperposition fails but are solved by other provers, and created
   a set of incomplete rules that enhance Zipperposition's Boolean support.
   Zipperposition 2 implemented these rules together with the new unification
   algorithm. In 2020, Zipperposition 2 won the higher-order division
