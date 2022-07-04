@@ -838,8 +838,8 @@ explosive.
   (\lambda y.\, \cst{a})$ have infinitely many unifiers of the form $\{ X \mapsto \lambda fx.
   \, f^i\, (x) \}, i \geq 0$, whereas terms $\cst{p} \, (\lambda y. \, X
   \, y \, \cst{a})$ and $\cst{p} \, (\lambda y. y^{100} \, \cst{b})$ have a finite CSU (in fact an MGU). 
-  When \texttt{Forward} context selection is enabled, % the subterm
-  $\cst{p} \, (\lambda y.\, X \, (\lambda x.\, x) \, \cst{a})$ is made the target of superposition inference, 
+  When \texttt{Forward} context selection is enabled, 
+  the target of superposition inference becomes $\cst{p} \, (\lambda y.\, X \, (\lambda x.\, x) \, \cst{a})$, 
   forcing computation of at least 100 unifiers (under the assumption that
   unifiers are returned in order of increasing $i$) before we get to refute
   $\inot(\cst{p} \, (\lambda y. y^{100} \, \cst{b}))$.
@@ -976,7 +976,18 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
       \State \Return $\mathit{maybe\_clause}$
     \EndFunction
 
-    \vspace{2\jot}
+    \vspace{1\jot}
+    
+    \Function{FairProbe}{$Q$, $\mathit{num\_oldest}$}
+      \assign{collected\_clauses}{\emptyset}
+      \assign{oldest\_streams}{\text{pop } \mathit{num\_oldest} \text{ oldest streams from } Q}
+      \For{$\mathit{stream}$ in $\mathit{oldest\_streams}$}
+        \assign{collected\_clauses}{\mathit{collected\_clauses} \mathrel\cup \textsc{ExtractClause}(Q, \mathit{stream})}
+      \EndFor
+      \State \Return $\mathit{collected\_clauses}$
+    \EndFunction
+    \vspace{3\jot}
+    \pagebreak[2]
 
     \Function{HeuristicProbe}{$Q$}
       \assign{i}{0}
@@ -995,17 +1006,9 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
       \State \Return $\mathit{collected\_clauses}$
     \EndFunction
 
-  \pagebreak[2]
-  \Function{FairProbe}{$Q$, $\mathit{num\_oldest}$}
-    \assign{collected\_clauses}{\emptyset}
-    \assign{oldest\_streams}{\text{pop } \mathit{num\_oldest} \text{ oldest streams from } Q}
-    \For{$\mathit{stream}$ in $\mathit{oldest\_streams}$}
-      \assign{collected\_clauses}{\mathit{collected\_clauses} \mathrel\cup \textsc{ExtractClause}(Q, \mathit{stream})}
-    \EndFor
-    \State \Return $\mathit{collected\_clauses}$
-  \EndFunction
+  % \pagebreak[2]
 
-  \vspace{2\jot}
+  \vspace{1\jot}
 
   \Function{ForceProbe}{$Q$}
     \assign{collected\_clauses}{\emptyset}
@@ -1024,7 +1027,7 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
     \State \Return $(\mathit{status}, \mathit{collected\_clauses})$
   \EndFunction
 
-  \vspace{2\jot}
+  \vspace{1\jot}
 
   \Function{GivenClause}{$P$, $A$, $Q$}
 
@@ -1051,7 +1054,6 @@ unpromising streams. The pseudocode of the modified procedure is as follows:
       \EndIf
     \EndIf
   \EndWhile
-
   \State \Return $\mathit{status}$
 
   \EndFunction
