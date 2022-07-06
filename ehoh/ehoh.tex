@@ -131,9 +131,9 @@ $\cst{g}\;\cst{a}$, $\cst{a}$, $\cst{b}$ but also the ``prefix'' subterms
 $\cst{f}$, $\cst{f}\;(\cst{g}\;\cst{a})$, $\cst{g}$.
 \begin{rep}Many operations, including superposition and rewriting, require
 traversing all subterms of a term.\end{rep}
-Using the optimization, the prover traverses subterms recursively in a
-first-order fashion, considering all the prefixes of a given subterm
-together. %, at little additional cost.
+The prefix optimization allows the prover to traverse subterms recursively in a
+first-order fashion, and simultaneously consider the prefixes of a given subterm
+at almost no additional cost.
 %
 Our experiments (Sect.~\ref{sec:ehoh:evaluation}) show that Ehoh is
 almost as fast as E on first-order problems and can also prove
@@ -155,7 +155,7 @@ extend the syntax of this logic by making formulas a special case of terms (with
 and its semantics by interpreting the Boolean type $o$ as a domain of
 cardinality~2. Functional extensionality, the property that two functions are equal if they
 always return the same value when given the same arguments, can be obtained by
-adding suitable axioms can be obtained by adding suitable axioms
+adding suitable axioms
 \cite[Sect.~3.1]{bbcw-21-lfho}.
 
 \looseness=-1
@@ -241,8 +241,8 @@ $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau.$
 Atomic types are represented by integers, leading to efficient type comparisons.
 
 \looseness=-1
-In \lfhol{}, a type signature is simply a type~$\tau$, in which the
-type constructor $\to$ can be nested---e.g., $(\iota \to \iota)\allowbreak
+In \lfhol{}, function types are built using the type constructor $\to$, which can be
+arbitrarily nested---e.g., $(\iota \to \iota)\allowbreak
 \to \iota.$
 %
 A natural way to represent such types is to mimic their recursive
@@ -294,7 +294,7 @@ propose a flattened representation, as a generalization of E's existing data
 structures: Allow arguments to variables, for symbols let \verb|arity| be
 the number of \begin{conf}\emph{actual} arguments\end{conf}\begin{rep}actual
 arguments, %as opposed to the declared arity,
-and rename the field \verb|num_args|\end{rep}. This representation, often called
+and rename the field to \verb|num_args|\end{rep}. This representation, often called
 ``spine notation,'' % \cite{cervesato-pfenning-2003},
 is isomorphic to the standard definition of higher-order terms with binary
 application. It is employed in various higher-order reasoning systems,
@@ -410,7 +410,7 @@ and matching procedures to operate directly on \lfhol{} terms.
 
 \subsection{Unification}
 We present our unification procedure as a \begin{rep}nondeterministic \end{rep}transition system
-that generalizes Baader and Nipkow \cite{bn-98-tr-and-all-that}.
+that generalizes the one of Baader and Nipkow \cite{bn-98-tr-and-all-that}.
 A unification problem consists of a finite set~$\mathit{S}$ of unification constraints $s_i
 \unif t_i$, where $s_i$ and $t_i$ are of the same type.
 A problem is in \emph{solved form} if it has the form $\{ x_1 \unif t_1,\allowbreak
@@ -2111,7 +2111,7 @@ $\cst{f} \; (\cst{g} \; \cst{a} \; \cst{b}) \eq \cst{f} \; (\cst{h} \; \cst{g} \
 be the given clause,
 and suppose that $x \; \cst{a} \eq \cst{h} \; x$ is indexed.
 Under context $\cst{f}\>[\phantom{.}]$, Ehoh considers the subterms
-$\cst{g} \; \cst{a} \; \cst{b}$ and $\cst{h} \; x \; \cst{b}$. It finds the
+$\cst{g} \; \cst{a} \; \cst{b}$ and $\cst{h} \; \cst{g} \; \cst{b}$. It finds the
 prefix $\cst{g} \; \cst{a}$ of $\cst{g} \; \cst{a} \; \cst{b}$ in the
 %
 tree, with $\sigma = \{x \mapsto\nobreak \cst{g}\}$.
@@ -2171,7 +2171,7 @@ Moreover, we require that
 $x_i \neq y_i$, all variables in $\tuple{x}{K} \cdot \tuple{y}{K}$ are distinct,
 where $K = \{1, \ldots, n\} \setminus J$,
 and neither $\tuple{x}{K}$ nor $\tuple{y}{K}$ shares variables with $\tuple{x}{J}$.
-For example, given $\cst{add} \; a \; b \noteq \cst{add} \; a \; b' \mathrel\lor a \eq b'$,
+For example, given $\cst{add} \; a \; b \noteq \cst{add} \; a \; b' \mathrel\lor b \eq b'$,
 \infname{IR} can derive the existence of the inverse
 $\cst{sk}_1$ characterized by $\cst{sk}_{1\!} \; (\cst{add} \; a \; b) \; a \eq b$.
 %As a second example, from the clause

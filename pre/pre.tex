@@ -88,7 +88,7 @@ extensions of domain, valuation, interpretation, and model (as defined by Fittin
 \cite{mf-1996-fol}) from unsorted to many-sorted logic. The models we consider are
 \emph{normal}, i.e., they interpret $\eq$ as an equality relation. Usual notions
 of (un)satisfiability and (in)validity are assumed. We write
-$\ourmodel~\models_\xi~N$ to denote that a model $\ourmodel$ satisfies a clause
+$\ourmodel~\models_\xi~N$ to denote that a model $\ourmodel$ satisfies a formula
 set $N$, for a variable assignment $\xi$. If $\ourmodel$ is a model of $N$
 (i.e., $\ourmodel$ satisfies it under every variable assignment), we simply write
 $\ourmodel \models N.$  Overloading notation, we write $M \models N$ to denote that
@@ -99,7 +99,7 @@ A {\em position} in a term is a tuple of natural numbers, with $\varepsilon$
 denoting the empty tuple. {\em Subterms} and positions are inductively defined
 as follows. The term $t$ is a subterm of itself at position $\varepsilon$. If
 $s$ is a subterm of $t_i$ at position $p$, then $s$ is a subterm of
-$\cst{f}(\tuplen{t})$ at position $i.p$. A {\em context} is a term with zero or
+$\cst{f}(\tuplen{t})$ at position $i.p$ (with $.$ denoting prepending operation). A {\em context} is a term with zero or
 more subterms replaced by a hole $\square$. We write $C[\overline{u}_n]$ for the
 term resulting from filling in the holes of a context $C$ with the terms
 $\overline{u}_n$, from left to right. We say a term is {\em ground} if it has no
@@ -111,7 +111,7 @@ terms of the same type. Substitutions map only finitely many variables to terms
 other than the variable itself. This is denoted as $\{ x_1 \mapsto t_1, \ldots,
 x_n \mapsto t_n \}$ where $x_i$ are variables that are not mapped to themselves.
 Applying a substitution $\sigma$ to a term $t$, denoted $\sigma(t)$, results in
-replacing all mapped variables by the corresponding terms.
+replacing all variables of $t$ by the corresponding values of the mapping $\sigma$.
 The composition $\varrho\sigma$ of substitutions is defined by
 $\left(\varrho\sigma\right)t=\varrho\left(\sigma (t)\right)$. We call a substitution $\sigma$ {\em grounding}
 if $\sigma(x) \not= x$ implies that $\sigma(x)$ is ground.
@@ -468,9 +468,9 @@ literals (\infname{RN}):
 
 \[
 \namedsimp{RN}{s \eq t \qquad u \noteq v \llor D}
-              {s \eq t \qquad \sigmacl{u[p \leftarrow \sigma(t)] \eq v \llor C \llor D}}
+              {s \eq t \qquad u[p \leftarrow \sigma(t)] \noteq v  \llor D}
 \]
-where $\sigma = \mgu(u|_p, s)$ and $\sigma(s) \succ \sigma(t)$.
+where $\sigma(s) = u|_p$ and $\sigma(s) \succ \sigma(t)$.
 
 
 Simple rules such as removing duplicate literals, literals of the form $s \noteq
