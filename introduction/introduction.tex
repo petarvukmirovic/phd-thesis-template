@@ -18,7 +18,7 @@ it intensified at the end of 19th and the beginning of 20th century
 \cite{jf-01-modern-logic}. Researchers in that time were mostly interested in
 finding a formal language that is expressive enough to describe many
 mathematical theories, yet intuitive and understandable enough to allow
-reasonably simple formal reasoning systems. Arguably, first-order logic seemed to satisfy
+reasonably simple formal reasoning. First-order logic became a commonly used system that satisfies
 both requirements.  This formalism not only allows one to model simple logical
 relations such as ``if it rains, the road is muddy'' (or formally $\cst{rains}
 \iimplies \cst{muddy}$), but also to quantify over objects as in ``all people
@@ -94,8 +94,9 @@ verification projects can take years to finish. Thus, providing some level of pr
 can substantially increase productivity of users of proof assistants.
 
 Integrating proof automation directly into the proof assistant is not an easy task.
-Most proof assistants are based on variants of higher-order logic, which is more
-expressive than first-order logic, but harder to automate as in general it does not even allow complete
+Most proof assistants are based on variants of higher-order logic, a logic expressive enough to
+describe complex mathematical theories
+out of reach for first-order logic.  However, it is harder to automate as in general it does not even allow complete
 proof calculi. To provide some level of automation, proof assistant developers
 use the efficient first-order provers as follows. First, the proof goal is
 translated from higher-order to first-order logic. Then the first-order prover
