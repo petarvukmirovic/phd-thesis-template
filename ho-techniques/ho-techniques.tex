@@ -427,7 +427,8 @@ symbols, proceeding from the outside inwards; this method corresponds to the one
 described in the previous chapter. For example, a clause $C \llor
 \neglit{(\cst{p} \iand \cst{q})}$ is transformed into $C \llor \neglit{\cst p}
 \llor \neglit{\cst q}$. The calculus also supports \emph{inner} delayed
-clausification, which uses only the core calculus rules to clausify problems.
+clausification, which does not enforce clausifying logical symbols in top-down direction, 
+and uses only the generating calculus rules to clausify problems.
 Even though this is the laziest approach to clausification, the earlier
 evaluation \cite{bbtv-21-full-ho-sup} showed that this
 approach is inefficient. Thus, we focus only on the outer rules.
@@ -573,7 +574,7 @@ We assessed it in the best configuration from
 Figure~\ref{fig:avatar-clause}, \relax{DCS}$-$\relax{LA}. With this change ($+$\relax{BI}),
 Zipperposition proves \NumberOK{1700} TPTP problems and \NumberOK{456} SH
 problems.
-On TPTP, even though $+$\relax{BI} solves \NumberOK{three} problems less
+On TPTP, even though $+$\relax{BI} solves \NumberOK{three} problems fewer
 than \relax{DCS}$-$LA, it is very useful: \NumberOK{41}
 problems can be proved with $+$\relax{BI} but not with \relax{DCS}$-$\relax{LA}. 
 Conversely, \NumberOK{44} problems are solved with \relax{DCS}$-$\relax{LA},
@@ -651,7 +652,7 @@ of a subterm in $s$, and $s$ occurs in a literal $l \in \{s \eq t{,}\; s \not\eq
 t\}$ of a clause $C$, the green position of the same subterm in $C$ is denoted by $l.s.p$.
 \osup{} mandates additional restrictions on the Boolean selection function:
 $\itrue$, $\ifalse$, and variable-headed terms cannot be selected; for literals
-$s \eq t$, neither $s$ nor $t$ cannot be selected; if $s$ (or $t$) contains a
+$s \eq t$, neither $s$ nor $t$ can be selected; if $s$ (or $t$) contains a
 variable $X$ as a green subterm and $X\> \tuplen{u}$, with $n \ge 1$, is a
 maximal term of $C$, then $s$ (or $t$) cannot be selected.
 
@@ -740,7 +741,7 @@ the terms in the chosen context, we choose the ones that are maximal with
 respect to $\vartriangleright$.
 
 Ganzinger and Stuber considered Boolean subterm selection for their extension of
-first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus requires
+first-order superposition with interpreted Boolean type \cite{gs-05-boolsup}. Unlike our calculus, their calculus
 only allows the selection of subterms that occur in negative green positions, defined below.
 
 \begin{defi}[Polarity of green positions]
@@ -1118,7 +1119,7 @@ to fill $P$.
 \begin{exa} 
   \begin{sloppypar}
   In this example we simplify the notation by writing positive predicate literals
-  $\poslit{s}$ as $s$ and negative predicate literals $\neglit{t}$ as $\neg t$.
+  $\poslit{s}$ as $s$ and negative predicate literals $t \noteq \itrue$ as $\neg t$.
   Consider the unsatisfiable two-clause problem $\{ X \, (\cst{f} \,
   \cst{a}) \not\eq \cst{f} \, (X \, \cst{a}) \lor \cst{p} \, (X \, \cst{a}),\allowbreak
   \neg \cst{p} \, (\cst{f}^{100} \, \cst{a})  \}$ and a selection function which
@@ -1218,7 +1219,7 @@ unification procedure and a pragmatic, terminating variant. The
 pragmatic variant was used directly---all the inference conclusions were put
 immediately in $P$, bypassing $Q$. The complete variant, which relies on
 possibly infinite streams and is much more prolific, proved only 15  problems
-less than the most competitive pragmatic variant. Furthermore, it proved 19
+fewer than the most competitive pragmatic variant. Furthermore, it proved 19
 problems not proved by the pragmatic variant.
 %
 This shows that our given clause procedure, with its heuristics, allows the

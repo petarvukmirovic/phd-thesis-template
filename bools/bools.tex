@@ -135,7 +135,7 @@ A {\em signature} is a quadruple $(\Sigmaty, \Vty, \Sigma, \VV)$ where $\Sigmaty
 set of type constructors, $\Vty$ is a set of type variables and $\Sigma$ and
 $\VV$ are sets of constants and term variables, respectively. We require nullary
 type constructor $o$ as well as binary constructor $\rightarrow$
-to be in $\Sigmaty$. A type $\tau, \upsilon$ is either a type variable $\alpha \in
+to be in $\Sigmaty$. Types $\tau, \upsilon$ are either type variables $\alpha \in
 \Vty$ or of the form $\kappa(\tau_1, \ldots \tau_n)$ where $\kappa$ is an
 $n$-ary type constructor. We write $\kappa$ for $\kappa()$, $\tau \rightarrow
 \upsilon$ for $\rightarrow(\tau, \upsilon)$, and we drop parentheses to shorten 
@@ -273,7 +273,7 @@ we change the first requirement on the order to $\ifalse \succ
 
 \newcommand{\eqneq}{\mathrel{\dot{\eq}}}
 These two rules hoist Boolean subterms $f$ to the literal level; therefore,
-some results of \infname{Cases} and \infname{CasesSimp} will have literals of the form $f \eq \itrue$ (or
+some conclusions of \infname{Cases} and \infname{CasesSimp} will have literals of the form $f \eq \itrue$ (or
 $f \noteq \itrue$) where $f$ is not an atom. This introduces the need for the rule
 called immediate clausification (\infname{IC}), where $\tuple{D}{m}$ are defined below:
 %
@@ -523,7 +523,8 @@ $ \iforall xy. \,
 Intuitively, it embodies the principle that if two terms are indistinguishable by propositions,
 they must be equal.
 Leibniz equality often appears in TPTP problems  \cite{gs-17-tptp}. Since modern provers have native support
-for equality, it is usually beneficial to recognize and replace occurrences of Leibniz equality.
+for equality, it is usually beneficial to recognize and replace occurrences of Leibniz equality by the natively
+supported one.
 
 Before we did our modifications, Zipperposition had a powerful rule that
 recognizes clauses that contain variations of Leibniz equality and instantiates
@@ -1094,14 +1095,14 @@ success rate increases to 1653. We determined that including or excluding the
 conclusion $D$ of \infname{Choice}, after it is simplified, makes no difference.
 Counterintuitively, disabling the \infname{BoolSimp} rule results in 1640 problems,
 which is only 6 problems short of configuration b. Disabling the \infname{Abs} and
-\infname{Interpret$\lambda$} rules results in solving 25 and 31 problems less,
+\infname{Interpret$\lambda$} rules results in solving 25 and 31 problems fewer,
 respectively. The raw data show that in total, using configurations from Figure
 \ref{fig:cases} to Figure \ref{fig:bool-rules}, 1682 problems can be solved.
 
 Last, we compared our approach to alternatives. Axiomatizing Booleans brings
 Zipperposition down to a grinding halt: only 1106 problems can be solved using
 this mode. On the other hand, preprocessing is fairly competitive: it solved
-only 8 problems less than the b configuration.
+only 8 problems fewer than the b configuration.
 
 
 \ourpara{Comparison with Other Higher-Order Provers} 

@@ -107,7 +107,7 @@ cannot be solved and the rules which are necessary to solve them.
 While preparing for the following year's CASC competition, we found problems
 that occur in practice for which the rules of \osup{} are necessary. However,
 these problems occur in less than one percent of the whole TPTP library.
-Furthermore, some of \osup{}'s rule are so explosive that they are disabled in
+Furthermore, some of \osup{}'s rules are so explosive that they are disabled in
 most CASC portfolio configurations.
 
 This led us to take a radically different approach when extending Ehoh to
@@ -131,7 +131,7 @@ benchmarks: \ehohii{} also excels on TPTP benchmarks, trailing slightly behind
 Zipperposition. In the coming months we plan to replace Ehoh by \ehohii{} in Sledgehammer.
 As Ehoh is already one of the most successful Sledgehammer backends,
 this will further improve the efficiency of hundreds of mathematicians and computer scientists using Isabelle.
-By manually expecting the TPTP benchmarks that are out of reach
+By manually inspecting the TPTP benchmarks that are out of reach
 for \ehohii{}, but within the reach of Zipperposition, we realized that resolving the lack of
 dynamic clausification might be the weight necessary to tip the scales in
 favor of \ehohii{} on TPTP benchmarks. 
@@ -228,7 +228,7 @@ Zipperposition can find them without the use of a backend.
 problems coming from proof assistants. However, its performance on TPTP problems is
 slightly behind Zipperposition. We plan to further investigate the benchmarks on
 which \ehohii{} fails, but that are proved by Zipperposition. One of the first
-features we plan implement is dynamic clausification, which can possibly help
+features we plan to implement is dynamic clausification, which can possibly help
 improve \ehohii{}'s performance on first-order problems as well. We also plan to
 experiment with implementing some of the \osup{} rules necessary for
 completeness such as \infname{FluidSup}. Heuristics for \ehohii{} are trained on

@@ -251,8 +251,8 @@ applied if the $\selected{\text{grayed}}$ constraint is selected.
       (\{\lambda \overline{z}_m. \, s' \unif \lambda \overline{z}_m. \, t'\, z_{n+1} \ldots z_m\}\uplus E, \sigma)$\\
       % where $n \geq m$ and $t'=\{y_1\mapsto x_1,\ldots,y_m\mapsto x_m\}t$
       where $m \geq n$, $\overline{x}_m \not= \overline{y}_n$, $s$ and $t$ are not $\lambda$-abstractions,
-      $\overline{z}_m$ are bound variables fresh with respect to $s$ and $t$, $s' = \{x_1 \mapsto z_1, \ldots, x_m \mapsto z_m \}$,
-      and $t' = \{y_1 \mapsto z_1, \ldots, y_n \mapsto z_n \}$
+      $\overline{z}_m$ are bound variables fresh with respect to $s$ and $t$, $s' = \{x_1 \mapsto z_1, \ldots, x_m \mapsto z_m \}\,s$,
+      and $t' = \{y_1 \mapsto z_1, \ldots, y_n \mapsto z_n \}\,t$
   % \smallskip
   \item[\rm\unifrulename{Normalize$_\beta$}]
       $(\{\selected{\lambda \overline{x}. \, s \unif \lambda \overline{x}. \, t}\}\uplus E, \sigma) 

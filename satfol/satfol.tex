@@ -101,7 +101,7 @@ The last technique we study is \emph{blocked clause elimination} (Sect.\
 logic has produced good results when used as a preprocessor, especially on
 satisfiable problems \cite{ksstb-2017-blockedfol}. We explore more ways to use
 blocked clause elimination on satisfiable problems, including using it to
-establish equisatisfiability with an empty clause set or as an inprocessing
+establish equisatisfiability with the empty clause set or as an inprocessing
 rule. Unfortunately, we find that its use as inprocessing can compromise the
 refutational completeness of superposition.
 
@@ -1681,9 +1681,9 @@ Adding and removing GALs preserves and reflects satisfiability:
 For first-order logic without equality, a clause $L \cor C$ is blocked if all its
 $L$-resolvents are tautologies \cite{ksstb-2017-blockedfol}. The $L$-resolvent
 between $L \cor C$ and $\neglit{L_1} \cor \cdots \cor \neglit{L_n} \cor
-D$ (which are renamed apart) is $\sigmacl{C \cor D}$, where $\sigma$ is the MGU
+D$ (renamed apart) is $\sigmacl{C \cor D}$, where $\sigma$ is the MGU
 of the literals $L, L_1, \ldots, L_n$.
-Given a Herbrand model $\ourmodel$ of a problem, the following procedure
+Given a Herbrand model $\ourmodel$ of a clause set $N$, the following procedure
 removes all clauses while preserving satisfiability:
 
 \begin{enumerate}
@@ -1823,7 +1823,7 @@ $K_\mathrm{len}$ and $K_{\mathrm{imp}}$.
 
   \Procedure{AddImplication}{$L_\mathrm{a}{,}\> L_\mathrm{c}{,}\> C$}
     \If{$\impmap[\sigmaterm{L_\mathrm{a}}] \not = \emptyset$ for some renaming $\sigma$} \label{statement:alpha}
-      \State $(L_\mathrm{a}, L_\mathrm{c}) \gets (\sigmaterm(L_\mathrm{a}), \sigmaterm{L_\mathrm{c}})$
+      \State $(L_\mathrm{a}, L_\mathrm{c}) \gets (\sigmaterm{L_\mathrm{a}}, \sigmaterm{L_\mathrm{c}})$
     \EndIf
 
    %  \vspace{0.1em}
