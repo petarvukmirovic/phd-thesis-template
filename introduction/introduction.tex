@@ -9,9 +9,9 @@ Unbothered and uninterested, I continued playing Fruit Ninja.
 
 Many years later I started studying various formal methods in computer science.
 There I learned the value of formal, mathematical language and finally
-understood him. Not only does using a rigorous mathematical language avoid the
+understood it. Not only does using a rigorous mathematical language avoid the
 ambiguity of the natural one, it allows us to use the formal rules of reasoning
-to make conclusions from initial arguments in a trustworthy manner. 
+to make conclusions from initial premises in a trustworthy manner. 
 
 Though the interest for rigorous and formal reasoning dates back to Aristotle,
 it intensified at the end of 19th and the beginning of 20th century
@@ -54,7 +54,9 @@ Since its introduction, resolution was improved in many ways. Strategies and
 heuristics~\cite{lw-65-sos} to curb the explosion of the search space were
 introduced, as well as complete, but less explosive variants of the calculus
 \cite{cc-73-resolution-book}. Despite this progress, reasoning about equality of
-objects was still hard for these methods. This changed with introduction of
+objects was still hard for resolution. Even though some improvements, like
+paramodulation calculus \cite{nr-01-paramodulation}, improved this situation,
+reasoning with equality remained impractical. This changed with introduction of
 superposition~\cite{bg-94-superposition} in the early 1990s.
 
 Superposition is a complete calculus for first-order logic loosely based on
@@ -83,9 +85,9 @@ trustworthy manner. For example, the four-color theorem \cite{gg-2008-four-color
 and the Kepler conjecture \cite{th-2015-kepler} were proven inside proof assistants,
 ending the need to trust hundreds of pages of mathematical proofs. Proof
 assistants are also used to show correctness of complex software such as
-compilers \cite{xl-09-compcert} or operating systems kernels \cite{gk-09-sel4}.
+compilers \cite{xl-09-compcert} and operating systems kernels \cite{gk-09-sel4}.
 This verified software can be used in safety-critical scenarios such as nuclear
-plants or autonomous vehicles.
+plants and autonomous vehicles.
 
 The proofs need to be spelled out in minute detail to be accepted by a proof assistant.
 Even though many proof assistants offer some sort of automation, seemingly simple
@@ -110,10 +112,10 @@ The approach proved useful: on some benchmarks, around 77\% of the proof goals c
 discharged automatically using Sledgehammer \cite{bgkku-16-larning-fact-selector}. However, there is
 clearly some untapped potential in the approach as it communicates with
 automatic theorem provers through a translation. To bridge this translation gap,
-attempts were made to use higher-order automatic theorem provers instead of
+an attempt was made to use higher-order automatic theorem provers instead of
 first-order ones \cite{ns-13-leo2sh}. This proved unfruitful as state-of-the-art
-higher-order theorem provers of the time were primarily designed for small and
-tricky problems. On the other hand, problems coming from hammers consist of
+higher-order theorem provers at the time of this attempt were primarily designed for small
+problems requiring complex higher-order reasoning. On the other hand, problems coming from hammers consist of
 mostly first-order formulas, are rather large, and mostly require simple
 higher-order proof steps. An example of a problem that is seemingly simple, but whose translation to first-order logic
 is out of reach for even the best of first-order provers is \cite{bbbntvw-2x-mechanical-mathematicians}:
@@ -127,7 +129,7 @@ limits. More precisely, the left-hand side of the above equation is usually
 represented as $\cst{sum}(1, n, \lambda i. \, i\cst{*}i + 2\cst{*}i + 1)$. When
 translated to first-order logic, $\lambda$-abstractions, which are ubiquitous as
 all-purpose binders in higher-order logic, are obfuscated to the point that all
-but the simplest  reasoning about them are out of reach for first-order provers.
+but the simplest  reasoning about them is out of reach for first-order provers.
 However, for higher-order provers the crux of the proof is matching the axiom
 $\iforall i j f g.\, \cst{sum}(i, j, \lambda x. \, f \, x \, \cst{+} \, g\,x) \ieq
 (\cst{sum}(i, j, \lambda x. \, f \, x ) \, \cst{+} \, \cst{sum}(i, j, \lambda x. \, g
@@ -145,19 +147,19 @@ automatic theorem prover fulfills the following wishlist:
 This brings us to the topic of this thesis: \emph{How to develop a prover fulfilling this wishlist?}
 
 \paragraph{Our Approach} To improve the automatic reasoning for higher-order
-logic, we decided not to start from a blank slate and build a new theorem prover.
+logic, my colleagues and me decided not to start from a blank slate and build a new theorem prover.
 Rather, we start from a position of strength---from the state-of-the-art
 first-order superposition theorem prover E~\cite{scv-19-e23}---and extend it to higher-order logic. In this way, the points \ref{it:fo} and
 \ref{it:size} from the above wishlist are already fulfilled, as E is very
 efficient and deals well with large problems.
 
-We do not extend E to higher-order logic in one atomic step. Instead, we extend
+We did not extend E to higher-order logic in one atomic step. Instead, we extended
 it by adding support for features of higher-order logic one by one,
 which gradually increase its reasoning capabilities. With this gradual
-approach we make sure that after every extension, E's
+approach we made sure that after every extension, E's
 efficiency on first-order problems did not decrease. Thus, while trying
-to fulfill the point \ref{it:ho} from the wishlist we make sure that points
-\ref{it:fo} and \ref{it:size} are not affected.
+to fulfill the point \ref{it:ho} from the wishlist we made sure that points
+\ref{it:fo} and \ref{it:size} were not affected.
 
 We have identified three stops on the road to full higher-order logic. A
 distinguished feature of higher-order logic is that it not only supports
@@ -179,11 +181,10 @@ second stop is to support automatically synthesizing such functions.
 
 In higher-order logic we can make statements about statements. More precisely,
 it treats Boolean terms (formulas) as first-class citizens, enabling us to
-model some concepts in a more natural manner. For example, we can naturally
-represent statements such as ``what Jasmin says is true'' as $\iforall x. \,
-\cst{says}(\cst{jasmin}, x) \iimplies x$. The last stop is to support Boolean terms
-as first-class citizens.
-\pagebreak[2]
+model some concepts in a more natural manner. For example, statements such as
+``what Jasmin says is true'' can be represented naturally as $\iforall x. \,
+\cst{says}(\cst{jasmin}, x) \iimplies x$. The last stop is to support Boolean
+terms as first-class citizens.
 
 \section{Contributions}
 
@@ -204,7 +205,7 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   term indexing data structures to work with higher-order terms, and improve the
   performance of heuristics on higher-order problems.
   
-  Together with Alexander Bentkamp and other colleagues we developed
+  Alexander Bentkamp with the help of other colleagues and me developed
   a complete superposition calculus for the second phase described above
   \cite{bbtvw-21-sup-lam}. Due to the complexity of the calculus and many design
   decisions that had to be evaluated in a short amount of time we decided to
@@ -231,18 +232,19 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   of CASC \cite{gs-21-cascj10}. This time it was 20 percent points ahead of the second best
   prover, Satallax.
   
-  Inspired by this success, we implemented the complete superposition
-  calculus for higher-order logic with Booleans (i.e., the third phase), that we developed with Bentkamp and other
-  colleagues \cite{bbtv-21-full-ho-sup}. Developing this calculus helped us understand in which
-  ways our pragmatic extension was too weak to prove hard theorems of
-  higher-order logic. We further fine-tuned the heuristics and implemented new ways
-  to tame the search space explosion. In 2021 we released Zipperposition 2.1
-  which implemented these new features. It again won
-  CASC, outperforming Zipperposition 2. It was 16 percent points ahead of the
-  runner-up, Vampire 4.5 \cite{lkav-13-vampire}. 
+  Inspired by this success, we implemented the complete superposition calculus
+  for higher-order logic with Booleans (i.e., the third phase), that was
+  developed by Bentkamp with the help of other colleagues and me
+  \cite{bbtv-21-full-ho-sup}. Developing this calculus helped us understand in
+  which ways our pragmatic extension was too weak to prove hard theorems of
+  higher-order logic. We further fine-tuned the heuristics and implemented new
+  ways to tame the search space explosion. In 2021 we released Zipperposition
+  2.1 which implemented these new features. It again won CASC, outperforming
+  Zipperposition 2. It was 16 percent points ahead of the runner-up, Vampire 4.5
+  \cite{lkav-13-vampire}. 
   
   Building on all the experience we gathered while working on Zipperposition,
-  we further extended Ehoh to full higher-order logic, obtaining a prover we call
+  we further extended Ehoh to full higher-order logic, obtaining a prover called
   \newehoh{}. We again modified the term representation, implemented new unification and
   matching algorithms, extended indexing data structures, and tweaked
   heuristics. Even though this extension has a larger scope than the original
@@ -253,7 +255,7 @@ heuristics to optimize the performance. We discuss those challenges in more deta
   A common thread for the extensions of both E and Zipperposition is that we
   heavily relied on the availability of established higher-order provers and the
   TPTP benchmark set. Whenever we noticed that there were problems E and
-  Zipperposition could not solve, but the competition could, we looked for an
+  Zipperposition could not solve, but other competitive provers could, we looked for an
   explanation for this issue. This explanation would usually be in the form of
   missing inference or heuristic. Then we would try to find more problems that
   have a similar pattern and see if the developed technique is useful on them.
@@ -395,7 +397,7 @@ year from 2013 to 2019.
 
 Various researchers also experimented with the idea of extending a first-order
 prover to higher-order logic. Beeson \cite{mb-04-lam-logic} implemented second-order
-unification and added $\lambda$-terms to one of the best superposition
+unification and added $\lambda$-terms to one of the best first-order
 provers at the time, Otter~\cite{mcc-03-otter}. Cruanes extended Zipperposition
 \cite{sc-15-simon-phd,sc-supind-17} with arithmetic, induction, and rudimentary support for
 higher-order logic. Bhayat and Reger implemented a complete superposition
