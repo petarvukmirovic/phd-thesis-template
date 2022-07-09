@@ -102,8 +102,8 @@ combinators, such as $\cst{map}$ on lists:
 
 Our vehicle is E\begin{rep} \cite{ss-02-brainiac,scv-19-e23}\end{rep},
 a prover developed primarily by Schulz. It is written in C and offers
-good performance, with more emphasis on ``brainiac''
-heuristics than on raw speed. E regularly scores among the top
+good performance. It gets its ``brainiac'' name by emphasizing 
+intelligent heuristics more than raw speed. E regularly scores among the top
 systems at CASC and is usually the strongest open-source prover in
 the relevant divisions. It also serves as a backend for
 competitive higher-order provers. We refer to our extended version of
@@ -152,8 +152,7 @@ higher-order logic (\lfhol{}) described by Bentkamp et al.\
 first-order logic.'' In the spirit of FOOL \cite{kotelnikov-16-fool}, we
 %% kotelnikov-15-fool
 extend the syntax of this logic by making formulas a special case of terms (without adding logical symbols to the signature),
-and its semantics by interpreting the Boolean type $o$ as a domain of
-cardinality~2. Functional extensionality, the property that two functions are equal if they
+and its semantics by interpreting the Boolean type $o$ as a two-element domain. Functional extensionality, the property that two functions are equal if they
 always return the same value when given the same arguments, can be obtained by
 adding suitable axioms
 \cite[Sect.~3.1]{bbcw-21-lfho}.
@@ -312,9 +311,7 @@ the prefix $\cst{f}\;\cst{a}.$ Similarly,
 $x$ and $x\;\cst{b}$ are represented by two distinct cells, $x()$ and
 $x(\cst{b})$, and there is no connection between the two occurrences of~$x$.
 %
-In particular,
-despite perfect sharing, their \verb|binding| fields are unconnected, leading
-to inconsistencies.
+In particular, when $x()$'s \verb|binding| field is updated, this does not affect the \verb|binding| of $x(\cst{b})$. 
 
 A potential solution would be to systematically traverse a
 clause and set the \verb|binding| fields of all cells of the form $x(\overline{s})$
@@ -360,7 +357,7 @@ robust option for superposition.
 In earlier work, Blanchette and colleagues have shown that only KBO can be
 generalized gracefully while preserving the necessary properties for
 superposition \cite{bbww-17-kbo,bww-17-rpo}. For this
-reason, we focus on KBO.
+reason, in this chapter, we focus on KBO.
 
 E implements L\"ochner's linear-time algorithm for KBO
 \cite{bl-06-kbo}, which relies on the \relax{tupling} method to store
@@ -368,8 +365,8 @@ intermediate results. % , avoiding repeated computations.
 It is straightforward to generalize the algorithm to compute the
 graceful \lfhol{} version of KBO \cite{bbww-17-kbo}.
 The main difference is that when comparing two terms $\cst{f} \; \tuple{s}{m}$
-and $\cst{f} \; \tuple{t}{n}$, because of partial application we may now
-have $m \not= n$; this required changing the implementation to
+and $\cst{f} \; \tuple{t}{n}$, because of partial application it is possible that $m \not= n$; 
+this required changing the implementation to
 perform a length-lexicographic comparison of the tuples $\tuple{s}{m}$ and
 $\tuple{t}{n}.$
 
@@ -727,8 +724,8 @@ is virtually as efficient as E on first-order terms.
   A unification algorithm for \lfhol{} can be derived from the above transition
   system, by committing to a strategy for applying the rules.
   %
-  This algorithm closely follows the Ehoh implementation, abstracting away from
-  complications such as prefix optimization. We assume a flattened
+  An algorithm which closely follows the Ehoh implementation, abstracting away from
+  complications such as prefix optimization is presented below. We assume a flattened
   representation of terms; as in Ehoh, each variable stores the term it is bound
   to in its \textit{binding} field (Sect.~\ref{sec:ehoh:types-and-terms}).
   We also rely on a \textsc{ApplySubst} function, which applies the
@@ -814,7 +811,7 @@ We then write that ``$t$ is an instance of $s$'' or
 ``$s$~generalizes~$t$.'' %and call $\sigma$ a \emph{generalizing substitution}.
 We are interested in most general generalizations (MGGs).
 Matching can be reduced to unification by treating variables in $t$ as
-nullary symbols \cite{bn-98-tr-and-all-that}, but E implements it
+nullary symbols \cite{bn-98-tr-and-all-that}, but E implements matching
 separately.
 
 Matching can be specified abstractly as a transition system on matching constraints
@@ -981,14 +978,15 @@ u$ where the other has $s\; (t\; u).$ However, these two subterms cannot both
 be well typed.
 
 \looseness=-1
-When generalizing the data structure to \lfhol, we face a complication
-due to partial application. First-order terms can only be stored in leaf nodes,
-but in Ehoh we must also be able to represent partially applied terms,
-such as $\cst{f}$, $\cst{g}$, or $\cst{g}\;\cst{a}$ (assuming, as above, that
-$\cst{f}$ is unary and $\cst{g}$ is binary). Conceptually, this can be solved
-by storing a Boolean on each node indicating whether it is an accepting state.
-In the implementation, the change is more subtle, because several parts of E's
-code implicitly assume that only leaf nodes are accepting.
+When generalizing the data structure to \lfhol, we face a complication due to
+partial application. First-order terms can only be stored in leaf nodes, but in
+Ehoh we must also be able to represent partially applied terms, such as
+$\cst{f}$, $\cst{g}$, or $\cst{g}\;\cst{a}$ (assuming, as above, that $\cst{f}$
+is unary and $\cst{g}$ is binary). Conceptually, this can be solved by storing a
+Boolean on each node indicating whether it is an accepting state (i.e., if it
+corresponds to a term in the indexed set). In the implementation, the change is
+more subtle, because several parts of E's code implicitly assume that only leaf
+nodes are accepting.
 
 \newcommand\TermStack{\ensuremath{T}}
 \newcommand\BTStack{\ensuremath{P}}
@@ -1605,8 +1603,7 @@ store generalizations of the query term in $D$.
   procedure moves the iterator to the next node that has not been explored in the
   search for generalization, or \textit{Null} if the entire tree has been
   traversed. It first goes through all child nodes labeled with a variable before
-  possibly visiting the child node labeled with a function symbol. We assume that
-  we can iterate through the children of a node using a function
+  possibly visiting the child node labeled with a function symbol. The children of a node can be iterated through using a function
   \textsc{NextVarChild} that, given a tree node and iterator through children,
   advances the iterator to the child representing the next variable. Furthermore, we
   assume that the iterator can also be in the distinguished states \textit{Start}
@@ -1692,13 +1689,13 @@ store generalizations of the query term in $D$.
 The pseudocode uses a slightly different representation of backtracking tuples
 than ${\Pdtarrow}$. In the \textsf{AdvanceX} rule,
 $\sigma$ changes only if the variable~$x$ was previously not bound.
-Instead of creating and storing substitutions explicitly, we simply remember
+Instead of creating and storing substitutions explicitly, the algorithm simply remembers
 whether the variable was bound in this step or not, in the
-$\mathit{var\_unbound}$ tuple component. Then we rely on the label~$x$ of the
+$\mathit{var\_unbound}$ tuple component. Then it relies on the label~$x$ of the
 current node and its \textit{binding} field to carry the substitutions.
-Similarly, since our strategy is to traverse the tree by first visiting the
-variable-labeled child nodes, we need to remember how far we have come with
-this traversal. We store this information in the $\mathit{c\_iter}$ tuple
+Similarly, since the strategy is to traverse the tree by first visiting the
+variable-labeled child nodes, it needs to remember how far it has come with
+this traversal. This information is stored in the $\mathit{c\_iter}$ tuple
 component.
 
 \subsection{Fingerprint Indices}
@@ -2128,7 +2125,7 @@ axioms for every function type occurring in the problem
 \cite[Sect.~3.1]{bbcw-21-lfho}. The evaluation by Bentkamp et al.\ of such
 an approach was discouraging \cite[Sect.~6]{bbcw-21-lfho}, so we decided to
 support extensionality via inference rules in Ehoh. We implemented two well-known
-incomplete rules we had experimented with in the context of Zipperposition.
+incomplete rules my colleagues and me had experimented with in the context of Zipperposition.
 
 The negative and positive extensionality (\infname{NE} and \infname{PE}) rules
 are defined as
@@ -2186,7 +2183,7 @@ $\cst{sk}_1$ characterized by $\cst{sk}_{1\!} \; (\cst{add} \; a \; b) \; a \eq 
 \section{Heuristics}
 \label{sec:ehoh:heuristics}
 
-E's heuristics are largely independent of the logic used and work
+E's heuristics are largely independent of the logic used, and work
 unchanged for Ehoh. Yet, in preliminary experiments, we noticed that E proved
 some \lfhol{} benchmarks quickly using the applicative encoding
 (Sect.~\ref{sec:ehoh:introduction}), whereas Ehoh timed out.
@@ -2230,7 +2227,7 @@ information carried by such symbols.\begin{rep} Since $\cst{@}_{\iota_2,\iota_3}
 conjecture symbol, some weight generation scheme could give it a low weight,
 which would also impact the second clause. By contrast, the native \lfhol{}
 clauses share no symbols; the connection between them is hidden in the types
-of variables and symbols, which are ignored by the heuristics.
+of variables and symbols that are ignored by the heuristics.
 
 \end{rep}
 
@@ -2294,7 +2291,7 @@ one negative literal. If no literal is selected, all \emph{maximal}
 literals become inference literals.
 %Given a clause $L_1 \lor \cdots \lor L_n$, a literal selection function
 %returns either $\{L_i\}$ for some $i$ or $\emptyset$.
-The most widely used function is probably
+The selection function E uses most often is probably
 \texttt{SelectMaxLComplexAvoidPosPred}, which we abbreviate to
 \texttt{SelectMLCAPP}. It selects at most one negative literal, based
 on size, absence of variables, and maximality of the literal in the clause.
@@ -2305,10 +2302,11 @@ on size, absence of variables, and maximality of the literal in the clause.
 \begin{rep}
   Intuitively, applied variables can potentially be unified with more terms than
   terms with rigid heads. This makes them prolific in terms of possible
-  inference partners, a behavior we might want to avoid. On the other hand, shorter proofs
-  might be found if we prefer selecting applied variables. To cover both
-  scenarios, we implemented selection functions that prefer or defer selecting
-  applied variables. % and that break ties using \texttt{SelectMLCAPP}.
+  inference partners, a behavior that can lead to creating many unnecessary
+  clauses and should thus be avoided. On the other hand, shorter proofs might be
+  found if we prefer selecting applied variables. To cover both scenarios, we
+  implemented selection functions that prefer or defer selecting applied
+  variables. % and that break ties using \texttt{SelectMLCAPP}.
   
   Let $\mathit{max}(L)=1$ if $L$ is a maximal literal of the clause it appears
   in; otherwise, $\mathit{max}(L) = 0$. Let $\mathit{appvar(L)} = 1$ if $L$ is a
@@ -2343,11 +2341,11 @@ on size, absence of variables, and maximality of the literal in the clause.
   the candidates.
   The priorities provide a crude partition, whereas the weights order the clauses
   within a partition.
-  E's main loop visits, in round-robin fashion, a set of priority queues. From a given
+  E's main loop visits a set of priority queues in round-robin fashion. From a given
   queue, the clause with the highest priority and the smallest weight is selected.
   \begin{rep}%
   Typically, one of the queues will use the clauses' age as priority, to ensure
-  fairness.
+  fairness (i.e., that each nonredundant clause is eventually chosen).
   \end{rep}
   
   E provides template weight functions that allow users to fine-tune parameters
@@ -2436,7 +2434,7 @@ restarting the prover for each configuration.
 }
 Configurations that are suitable for a wide range of problems have emerged over
 time. One of them is the configuration that is most often chosen by E's \emph{auto}
-mode. We call it \emph{boa} (``best of \emph{auto}'')\begin{conf}.\end{conf}\begin{rep}:
+mode when running on TPTP benchmarks. We call it \emph{boa} (``best of \emph{auto}'')\begin{conf}.\end{conf}\begin{rep}:
 %
 %%% TYPESETTING: TEMPORARILY DISABLED LEFTMARGIN (?)
 \begin{description}[labelwidth=\widthof{Precedence generation:}]
@@ -2481,7 +2479,7 @@ unsound, because it introduces symbols that can be used to instantiate
 higher-order variables.
 %
 One solution proposed by Miller \cite[Sect.~6]{dm-87-compact-proofs} is to ensure that
-Skolem symbols are always applied to a minimum number of arguments.
+Skolem symbols are always applied to a minimal number of arguments.
 %Accordingly, the version of \lfhol{} introduced by Bentkamp et al.\
 %\cite{bbcw-21-lfho} distinguishes between mandatory and optional
 %arguments.
@@ -2510,9 +2508,9 @@ the $\{y \mapsto \lambda x.\; x\}$ instance and $\beta$-reduction.)
 %
 For the moment, we have simply disabled definition unfolding in Ehoh. We have
 not measured the effect of this choice, but we conjecture it is not substantial.
-Namely, appropriately chosen term order will result in a similar outcome without
+Appropriately chosen term order will result in a similar outcome without
 removing the defined symbol. We will enable definition unfolding again once we
-have added support for $\lambda$-terms.
+have added support for $\lambda$-terms (Chapter \ref{ch:ehoh2}).
 
 Higher-order logic treats formulas as terms of Boolean type, erasing
 the distinction between terms and formulas. As a consequence, formulas might appear
@@ -2611,7 +2609,7 @@ $\tmeasure(\psi')$, which is less than $\tmeasure(\psi) = 3^k (1 +
 The output may contain $\itrue$, $\ifalse$, or Bool\-ean
 variables as nested formulas. Since E was first developed as an untyped prover,
 unification of a variable with a Boolean constant was disallowed to avoid
-unsoundness. We needed to undo this in Ehoh. Ehoh must also remove trivial
+unsoundness. We needed to undo this in Ehoh. Ehoh also removes trivial
 literals $\ifalse \eq \itrue$ and $\itrue \noteq
 \itrue$ that emerge during proof search.
 \end{rep}
@@ -2623,7 +2621,7 @@ literals $\ifalse \eq \itrue$ and $\itrue \noteq
 How useful are Ehoh's new heuristics? And how does Ehoh perform compared with
 E, used directly or in tandem with the
 applicative encoding, and compared with other provers?
-To answer the first question, we evaluated each new parameter independently. From
+To answer the first question, we evaluated each new heuristic scheme independently. From
 the empirical results, we derived a new configuration optimized for \lfhol{}.
 For the second question, we compared Ehoh's success
 rate\begin{rep} and speed\end{rep} on \lfhol{} problems with
@@ -2645,7 +2643,7 @@ nodes equipped with Intel Xeon E5-2609\,0 CPUs clocked at 2.40\,GHz.
 We used the \emph{boa} configuration as the basis to evaluate the new
 heuristic schemes. For each heuristic parameter we tuned, we changed only its
 value while keeping the other parameters the same as for \emph{boa}.
-\begin{rep}This gives an idea of how each parameter affects overall
+\begin{rep}This gave an idea of how each parameter affected overall
 performance.\end{rep}
 All heuristic parameters were tested on a 5012~problem suite generated
 using Sledgehammer, consisting of four variants of the Judgment Day
@@ -2727,7 +2725,7 @@ combined schemes appear to be less efficient than the type-aware schemes.
   \texttt{SelectMLCAPPPreferAppVar}.
 % \end{sloppypar}
 
-Clause selection is the heuristic component that we extended the most. We must
+Clause selection is the heuristic component that we extended the most. We had to
 assess the effect of a new heuristic weight function, a multiplier for the
 occurrence of top-level applied variables, and clause priority based on the
 number of top-level applied variables.
@@ -2747,12 +2745,12 @@ number of top-level applied variables.
 \end{figure}
 
 To test the effect of the new type-based weight function, we replaced
-\emph{boa}'s queue, which uses
+\emph{boa}'s queue that uses
 \texttt{4.CRS\-Weight(}\ldots\texttt{)}, with the queue ordered by
-\texttt{4.CRSTypeWeight(}\ldots\texttt{)}. We call the original
-heuristic \texttt{W} and the type-aware alternative \texttt{TW}.
+\texttt{4.CRSTypeWeight(}\ldots\texttt{)}. The original
+heuristic is called \texttt{W} and the type-aware alternative \texttt{TW}.
 %
-We chose nine values for testing the effect of the applied
+We intuitively chose nine values for testing the effect of the applied
 variable multiplier \textit{appv\_mult}.
 %
 Figure \ref{fig:ehoh:clauseweight-fun-eval} summarizes the results of combining
@@ -2858,7 +2856,7 @@ and higher-order problems. Similarly, Zipperposition does not use E as backend w
 it is run on first-order problems
 and uses different heuristics on first-~and higher-order problems.
 The genuine higher-order provers have
-the unfair advantage that they can instantiate higher-order
+the advantage that they can instantiate higher-order
 variables with $\lambda$-terms. % (or equivalent SK-style combinator terms).
 Thus, some formulas that are
 provable by these systems may be nontheorems for \appE{} and Ehoh\confrep{}{, or
@@ -2868,7 +2866,7 @@ An example is the conjecture $\exists f.\>\forall x\> y.\; f\>x\;y \eq
 \cst{g}\;y\;x$, whose proof requires taking $\lambda x\> y.\; \cst{g}\;y\;x$
 as the witness for~$f$.
 
-We ran all provers except Satallax (which only supports THF) on first-order
+We ran all provers except Satallax (which supports only THF) on first-order
 benchmarks to measure the overhead introduced by our extensions, as
 well as that entailed by the applicative encoding.
 Figure~\ref{fig:main-eval} gives the number of problems each system proved.
@@ -2923,7 +2921,7 @@ Third, it is advantageous to use the higher-order versions of the
   small, especially for SH512.
 %
 Fourth, the new \emph{hoboa} %configuration
-  outperforms \emph{boa} on
+  outperforms \emph{boa} on most
   higher-order problems, suggesting that it could be worthwhile to re-train
   \emph{auto} and \emph{autoschedule} based on \lfhol{} benchmarks
   and to design further heuristics.
@@ -2989,13 +2987,14 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
   state-of-the-art prover. In this thesis, the focus is on the second aspect.
   %TODO_PHD: another reference
   
-  The work described in this chapter required modifying many parts of the E
-  prover. The invariant that variables cannot be applied and that symbols are always
+  The work described in this chapter was large in scope: it required modifying almost all parts of the E
+  prover, from the parser, to the inference engine, to heuristics. 
+  The invariant that variables cannot be applied and that symbols are always
   passed the same number of arguments were entrenched in E's code,
   requiring hundreds of modifications. Nonetheless,
   %with a good understanding of the prover's inner working,
   %% Obvious, since Stephan is a coauthor. --JB
-  we found the generalization manageable and are now in a position to add
+  we found the generalization manageable. The generalization put us in a position to add
   support for $\lambda$-terms and higher-order unification, as discussed in Chapter~\ref{ch:ehoh2}.
   \end{rep}
   
@@ -3006,9 +3005,9 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
   Zipperposition by Cruanes et al.\ %, Vukmirovi\'c, and colleagues
   \cite{sc-15-simon-phd,sc-supind-17}. \hbox{Otter-$\lambda$}
   adds $\lambda$-terms and second-order unification to
-  the superposition prover Otter\begin{rep} \cite{mcc-03-otter}\end{rep}.
+  the first-order prover Otter\begin{rep} \cite{mcc-03-otter}\end{rep}.
   % The approach is pragmatic. , with little emphasis on completeness.
-  Zipperposition, also based on superposition, was extended
+  Zipperposition, based on superposition, was extended
   to Bool\-e\-an-free higher-order logic by Bentkamp et al.\
   \cite{bbtvw-21-sup-lam}. Its performance is a far cry from E's, but
   it is easier to modify.
@@ -3063,14 +3062,14 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
   %
   \begin{rep}%
   In practice, on problems with a large first-order component, translations
-  perform very well compared with the existing native provers
+  perform very well compared with native provers
   \cite{ns-13-leo2sh}. Largely thanks to Sledgehammer, Isabelle often came
   in a close second at CASC, even defeating Satallax in 2012
   \cite{gs-13-cascj6}.
   \end{rep}
   
   By removing the need for the applicative encoding, our work reduces
-  the translation gap. The encoding buries the \lfhol{} terms' heads under
+  the translation gap. The applicative encoding buries the \lfhol{} terms' heads under
   layers of $\cst{@}$ symbols. %\confrep{}{, which impacts the heuristics that inspect terms}.
   Terms double in size, cluttering the data structures, and twice as many
   subterm positions must be considered for inferences. Moreover, the encoding is
@@ -3091,7 +3090,7 @@ Zipperposition              & 3.81          & 1.60             & 5.09          &
 \label{sec:ehoh:conclusion}
 
 Despite considerable progress since the 1970s, until a few years ago higher-order automated
-reasoning has not assimilated some of the most successful methods for
+reasoning had not assimilated some of the most successful methods for
 first-order logic with equality, such as superposition. We presented a
 graceful extension of a state-of-the-art first-order theorem prover to a
 fragment of higher-order logic devoid of $\lambda$-terms. Our work
@@ -3107,6 +3106,6 @@ higher-order automation. Our aim is to turn it into a prover that excels on
 proof obligations arising in interactive verification, which tend to be
 large but \relax{only mildly higher-order} \cite{ns-13-leo2sh}.
 In Chapter \ref{ch:ehoh2} we describe the extension of Ehoh to full higher-order logic.
-It was heavily inspired by the techniques implemented in Zipperposition, which made it
-dominate the CASC competition in 2020 and 2021.
+It was heavily inspired by the techniques implemented in Zipperposition, which helped it
+dominate CASC in 2020 and 2021.
 \end{sloppypar}

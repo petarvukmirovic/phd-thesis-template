@@ -20,6 +20,7 @@
 
 \section{Propositional Logic}
 
+
 \emph{Atomic formulas} (\emph{atoms}) of propositional logic are propositional variables
 $\cst{p}, \cst{q}, \ldots$ and constants $\itrue$ and $\ifalse$. More complex
 formulas are built inductively using logical connectives $\inot, \iand, \ior,
@@ -51,7 +52,7 @@ objects and has a more complicated formula structure. There are many flavors of
 first-order logic, but in this thesis we consider monomorphic first-order logic
 with equality.
 
-We distinguish a set of base types $T$ which is required to have the Boolean
+We distinguish a set of base types $T$ which is required to include the Boolean
 type $o$, and a set of symbols $\Sigma$. To each symbol $\cst{f} \in \Sigma$ a
 tuple $(\tau_1, \ldots, \tau_{n}, \tau), n \geq 0$ of types is assigned, written
 $\cst{f} : (\tau_1, \ldots, \tau_{n}) \rightarrow \tau$. We say that $(\tau_1,
@@ -280,7 +281,7 @@ background concepts.
 \label{sec:pre:order}
 Superposition calculus is parameterized by a
 term order $\succ$ with the following properties:
-
+%
 \noindent\begin{tabular}{p{\dimexpr 0.3\linewidth-2\tabcolsep}p{\dimexpr 0.7\linewidth-2\tabcolsep}}
     \textit{Irreflexive} & For all terms $s$, $s \not\succ s$ \\
     \textit{Transitive} & For all terms $s, t, u$,  if $s\succ t$ and $t \succ u$ then $s \succ u$ \\ 
@@ -327,7 +328,7 @@ such that $\varrho = \theta\sigma$.
 A \emph{most general unifier} ({MGU}) is a
 unifier $\sigma$, such that for any other unifier $\varrho$, $\sigma$ is more general than $\varrho$. In first-order logic,
 the MGU is unique up to variable renaming. For example, $\cst{f}(X) \unif \cst{f}(Y)$ yields the MGU 
-$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient algorithms for computing MGUs \cite{hv-09-unifalgs}.
+$\{ X \mapsto Y\}$ or  $\{ Y \mapsto X \}$. First-order logic also admits efficient, linear-time algorithms for computing MGUs \cite{hv-09-unifalgs}.
 
 In higher-order logic, unification is performed modulo
 $\alpha\beta\eta$-equivalence. Under these conditions, the uniqueness of the MGU is not guaranteed. Consider the constraint $X \,
@@ -449,7 +450,7 @@ results in $\neg \cst{even}(Y) \llor \neg \cst{even}(\cst{b}) \llor
 
 The rules described above are used to generate new clauses from already derived
 ones. Even though orders and selection are used to reduce the search space,
-it still grows rather fast. To identify unnecessary clauses in the search
+many unnecessary clauses might be created. To identify unnecessary clauses in the search
 space, superposition features a \emph{redundancy criterion}
 \cite[Sect.~4.2.2]{bg-01-resolution}. We say that a ground clause $C$ is
 {\em redundant} in a ground set of clauses $N$ if it is entailed by a subset of
@@ -460,7 +461,7 @@ clauses does not affect completeness of superposition.
 
 Next to the four generating rules, superposition provers also use
 simplification rules, which are justified by the redundancy criterion. These
-rules effectively replace the pre\-mises with conclusions, and we denote them
+rules replace the pre\-mises with conclusions, and we denote them
 using double bars. In theory, the rules work by adding conclusions and then
 using them to show that premises are redundant; after this, premises can be eliminated. As
 an example of such a rule, let us introduce rewriting (demodulation) of negative
@@ -506,9 +507,9 @@ The provers we discuss in this thesis, E and Zipperposition, are both DISCOUNT-l
 
 \looseness=-1
 In Chapter \ref{ch:intro} we described a roadmap (consisting of three steps) to
-extend an efficient superposition prover to higher-order logic. Together with
-our colleagues we did the necessary theoretical work by extending the
-superposition calculus using the same roadmap:
+extend an efficient superposition prover to higher-order logic. My colleagues
+and me did the necessary theoretical work by extending the superposition calculus
+using the same roadmap:
 
 \begin{enumerate}
     \item Bentkamp, Blanchette, Cruanes, and Waldmann designed a complete
@@ -527,7 +528,7 @@ superposition calculus using the same roadmap:
     calculus is called Boolean $\lambda$-superposition, or shortly \osup{}.
 \end{enumerate}
 %
-Note that we use the name $\lambda$-superposition for both \lsup{}
+Note that in this thesis the name $\lambda$-superposition is used for both \lsup{}
 and \osup{}.
 
 \subsection{Theorem Provers}
@@ -552,7 +553,7 @@ This makes it attractive for fast evaluation of various promising extensions of
 superposition.
 
 \ourpara{E} E is a state-of-the-art first-order prover based on superposition.
-In the last decade, together with its derivatives, it has revolved around the
+In the last decade, together with its derivatives, it was usually the
 second place at the first-order division of the CASC theorem prover
 competition \cite{ss-96-casc}. It is open-source, written in C (without using any
 external libraries), and designed around efficient algorithms and data structures
