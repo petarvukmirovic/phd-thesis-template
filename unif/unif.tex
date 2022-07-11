@@ -90,11 +90,11 @@ We call algorithms that enumerate elements of the CSU for such fragments
 \emph{oracles}. Noteworthy fragments with oracles are first-order terms,
 patterns \cite{tn-93-patterns}, functions-as-constructors
 \cite{tl-16-facunif}, and a new fragment 
-we present in Sect.~\ref{sec:unif:solid-oracle}.
+presented in Sect.~\ref{sec:unif:solid-oracle}.
 %
 The unification procedures of Isabelle and Leo-III check whether the unification
 problem belongs to a decidable fragment, but we take this idea a step further by
-checking this more efficiently and for every subproblem arising during
+checking this more efficiently, and for every subproblem arising during
 unification.
 
 Second, the JP procedure computes many redundant unifiers. Consider the
@@ -124,15 +124,15 @@ common context above the position of disagreement, it cannot be easily adapted t
 eagerly decompose unification pairs. By contrast, our procedure is designed to decompose
 the pairs eagerly, never traversing a common context twice.
 
-Last, the JP procedure does not allow to apply substitutions and
-$\beta$-reduce lazily.
+Last, the JP procedure does not allow applying substitutions and
+$\beta$-reducing lazily.
 The rules of simpler procedures (e.g., first-order
-\cite{hv-09-unifalgs} and pattern unification \cite{tn-93-patterns}) depend only on
+\cite{hv-09-unifalgs} and pattern unification \cite{tn-93-patterns}) depend on only
 the heads of the unification pair.
 Thus, to
 determine the next step, implementations of these procedures need to
 substitute and
-$\beta$-reduce only until the heads of the current unification
+$\beta$-reduce until only the heads of the current unification
 pair are not mapped by the substitution and are not $\lambda$-abstractions. 
 Since the JP procedure is not based on the decomposition of unification pairs, 
 it is unfit for
@@ -187,7 +187,7 @@ $\mathcal{C}(\lambda x.\, s, \lambda y.\, t) = \lambda x.\,
 \mathcal{C}(s,\{y\mapsto x\}t)$; $\mathcal{C}(a\,\overline{s}_m,
 b\,\overline{t}_n) = \square$; $\mathcal{C}(a\,\overline{s}_m,
 a\,\overline{t}_m) = a\,\mathcal{C}(s_1,t_1)\,\ldots\,\mathcal{C}(s_m,t_m)$.
-Unless otherwise stated, we take unification constraint $s \unif t$ to be an
+Unless otherwise stated, we take the unification constraint $s \unif t$ to be an
 unordered pair of two terms of the same type. To ease notation, we do not write
 parentheses around application of substitutions to terms (or other objects containing terms);
 in other words we shorten $\sigma(\theta(\varrho(s)))$ to $\sigma\theta\varrho \, s$. When we write $\tau_1
@@ -226,11 +226,11 @@ forms a complete set of unifiers for $s$ and $t$. More generally, our procedure 
 unify a multiset $E$ of constraints by making the root of the unification tree
 $(E, \makeop{id})$.
 
-The procedure requires an infinite supply of fresh free variables. These fresh
-variables must be disjoint from the variables occurring in the initial multiset
-$E$. Whenever a transition $(E,\sigma) \newunifarrow (E',\sigma')$ is made, all
-fresh variables used in $\sigma'$ are removed from the supply and cannot be used
-again as fresh variables.
+The procedure requires an infinite supply of fresh free variables that must be
+disjoint from the variables occurring in the initial multiset $E$. Whenever a
+transition $(E,\sigma) \newunifarrow (E',\sigma')$ is made, all fresh variables
+used in $\sigma'$ are removed from the supply and cannot be used again as fresh
+variables.
 
 \looseness=-1
 The transitions are parameterized by a mapping~$\mathcal{P}$ that assigns a set
@@ -322,12 +322,12 @@ using different unifiers of the CSU, \unifrulename{Bind} can introduce branches
 using different substitutions in $\mathcal{P}$, and \unifrulename{Decompose}
 can be applied in parallel with \unifrulename{Bind}. 
 
-The form of the rules \unifrulename{OracleSucc} and \unifrulename{Bind} is similar: both
+The forms of the rules \unifrulename{OracleSucc} and \unifrulename{Bind} are similar: both
 extend the current substitution. However,
 they are designed following different principles. \unifrulename{OracleSucc} solves
 the selected unification constraint using an efficient algorithm applicable only
 to certain classes of terms. On the other hand, \unifrulename{Bind} is applied to
-explore the whole search space for any given constraint. To compute CSU using efficient oracles and to discover
+explore the whole search space for any given constraint. To compute a CSU using efficient oracles and to discover
 failures early, \unifrulename{Bind} is applicable only if \unifrulename{OracleSucc}
 (or \unifrulename{OracleFail}) is not.
 
@@ -335,7 +335,7 @@ Our approach is to apply substitutions and $\alpha\beta\eta$-normalize terms
 lazily. In this context, laziness means that the transitions
 \unifrulename{Normalize$_{\alpha\eta}$}, \unifrulename{Normalize$_{\beta}$}, and
 \unifrulename{Dereference} partially normalize and partially apply the constructed
-substitution just enough to ensure that the heads are the ones we would get if
+substitution just enough to ensure that the heads are the ones that would be obtained if
 the substitution was fully applied and the term was fully normalized. 
 Additionally, the transitions that modify the constructed substitution,
 \unifrulename{OracleSucc} and \unifrulename{Bind}, do not apply that substitution to the
@@ -356,8 +356,8 @@ In some cases, the addition of oracles lets the procedure terminate more often.
 
 In the literature, oracles are usually stated under the assumption that their
 input belongs to the appropriate fragment. To check whether a unification
-constraint is inside the fragment, we need to fully apply the substitution and
-$\beta$-normalize the constraint.
+constraint is inside the fragment, the  substitution must be fully applied and
+the constraint must be $\beta$-normalized.
 % To use an off-the-shelf oracle
 % in our procedure, we need to wrap it inside an algorithm that applies the currently
 % built substitution $\sigma$, normalizes terms and checks whether terms belong to the
@@ -370,10 +370,10 @@ belong to their fragment.
 % Usually, the operations
 % oracles perform can clearly be separated into those that do and those that do
 % not depend on whether the terms belong to the fragment oracle manages. 
-Most oracles contain a decomposition operation which requires only a partial application of
+Most oracles contain a decomposition operation that requires only a partial application of
 the substitution and only partial $\beta$-normalization. If one of the constraints resulting from decomposition is not in
 the fragment, the original problem is not in the fragment. 
-This allows us to detect that the problem is not in the fragment without fully applying
+This allows detecting that the problem is not in the fragment without fully applying
 the substitution and $\beta$-normalizing.
 % Thus, without checking if all subterms are in the fragment, the oracle
 % can check if the term heads are equal after getting terms in hnf. This
@@ -556,11 +556,11 @@ is never revisited, which improves the performance and returns fewer redundant
 unifiers. We show that this restriction prunes the search space without
 losing completeness.
 
-Our procedure chooses child nodes based only on the heads of the
+Our procedure chooses child nodes based on only the heads of the
 selected unification constraint. In contrast, the JP procedure tracks all the
 variables occurring in the common context. Thus, lazy normalization and lazy
 variable substitution cannot be integrated in the JP procedure a straightforward
-fashion. Moreover, as it does not feature a rule similar to
+fashion. Moreover, as the JP procedure does not feature a rule similar to
 \unifrulename{Decompose}, it always retraverses the already unified part of the
 problem, resulting in poor performance on deep terms.
 
@@ -886,9 +886,9 @@ $\varrho_{0}=\varrho$. The substitution $\varrho_{j}$ is what remains to be adde
 to $\sigma_{j}$ to reach $\varrho_{0}$. States are defined
 so that the shape of the selected constraint from $E_{j}$ and the remainder
 substitution guide the choice of applicable transition rule.
-We employ a measure based on values of $E_j$ and $\varrho_j$ that decreases with 
-each application of the rules. Therefore, eventually, we will reach the target substitution
-$\sigma$.
+Finally, a measure based on values of $E_j$ and $\varrho_j$ that decreases with 
+each application of the rules is employed. Therefore, eventually, the target substitution
+$\sigma$ will be reached.
 
 In the remainder of this section, we view terms as
 $\alpha\beta\eta$-equivalence classes, with the $\eta$-long $\beta$-normal
@@ -946,13 +946,13 @@ Then the disagreement pairs of $t'$ and $s'$ are called
   Let $\varrho$ be the substitution $\{ X \mapsto \lamx{\cst{f} \, x}, Y
   \mapsto \lamx{x} \}$. Clearly, $\varrho$ unifies the problem $X \, \cst{a}
   \unif Y \, (\cst{f} \, \cst{a})$. The opponent pair for $\varrho\,X$ and $\varrho\,Y$
-  is $(\cst{f} \, x, y)$ which clearly adheres to the conclusion of Lemma \ref{lem:principal-lemma}.
+  is $(\cst{f} \, x, y)$, which clearly adheres to the conclusion of Lemma \ref{lem:principal-lemma}.
 %
   Intuitively, one of the consequences of this lemma is that any solution for
   flex-flex problems that does not mention parameters will not have opponent pairs. 
   For example, one solution for the 
   problem $X \, \cst{a}
-  \unif Y \, (\cst{f} \, \cst{a})$ is $\varrho = \{ X \mapsto \lamx{\cst{c}}, Y \mapsto \lamx{\cst{c}} \}$
+  \unif Y \, (\cst{f} \, \cst{a})$ is $\varrho = \{ X \mapsto \lamx{\cst{c}}, Y \mapsto \lamx{\cst{c}} \}$,
   which has no opponent pairs.
 \end{exa}
   
@@ -990,7 +990,7 @@ unify $s_{i} \unif t_{i}$. For example, $\{X \mapsto \lam{\overline{x}}{\cst{a}}
     \mathbfit{y})}$. In the first case $x$ is not applied to parameter $y$ and
     in the second $y$ occurs as an argument to $x$. 
   \end{exa}
-  This definition is slightly too restrictive for our purposes.
+  Definition \ref{unif:def:omega-simple} is slightly too restrictive for our purposes.
   It is unfortunate that condition~1 requires $x$ to be applied to
   \emph{all} instead of just some of the bound variables. The JP
   proof would probably work with such a relaxation, and the definition
@@ -1641,7 +1641,7 @@ and $t$ is second-order. Together with completeness of PT for preunification,
 this result implies that the PT procedure can be used to enumerate finitely many
 elements of a complete set of preunifiers for this class of terms.
 
-Prehofer focused on the preunification problem as he remarks that the resulting
+Prehofer focused on the preunification problem, remarking that the resulting
 flex-flex pairs are ``intricate" \cite[Sect.~5.2.2]{cp-95-unifphd}. We discovered that these flex-flex
 pairs actually have an MGU, allowing us to solve the full unification problem,
 rather than the preunification problem. Moreover, we lift the order restriction
@@ -2151,27 +2151,27 @@ of Lemmas \ref{unif:lemma:solid-var-same-mgu} and \ref{unif:lemma:solid-vars-dif
    \looseness=-1
   Let $\{F \, (\cst{f} \, \cst{a}) \unif \cst{g} \, \cst{a} \, (G \, \cst{a})\}$ be
   the unification problem to solve. Projecting~$F$ onto the first argument will
-  lead to a nonunifiable problem, so we perform imitation of~$\cst{g}$ building a
+  lead to a nonunifiable problem, so the imitation of~$\cst{g}$ is performed, yielding a
   binding $\sigma_1 = \{ F \mapsto \lambda x.\, \cst{g} \, (F_1 \, x) \, (F_2 \, x)
   \}$. After decomposition, this yields the  problem $\{F_1
   \, (\cst{f} \, \cst{a}) \unif \cst{a}, \allowbreak F_2 \, (\cst{f} \, \cst{a}) \unif G \,
-  \cst{a}\}$. Again, we can only imitate $\cst{a}$ for $F_1$---building a new 
+  \cst{a}\}$. Again, $\cst{a}$ can only be imitated for $F_1$---building a new 
   binding $\sigma_2 = \{F_1 \mapsto \lambda x.\, \cst{a} \}$. Finally, this
   yields the problem $\{ F_2 \, (\cst{f} \, \cst{a}) \unif G \, \cst{a} \}$.
-  According to Lemma \ref{unif:lemma:solid-vars-diff-mgu}, we find CSUs for the
+  According to Lemma \ref{unif:lemma:solid-vars-diff-mgu}, CSUs for the
   problems $J_1 \, \cst{a} = \cst{f} \, \cst{a}$ and $I_1 \, (\cst{f} \, \cst{a})
-  \unif \cst{a}$ using PT. The latter problem has a singleton CSU $\{I_1 \mapsto \lambda x.\,
+  \unif \cst{a}$ are found using PT. The latter problem has a singleton CSU $\{I_1 \mapsto \lambda x.\,
   \cst{a}\}$, whereas the former has a CSU containing $\{ J_1 \mapsto \lambda x.\,
   \cst{f} \, x \}$ and $\{ J_1 \mapsto \lambda x.\, \cst{f} \, \cst{a} \}$.
-  Combining these solutions, we obtain an MGU $\sigma_3 =
+  Combining these solutions, an MGU $\sigma_3 =
   \{ F_2 \mapsto \lambda x.\, H \, x \, x \, \cst{a},\,
   G   \mapsto \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x \}$ 
-  for $F_2 \, (\cst{f}\, \cst{a}) \unif G \, \cst{a}$.
+  is obtained for $F_2 \, (\cst{f}\, \cst{a}) \unif G \, \cst{a}$.
   %\begin{equation*}
   %    F_2 \mapsto \lambda x.\, H \, x \, x \, \cst{a} \\
   %    G   \mapsto \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x
   %\end{equation*}
-  Finally, we get to the MGU of the original problem $\sigma = \sigma_3 \sigma_2 \sigma_1 = \{ F
+  Finally, the MGU of the original problem is computed: $\sigma = \sigma_3 \sigma_2 \sigma_1 = \{ F
   \mapsto \lambda x.\, \cst{g} \, \cst{a} \, (H \, x \, x \, \cst{a}),\allowbreak G \mapsto
   \lambda x.\, H \, (\cst{f} \, \cst{a}) \, (\cst{f} \, x) \, x  \}$.
   For brevity, we omitted the intermediate bindings of auxiliary variables
@@ -2186,7 +2186,7 @@ terminate.
 
 
 Small examples that violate conditions of Theorem \ref{unif:thm:oracle} 
-and admit only infinite CSUs can be found easily. The problem $\{ \lambda x.\, F \, (\cst{f} \, x) \unif \lambda x.\, \cst{f} \,
+and admit only infinite CSUs can easily be found. The problem $\{ \lambda x.\, F \, (\cst{f} \, x) \unif \lambda x.\, \cst{f} \,
 (F \, x) \}$ violates variable distinctness and is a well-known example of a problem with only infinite CSUs.
 %TODO: @PETAR: Do we have a citation, if this is well-known? 
 %It is really really well-known :)
@@ -2197,8 +2197,6 @@ Only ground arguments to free variables are allowed because  $\{F \, X \unif G
 \, \cst{a}\}$ has only infinite CSUs. Finally, it is crucial that
 functional arguments to free variables are only bound variables: The problem
 $\{ \lambda y. \, X (\lambda x.\, x) \, y \unif \lambda y. \, y \}$ has only infinite CSUs.
-
-
 
 \section{An Extension of Fingerprint Indexing}
 \label{sec:unif:indexing}
@@ -2345,8 +2343,8 @@ We implemented our procedure in Zipperposition.
 
 \looseness=-1
 We used OCaml's functors to create a modular implementation. The core of our
-procedure is implemented in a module which is parameterized by another module
-providing oracles and implementing the \textsf{Bind} step. In this way we can
+procedure is implemented in a module that is parameterized by another module
+providing oracles and implementing the \textsf{Bind} step. In this way we
 obtain the complete or pragmatic procedure and seamlessly integrate
 oracles while reusing as much common code as possible.
 
@@ -2362,7 +2360,7 @@ unifier indefinitely, we use the dovetailing technique: we first take one
 subsingleton from $p_1$, then one from each of $p_1$ and $p_2$. We continue with
 one subsingleton from each of $p_1,p_2$, and $p_3$, and so on. Empty lazy lists are
 ignored in the traversal. To ensure we do not remain stuck waiting for a unifier
-from a particular lazy list, the procedure will periodically return an empty
+from a particular lazy list, the procedure periodically returns an empty
 set, indicating that the next lazy list should be probed. 
 
 \looseness=-1
@@ -2429,8 +2427,8 @@ to evaluate the performance of our procedure. We compare it with the complete
 variant of our procedure (\textbf{cv}) and pragmatic variants (\textbf{pv}) with
 several different configurations of limits for applied bindings. All other
 Zipperposition parameters have been fixed to the values of a variant of a
-well-performing configuration we used for the 2019 installment of the higher-order
-division of CASC theorem proving competition \cite{gs-19-casc27}. The cv
+well-performing configuration we used for the 2019 installment of THF
+division of the CASC theorem proving competition \cite{gs-19-casc27}. The cv
 configuration and all of the pv configurations use only pattern unification as
 an underlying oracle. To test the effect of oracle choice, we evaluated the
 complete variant in eight combinations: with no oracles (\textbf{n}), with only
@@ -2442,8 +2440,10 @@ Figure~\ref{fig:new-old} compares different variants of the procedure with the
 naive JP implementation. Each pv configuration is denoted by pv$^{a}_{bcde}$
 where $a$ is the limit on the total number of applied bindings, and $b$, $c$,
 $d$, and $e$ are the limits of functional projections, eliminations, imitations,
-and identifications, respectively. Figure~\ref{fig:oracles} summarizes the
-effects of using different oracles.
+and identifications, respectively. The values for $a,b,c,d,$ and $e$ are chosen following
+the intuition that functional projection and identification are the most explosive
+bindings.  Figure~\ref{fig:oracles} summarizes the
+effects of using different oracles. 
 
 The configuration of our procedure with no oracles outperforms the JP procedure with the first-order oracle. This
 suggests that the design of the procedure, in particular lazy normalization and
@@ -2610,7 +2610,7 @@ Third, it can integrate any oracle for problems with finite CSUs, including the 
 The implementation of our procedure in Zipperposition was one of the reasons
 this prover evolved from proof-of-concept prover for higher-order logic to
 competitive higher-order prover. Shortly after the procedure was implemented, in the 2020 edition of CASC, Zipperposition won
-the higher-order division. 
+the THF division. 
 
 \section{Conclusion}
 We presented a procedure for enumerating a complete set of higher-order unifiers
