@@ -23,7 +23,7 @@ Visa Nummelin implemented the FOOL preprocessing module.}
 \section{Introduction} 
 \label{sect:bool:introduction}
 
-In Chapter~\ref{ch:intro} we motivated our work by the need to bridge the gap
+In Chapter~\ref{ch:intro} I motivated the work presented in this thesis by the need to bridge the gap
 between higher-order frontends and first-order backends. This gap is
 traditionally bridged using translations from higher-order to
 first-order logic \cite{ar-70-hol, mp-08-trans}. However, as shown in Chapter
@@ -47,7 +47,7 @@ $\lambda$-terms and function extensionality. Kotelnikov et al.\
 \cite{kotelnikov-15-fool,kotelnikov-16-fool} extended the language of
 first-order logic to support the third feature of higher-order logic that
 requires translation. They described two approaches: One based on a calculus-level
-treatment of Booleans and other, which requires no changes to the calculus,
+treatment of Booleans and another that requires no changes to the calculus,
 based on preprocessing.
 
 \looseness=-1 To fully bridge the gap between higher-order and first-order tools,
@@ -57,7 +57,7 @@ Boolean terms. In early work, Kotelnikov et al.\
 rule that, under some order requirements, removes the need for the axiom
 describing the Boolean domain---$\iforall p. \; p \ieq \itrue \llor p
 \ieq \ifalse$. In this approach, it is assumed that a problem with formulas occurring as
-arguments of symbols is translated to first-order logic. 
+arguments of symbols is translated to first-order logic using a translation they describe. 
 
 \looseness=-1
 The backbone of our approach is based on an extension of this rule to higher-order
@@ -82,7 +82,7 @@ elimination of Leibniz equality, primitive instantiation, and treatment of the c
 operator \cite{pa-01-classical-ty-thy}. We have also designed new rules including those that use
 higher-order unification to resolve Boolean formulas that are hoisted to the literal
 level, delay clausification of nonatomic literals, and reason about formulas under
-$\lambda$-binders. Even though the rules we use are inspired by
+$\lambda$-binders. Even though the rules are inspired by
 the ones of refutationally complete higher-order provers, we do not guarantee
 completeness of our extension of \lsup{}. Using the insights that we gained with
 this incomplete extension of \lsup{} to full higher-order logic, Bentkamp et al.
@@ -91,7 +91,7 @@ designed a complete calculus for full higher-order logic---\osup{}
 
 
 \looseness=-1
-We compare our native approach with two alternatives which are based on
+We compare our native approach with two alternatives that are based on
 preprocessing (Sect.~\ref{sect:bool:alternative}). First, we compare it to  an
 axiomatization of the theory of Booleans. Second, inspired by work of
 Kotelnikov et al.\ \cite{kotelnikov-16-fool}, we implement the preprocessing approach that does not
@@ -118,7 +118,7 @@ approaches our work is based on, as well as related approaches (Sect.~
 
 We base our work (and parts of the following text) on Bentkamp et al.'s
 \cite{bbtvw-21-sup-lam} extensional polymorphic clausal higher-order logic. This
-logic supports rank-1 polymorphism, as defined by the TH1 format of TPTP
+logic supports rank-1 polymorphism, as defined by the TH1 format of the TPTP
 \cite{ksr-16-th1}.
 We
 extend the syntax of this logic by adding logical connectives to the signature.
@@ -205,7 +205,7 @@ implemented. For ease of presentation we divide them into three categories.
 \subsection{Support for Booleans in Zipperposition}
 \label{subsect:bool:zip-bools}
 
-As mentioned in the previous chapter, Zipperposition is an open source prover
+As mentioned in Chapter \ref{ch:unif}, Zipperposition is an open source prover
 written in OCaml. From its inception, it was designed as a prover that supports
 easy extension of its base superposition calculus to various theories, including
 arithmetic, induction, and limited support for higher-order logic
@@ -221,7 +221,7 @@ internally stored as $\iand \, \cst{p} \, \cst{q} \, \cst{r}$. Zipperposition's
 support for $\lambda$-terms is used to represent quantified nested Booleans:
 Formulas $\iforall x. \, \, f$ and $\iexists x. \, f$ are represented as
 $\iforall \, (\lamx{f})$ and $\iexists \, (\lamx{f})$. After clausification of
-the input problem, no nested Booleans will be modified or renamed using fresh
+the input problem, no nested Booleans are modified or renamed using fresh
 predicate symbols.
 
 The version of Zipperposition preceding our modifications distinguished between non\-equational
@@ -340,7 +340,7 @@ Leo-III implements a similar rule, called \textsf{simp} \cite[Sect.~4.2.1.]{as-1
 
 Our decision to represent negative atoms as negative equations was motivated by
 the need to alter Zipperposition's earlier behavior as little as possible. 
-Namely, negative atoms were not used as literals that can be used
+Namely, negative atoms are not used as literals that can be used
 to paramodulate from, and as such added to the laziness of the superposition calculus.
 However, it might be useful to consider unit clauses of the form $f \noteq \itrue$
 as $f \eq \ifalse$ to strengthen rewriting. To that end, we have introduced the following
@@ -418,7 +418,7 @@ term in the proof state, this axiom is very explosive. Therefore, Leo-III
 them on the calculus level. Namely, whenever a clause $C = P \, X \noteq \itrue \llor P \, (\cst{f} \,
 P) \eq \itrue$ is chosen for processing, $C$ is removed from the proof state and $\cst{f}$ is
 added to the set of choice functions $\mathit{CF}$ (which initially contains just
-$\varepsilon$). Later, elements of $\mathit{CF}$ will be used to heuristically
+$\varepsilon$). Later, elements of $\mathit{CF}$ are used to heuristically
 instantiate the axiom of choice. We reused the method of recognizing choice
 functions, but generalized the rule for creating the instance of
 the axiom (assuming $\xi \in \mathit{CF}$ and $X$ and $z$ are fresh variables):
@@ -481,7 +481,7 @@ text \infname{Abs} refers to the version that supports Boolean extensionality.
 
 \looseness=-1
 Consider the clause $\cst{f} \, (\inot\cst{p} \ior \inot\cst{q}) \noteq \cst{f} \,
-(\inot (\cst{p} \iand \cst{q}))$. This problem is unsatisfiable, as
+(\inot (\cst{p} \iand \cst{q}))$. This clause is unsatisfiable, as
 the arguments of $\cst{f}$ on the different sides of the disequation are Boolean-extensionally
 equal. Without the \infname{Abs} rules Zipperposition relies on the
 \infname{Cases}(\infname{Simp}) and \infname{IC} rules to derive the empty
@@ -498,11 +498,11 @@ clause. On the other hand, \infname{AbsER} generates~$C = \inot\cst{p} \ior \ino
   \cite{bbtvw-21-sup-lam}) to both sides of a (dis)equation to reduce it to
   a first-order literal; Boolean extensionality is usually better supported by
   applying \infname{IC} on the top-level Boolean term. Thus, for the following
-  discussion we can assume $s$ and $s'$ are not $\lambda$-abstractions or formulas. Then, $\infname{AbsSup}$ is applicable if $s$
+  discussion, we assume $s$ and $s'$ are not $\lambda$-abstractions or formulas. Then, $\infname{AbsSup}$ is applicable if $s$
   and $s'$ have the same head, and a functional or Boolean subterm. To speed up
   retrieval of such terms, we added an index that maps symbols to positions in
   clauses where they appear as a head of a term that has a functional or Boolean
-  subterm. This index will be empty for first-order problems, incurring no
+  subterm. This index is empty for first-order problems, incurring no
   overhead if extensionality reasoning is not needed. One more restriction we implemented is that we do not apply the \infname{Abs} rules if all
   disagreement pairs have at least one side whose head is a variable; those will
   be dealt with more efficiently using the core rules of the superposition
@@ -872,7 +872,7 @@ Zipperposition and Ehoh share the
 same clausification algorithm, enabling us to reuse the extension, with one
 notable difference:
 Unlike in Ehoh, not all nested Booleans different from variables, $\itrue$ and $\ifalse$
-will be removed. Namely, Booleans that are below $\lambda$-abstraction
+are removed. Namely, Booleans that are below $\lambda$-abstraction
 and contain $\lambda$-bound variables will not be preprocessed. They cannot be easily hoisted to the level of an atom in which
 they appear, since this process might leak any variables bound in the context
 in which the nested Boolean appears. Similar preprocessing techniques are used in other higher-order provers
@@ -897,11 +897,11 @@ $$ \neg (\iexists x. \, \iforall y. \,
 \iexists z. \, x \, z \eq y) $$ 
 After negating the conjecture and
 clausification this problem becomes $ \cst{sk}_1 \, (\cst{sk}_2 \, Y) \eq Y   $
-where $\cst{sk}_1$ and $\cst{sk}_2$ are Skolem symbols. Then, we can use the
+where $\cst{sk}_1$ and $\cst{sk}_2$ are Skolem symbols. Then, the
 \infname{ArgCong} rule \cite{bbtvw-21-sup-lam} which applies
-fresh variable $W$ to both sides of the equation, yielding clause $ C = \cst{sk}_1 \, (\cst{sk}_2 \, Y) \, W
+fresh variable $W$ to both sides of the equation can be used, yielding clause $ C = \cst{sk}_1 \, (\cst{sk}_2 \, Y) \, W
 \eq Y \, W$. Superposition-based higher-order theorem
-provers (such as Leo-III, Vampire, and Zipperposition) will split this clause
+provers (such as Leo-III, Vampire, and Zipperposition) split this clause
 into two clauses $C_1 = \cst{sk}_1 \, (\cst{sk}_2 \, Y) \, W \not\eq \top \llor Y
 \, W \eq \top $ and $ C_2 =  \cst{sk}_1 \, (\cst{sk}_2 \, Y) \, W \eq \top \llor
 Y \, W \not\eq \top $. This clausification step makes the problem
@@ -923,22 +923,22 @@ Combining the rule \infname{(Bool)ER} with dynamic clausification is very fruitf
 the benchmark \texttt{SYO033\^{}1} illustrates. This problem contains the
 single conjecture
 $$ \iexists x. \, \iforall y.  \, x \, y \iequiv (\iforall z. \, y \,z)$$ The
-problem is easily solved if we replace the variable $x$ with the constant $\forall$.
+problem is easily solved if the variable $x$ is replaced with the constant $\forall$.
 Moreover, the prover does not have to blindly guess this instantiation. Instead,
 pretending that bound variables are free, it can obtain it by unifying $  X \, Y
 $ with $ \iforall \, Y$ (which is the $\eta$-short form of $\iforall z. \, Y
 \,z$). However, when the problem is clausified, all quantifiers are removed.
 Then, Zipperposition finds the proof only if an appropriate instantiation mode of
 \infname{PI} is used, and if both clauses resulting from clausifying the negated
-conjecture are appropriately instantiated. In contrast, dynamic clausification will
-derive the clause $ X \, (\cst{sk} \, X) \not\eq \forall \, (\cst{sk} \, X) $
+conjecture are appropriately instantiated. In contrast, dynamic clausification
+derives the clause $ X \, (\cst{sk} \, X) \not\eq \forall \, (\cst{sk} \, X) $
 from the negated conjecture in three steps. Then, equality resolution results in
 an empty clause, swiftly finishing the proof without any explosive inferences.
 This effect is even more pronounced on problems \verb|SYO287^5| and
 \verb|SYO288^5|, in which a critical proof step consists of instantiating a variable
 with imitations of $\ior$ and $\iand$. In configurations that do not use dynamic
 clausification and \infname{BoolER}, Zipperposition times out in any reasonable
-time limit; with those two options it solves the mentioned problems in less than
+time limit; with those two options it solves these two problems in less than
 100\,ms.
 
 In some cases, it is better to preprocess the problem. For example, TPTP problem
@@ -968,7 +968,7 @@ does our approach compare with state-of-the-art higher-order provers?
 For this part of the evaluation, we fixed a single well-perform\-ing Zipperposition configuration
 called \emph{base} (b). Since we are testing a single configuration, we
 used the CPU time limit of \NumberOK{15} s---roughly the time a single configuration is
-given in a portfolio mode when participating in CASC. Configuration {b} uses the pragmatic variant
+given in Zipperposition's portfolio mode when participating in CASC. Configuration {b} uses the pragmatic variant
 pv$_{1121}^{2}$ (Sect.~\ref{sec:unif:evaluation}) of the unification algorithm described in Chapter~\ref{ch:unif}. 
 It enables the \infname{BoolSimp} rule,
 the \infname{EC} rule, the \infname{PI} rule in \emph{Pragmatic} mode with $k=2$,
@@ -1018,13 +1018,13 @@ parameter $k$: 1, 2, and~8 (Figure \ref{fig:pi}). The columns denote, from left 
 right: disabling the \infname{PI} rule, \emph{Pragmatic} mode, \emph{Full} mode,
 and \emph{Imit}$_\star$ modes with appropriate logical symbols. The rows denote
 different values of $k$. The results show that different values for $k$ have a
-modest effect on the success rate. The raw data reveal that when we focus our
+modest impact on the success rate. The raw data reveal that when we focus our
 attention to configurations with $k=2$, mode \emph{Full} can solve ten problems
 no other mode (including disabling the \infname{PI} rule) can. Modes
 \emph{Imit}$_{\iand}$ and \emph{Pragmatic} solve two  problems whereas
 \emph{Imit}$_{\ior}$ solves one problem uniquely. This result suggests that, even
 though this is not evident from Figure \ref{fig:pi}, the sets of problems solved 
-by different modes somewhat differ.
+by different modes differ somewhat.
 
 Figure \ref{fig:elim-leibniz} gives results of evaluating rules that treat
 Leibniz equality on the calculus level: EL stands for \infname{ElimLeibniz},
@@ -1087,7 +1087,7 @@ rules of the superposition calculus.
 \pagebreak[2]
 
 \looseness=-1
-Combining these two rules with dynamic clausification is more useful: When rule
+Combining BER and BEF rules with dynamic clausification is more useful: When rule
 \infname{IC} is replaced by rule \infname{DC}, the success rate increases
 to 1660 problems, compared to 1646 problems solved by b. We also discovered
 that reasoning with choice is useful: When rule \infname{Choice} is enabled, the
@@ -1144,7 +1144,7 @@ and \emph{coop}, which uses all supported backends.
 \looseness=-1
 In both uncooperative and cooperative mode, Satallax is the winner. Zipperposition comes
 in close second, showing that our approach is a promising basis for further
-extensions. Indeed, as will be shown in Chapter \ref{ch:ho-techniques}, with
+extensions. Indeed, as is shown in Chapter \ref{ch:ho-techniques}, with
 fine-tuning of the heuristics and further extensions to the calculus, this
 approach can outperform all other competitive provers with a large margin.
 
