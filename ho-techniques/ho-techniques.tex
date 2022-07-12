@@ -11,7 +11,7 @@
 }
 
 \blfootnote{In this work I was the main designer of all presented techniques,
-with the exception of inference streams which were designed by Alexander
+with the exception of inference streams that were designed by Alexander
 Bentkamp and Sophie Tourret. Alexander Bentkamp and Jasmin Blanchette also
 discussed many of the techniques with me and suggested important updates. Visa
 Nummelin worked on the implementation of FOOL preprocessing. Simon Cruanes is the
@@ -26,7 +26,7 @@ original developer of Zipperposition and provided us with invaluable knowledge.
     Booleans, and the need to curb the explosion of specific higher-order rules. We
     describe techniques that address these issues and extensively evaluate their
     implementation in the Zipperposition theorem prover. Largely thanks to their use,
-    Zipperposition won the higher-order division of the CASC competition in 2020 and 2021.  
+    Zipperposition won the THF division of the CASC competition in 2020 and 2021.  
   \end{abstract}
 \newpage
 
@@ -62,9 +62,9 @@ original developer of Zipperposition and provided us with invaluable knowledge.
 % 12~percentage points behind the winner, the tableau prover Satallax 3.4 \cite{cb-2013-satallax}.
 
 The landscape of higher-order proving techniques based on the extension of efficient
-first-order ones has tremendously expanded in the late 2010s and early 2020s. As
-mentioned in Sect.~\ref{sec:pre:ho-sup-calculi} we have implemented three
-higher-order calculi---\lfsup{}, \lsup{}, and \osup{}---which extend first-order superposition in a graceful way.
+first-order ones has expanded tremendously in the late 2010s and early 2020s. As
+mentioned in Sect.~\ref{sec:pre:ho-sup-calculi}, we have implemented three
+higher-order calculi---\lfsup{}, \lsup{}, and \osup{}---that extend first-order superposition in a graceful way.
 Bhayat and Reger also gracefully extended superposition to higher-order logic using
 \textsf{SKBCI} combinators \cite{br-20-full-sup-w-combs}, resulting in a calculus called combinatory superposition. Significant progress has been
 made on the SMT front as well \cite{brotb-19-ho-smt}.
@@ -73,7 +73,7 @@ In 2019 we tested for the first time if the idea of gracefully extending first-o
 higher-order logic really improves the state of the art. We
 implemented \lsup{} \cite{bbtvw-21-sup-lam} in Zipperposition~1.5 with basic
 heuristics and rudimentary extensions of the calculus to deal with Booleans. It
-finished third at that year's higher-order division of CASC competition
+finished third at that year's THF division of CASC competition
 \cite{gs-19-casc27}, 12~percentage points behind the winner, the tableau prover
 Satallax 3.4 \cite{cb-12-satallax}.
 
@@ -94,8 +94,9 @@ on a newer calculus. Instead of \lsup{} augmented with ad hoc Boolean rules, we
 work with {\osup} \cite{bbtv-21-full-ho-sup}, a principled extension of
 superposition to full higher-order logic, including an interpreted Boolean type.
 
-Many higher-order problems extensively use symbol definitions to simplify
-their representation. We describe several ways to exploit the definitions,
+Many higher-order problems use symbol definitions extensively to decrease the
+verbosity of representation. We describe several ways to exploit the
+definitions,
 %of which the most successful is
 such as turning them into rewrite rules (Sect.~\ref{sec:ho-tech:preprocessing}).
 %Interesting patterns can be observed in various higher-order problem encodings.
@@ -107,8 +108,8 @@ Through its support for delayed clausification and, more generally,
 calculus-level formula manipulation, \osup{} enables us to
 simulate most successful tableau techniques in a saturating prover
 (Sect.~\ref{sec:ho-tech:formulas}). This calculus also supports \emph{Boolean selection
-functions}, a mechanism that allows us to choose on which Boolean subterms
-to perform inferences first.
+functions}, a mechanism that allows us to choose which Boolean subterms
+to perform inferences on first.
 We implemented some Boolean selection functions and
 evaluated them (Sect.~\ref{sec:ho-tech:bool-select}).
 
@@ -146,11 +147,11 @@ techniques can easily be extended with rank-1 polymorphism \cite{ksr-16-th1}. In
 already supports some of them polymorphically. Further, we use exactly the same
 notation for this logic and superposition calculus as introduced in Chapter \ref{ch:pre}. Since we are
 working with extensions of superposition, we assume a clausal structure
-(Sect.~\ref{sec:pre:clauses}). Like in the previous chapter, literals
+(Sect.~\ref{sec:pre:clauses}). As in the previous chapter, literals
 of clauses can contain arbitrary higher-order terms, including formulas.  
 At CASC, most theorem provers, including Zipperposition, are invoked using a
 sequence of different configurations (possibly in parallel) until either the
-time limit is reached or a proof is found. We call this sequence a \emph{portfolio}.
+time limit is reached or a proof is found. This sequence is usually called a \emph{portfolio}.
 
 \ourpara{Higher-Order Calculi}
 \looseness=-1
@@ -204,7 +205,7 @@ Other competing higher-order calculi include SMT (implemented in CVC4
 \ourpara{Experimental Setup}
 To assess our techniques, we carried out experiments with Zipperposition~2. We
 used two sets of benchmarks:\ all 2851~monomorphic higher-order problems from the
-TPTP library \cite{gs-17-tptp} version~7.4.0 (labeled \emph{TPTP})
+TPTP library \cite{gs-17-tptp} version~7.4.0 (labeled \emph{TPTP} in the figures of this chapter)
 and 1253 Sledgehammer-generated
 monomorphic higher-order problems (labeled \emph{SH}).
 Although some techniques support polymorphism, we
@@ -238,7 +239,7 @@ Definitions $s \eq t$ (or $(s \iequiv t) \eq \itrue$) can be replaced by rewrite
 rules $s \longrightarrow t$,
 using the orientation given in the input problem. If there are multiple
 definitions for the same symbol, only the first one is replaced by a rewrite rule.
-Then, whenever a clause is picked in the given clause procedure, it will be rewritten
+Then, whenever a clause is picked in the given clause procedure, it is rewritten
 using the collected rules.
 Alternatively, we can rewrite
 the input formulas as a preprocessing step. This ensures that the input
@@ -282,8 +283,8 @@ the other hand, superposition's reasoning with equivalences is often inadequate
 \cite{bbtv-21-full-ho-sup, gs-05-boolsup}. Thus, it makes sense to treat only
 predicate definitions as rewrite rules.
 
-The second technique aims at preserving completeness: We can try to choose, as the term order that
-parameterizes superposition, one that orients as many definitions as possible and rely on
+The second technique aims at preserving completeness: We can try to choose the term order that
+parameterizes superposition, as one that orients as many definitions as possible, and rely on
 demodulation to simplify the proof state. Usually, an instance of the Knuth--Bendix order (KBO)
 \cite{db-1970-kbo} is used. KBO compares terms by first comparing their weights,
 which is the sum of all the weights assigned to the symbols it contains. Given a
@@ -308,10 +309,10 @@ right.
   implication and equivalence) are defined in terms of basic connectives (such as negation
   and disjunction). Some of the definitions present in the problems are
   $\cst{mnot} := \lambda p\, x. \, \inot \, p \, x$, $\cst{mor} := \lambda p\, q\, x.
-  \, p \, x \ior q \, x$,  and $\cst{mimplies} = \lambda p\, q. \allowbreak\, \cst{mor} \,
+  \, p \, x \ior q \, x$,  and $\cst{mimplies} := \lambda p\, q. \allowbreak\, \cst{mor} \,
   (\cst{mnot} \, p) \, q$. Assuming that the weight of $\lambda$, bound
   variables, and basic connectives is 2, we can orient equations using
-  the above described approach as follows. Starting from symbols that do not
+  the approach above described as follows. Starting from symbols that do not
   depend on the other ones, we set $\mathcal{W}(\cst{mnot}) = 11$ and
   $\mathcal{W}(\cst{mor}) = 17$. Then, we use these values to set
   $\mathcal{W}(\cst{mimplies}) = 37$. Clearly, these weights
@@ -379,7 +380,7 @@ perform much better than the other two. In contrast, adjusting KBO weights gives
 no substantial improvement: Looking at raw data, we found only
 \NumberOK{two}~problems proved by $o$-RW$+$KBO but not by $o$-RW in which the
 feature was used in the proof. For no-RW and no-RW$+$KBO, the
-\NumberOK{two}-problem difference may be just noise. Even though it proves fewer
+\NumberOK{two}-problem difference may just be noise. Even though it proves fewer
 problems, the configuration $o$-RW has some advantages over pre-RW: It proves
 \NumberOK{16} problems that pre-RW does not, \NumberOK{three} of which have a TPTP
 difficulty rating of~1. Difficulty rating is a number from 0 to 1, proportional to the number
@@ -398,7 +399,7 @@ by in-RW but not by any other above described configuration. % from Figure~\ref{
 \section{Reasoning about Formulas}
 \label{sec:ho-tech:formulas}
 
-Higher-order logic identifies formulas with terms of Boolean type. To prove a problem, we often
+Higher-order logic identifies formulas with terms of Boolean type. To prove a conjecture, we often
 need to instantiate a variable with the right predicate.
 Finding this predicate can be easier if the problem is not clausified.
 Consider the conjecture $\iexists f. \, f \, \cst{p} \, \cst{q} \iequiv \cst{p}
@@ -881,7 +882,7 @@ it contains a selectable Boolean subterm.
 
 The results of evaluating 21 concrete selection functions obtained
 by instantiating the contextualized Boolean selection function are shown in
-Figure~\ref{fig:bool-sel}. Rows denote the used partial order $\vartriangleright$,
+Figure~\ref{fig:bool-sel}. Rows denote the partial order $\vartriangleright$ which is used,
 while columns denote the function $\mathit{ctx}$.
 
 \looseness=-1
@@ -916,7 +917,7 @@ selection formulas is usually not required by Sledgehammer problems.
 As an optimization and to simplify the code, Leo-III
 \cite{as-18-phd} and Vampire 4.4 \cite{br-19-restricted-unif} (which uses
 \confrep{}{\emph{restricted combinatory unification}, }a predecessor of combinatory
-superposition) compute only a finite subset of the possible conclusions for
+superposition) compute only a finite subset of the possible conclusions of
 inferences that require enumerating a CSU. Not only is this a source of
 incompleteness, but choosing the cardinality of the computed subset is a
 difficult heuristic choice. Small sets can result in missing the necessary unifier, while large sets make the prover spend too long in
@@ -943,9 +944,9 @@ a singleton set containing a unifier. To avoid getting stuck waiting for a unifi
 that may not exist, the unification procedure should return
 $\emptyset$ after it performs some number of operations without finding a unifier.
 
-The complete unification procedure described in Chapter \ref{ch:unif} returns such a stream. Other procedures such
+The complete unification procedure described in Chapter \ref{ch:unif} returns such a stream. Other procedures, such
 as Huet's \cite{gh-75-unification} and Jensen and
-Pietrzykowski's \cite{jp-76-unif} can easily be adapted to meet this
+Pietrzykowski's \cite{jp-76-unif}, can easily be adapted to meet this
 requirement. Based on the stream of unifiers interspersed with $\emptyset$, we
 can construct a stream of inferences similarly interspersed with $\emptyset$.
 Any finite prefixes of this stream can be computed in finite time.
@@ -1090,7 +1091,9 @@ element is $\emptyset$, the rest of the stream is inserted into $Q$ and a new st
 chosen. This is repeated until either \ParamRetry{} occurrences of $\emptyset$ have  been
 met (by default, $\ParamRetry = 20$) or the stream yields a singleton. Setting $\ParamRetry > 0$ increases
 the chance that \textsc{HeuristicProbe} will return $\ParamMaxStreams$ clauses, as desired. Finally, if $P$ becomes empty, \textsc{ForceProbe}
-searches relentlessly for a clause in $Q$, as a fallback.
+searches relentlessly for a clause in $Q$, as a fallback. The default values
+for $\ParamMode{}, \ParamMaxStreams{},$ and $\ParamRetry{}$ are chosen by informal
+experiments.
 
 \looseness=-1
 The function \textsc{ExtractClause} extracts an element from a nonempty stream
@@ -1233,8 +1236,8 @@ influence the behavior of the given clause procedure, even when the same
 unification procedure is used. Figure~\ref{fig:streams}
 presents the effects of these parameters on TPTP and SH.
 Selecting a low number of best clauses seems to
-perform well on both benchmark sets. However, on SH benchmarks, which require
-overwhelmingly first-order unifiers, visiting older streams should be delayed
+perform well on both benchmark sets. However, on SH benchmarks, which mostly require 
+first-order unifiers, visiting older streams should be delayed
 a lot.
 
 As with Boolean selection functions, changing these three parameters causes
@@ -1587,10 +1590,10 @@ containing $\lambda$-abstractions.
   optimized backend such as Ehoh greatly improves the performance of a
   less optimized prover such as Zipperposition.
   The figure indicates that it is preferable to invoke the backend early. We
-  have indeed observed that if the backend is invoked late, small clauses with
-  deep derivations tend to be present by then. These clauses might have been
+  have observed that if the backend is invoked late, small clauses with
+  deep derivations tend to be present. These clauses might have been
   used to delete important shallow clauses already. But due to their derivation
-  depth, they will not be translated. In such situations, it is better to
+  depth, they will not be sent to Ehoh. In such situations, it is better to
   invoke the backend before the important clauses are deleted.
 
   Figure~\ref{fig:translation} quantifies the effects of the three
@@ -1612,7 +1615,7 @@ containing $\lambda$-abstractions.
 \looseness=-1
 Different choices of
 parameters lead to noticeably different sets of proved problems. In an attempt
-to use Zipperposition~2 to its full potential, we have created a portfolio mode
+to use Zipperposition~2 to its full potential, we created a portfolio mode
 that runs up to 50 configurations in parallel during the allotted time. The portfolio
 was designed to solve as many problems as possible from the TPTP benchmark set. To
 provide some context, we compare Zipperposition~2 with the following versions of
@@ -1633,7 +1636,7 @@ and serves as a baseline for comparison with $\lambda$E introduced in Chapter~\r
 
 We use the same benchmark sets as elsewhere in this chapter. To imitate the
 setup of the 2020 edition of CASC, we use a 120~s wall-clock limit and a 960~s CPU limit.
-We even carried out our evaluation on the 8-core CPU nodes that were used for
+We carried out our evaluation on the 8-core CPU nodes that were used for
 CASC in 2020. We also ran Zipperposition in uncooperative mode, in which its
 collaboration with a backend is disabled. Figure~\ref{fig:other-provers}
 summarizes the results.
@@ -1676,10 +1679,11 @@ benchmarks, and it matches the performance of the top contenders on SH.
 On the other hand, the increase in performance due to the addition
 of an efficient backend suggests that the implementation of this calculus in a
 modern first-order superposition prover such as E or Vampire would achieve
-even better results.
+even better results. In Chapter \ref{ch:ehoh2} we describe how a version of \osup{}
+is implemented in E.
 
 We believe that there are still techniques inspired by
-tableaux, SAT solving, and SMT solving that could be adapted and integrated in
+tableaux, SAT solving, and SMT solving that can be adapted and integrated in
 saturation provers. In particular, there are still \NumberOK{25} TPTP problems
 and \NumberOK{17} SH problems that can be proved by other provers but not by
 Zipperposition.
