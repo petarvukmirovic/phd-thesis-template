@@ -15,13 +15,13 @@ did the daily supervision. Stephan Schulz provided
 the necessary E expertise.}
 
 \begin{abstract}%
-    The automatic discharge of tedious subgoals is high on the wishlist of many
+  The automatic discharge of tedious subgoals is high on the wishlist of many
   users of proof assistants. Some proof assistants discharge such goals
   by translating them to first-order logic and invoking an efficient prover on
   them, but much is lost in translation. As an alternative,
-  we propose to extend first-order provers with native support for
+  we propose to extend a first-order prover with native support for
   higher-order features. Building on our extension of E to $\lambda$-free
-  higher-order logic, we now extend E to full higher-order logic.
+  higher-order logic, we extended E to full higher-order logic.
   The resulting prover is the \NumberOK{strongest} one on benchmarks coming from a
   proof assistant, and the \NumberOK{second strongest} on TPTP benchmarks.
     %It also incurs no overhead on first-order problems.  -- sounds like a detail --JB
@@ -34,19 +34,19 @@ the necessary E expertise.}
 
 In Chapter~\ref{ch:ehoh} of this thesis we introduced Ehoh, a rather conservative extension of
 state-of-the-art first-order prover to a fragment of higher-order logic devoid of $\lambda$-abstraction. This
-extension gave us a flavor of the difficulties that we might encounter on the
-way to full higher-order logic. In chapters that precede this one,
+extension gave us a feeling for the difficulties that might be encountered on the
+way to full higher-order logic. In the chapters that precede this one,
 we discussed many ways in which those difficulties can be overcome.
-In this chapter, we fulfill a promise we gave in the beginning of the thesis: We present the extension of
+In this chapter, we fulfill the promise given in the beginning of the thesis: We present the extension of
 Ehoh to full higher-order logic using incomplete variants
-of $\lambda$-superposition. We call this prover \ehohii.
+of $\lambda$-superposition. This prover is called \ehohii.
 
 %
 The $\lambda$-superposition calculi were
 previously implemented in Zipperposition, and
 extensive experiments with various heuristic choices have been performed
-(Chapter \ref{ch:ho-techniques}). In \ehohii{}'s implementation, we used
-these experiences to choose a set of effective rules that could easily be
+(Chapter \ref{ch:ho-techniques}). In \ehohii{}'s implementation we used
+this experience to choose a set of effective rules that could easily be
 retrofitted into an originally first-order prover. Another principle that guided 
 the design of \ehohii{} was \emph{gracefulness}: We made sure that our changes
 do not impact the strong first-order performance of E and $\lambda$-free higher-order performance of Ehoh. 
@@ -80,9 +80,9 @@ We also compared the performance of \ehohii{} with E on first-order
 problems and found that no overhead has been introduced by the
 extension to higher-order logic.
 
-\ourpara{Background} The logic \ehohii{} targets is the monomorphic higher-order
+\ourpara{Background} The logic that \ehohii{} targets is the monomorphic higher-order
 logic described in Sect.~\ref{sec:pre:hol}. We reuse all the notions from this
-section, with the corresponding notations. Like in the previous chapter, we
+section, with the corresponding notations. As in the previous chapter, we
 simplify the notation by writing predicate literals in unencoded form: Positive
 literal $\eqlit{s}{\itrue}$ is written as $s$ and negative literal
 $\neqlit{s}{\top}$ is written as $\negpredlit{s}$.   This chapter discusses
@@ -133,7 +133,7 @@ which makes substitutions more efficient.
 %but flattened representation.
 
 \ourpara{Representation of $\lambdabf$-Terms} To support full
-higher-order logic, Ehoh's $\lambda$-free cell data structure must
+higher-order logic, Ehoh's $\lambda$-free cell data structure had to
 be extended to support the $\lambda$ binder. We use the locally nameless
 representation \cite{ac-12-locally-nameless} for this purpose: De Bruijn indices
 %%% @PETAR(checked): Double-check "possibly loose".
@@ -201,7 +201,7 @@ that $\internallam$ has two arguments. Furthermore, replacing free
 variables with $\lambda$-abstractions (e.g., replacing $X$ with $\lambda
 x. \, x$ in $\internalat(X, \cst{a})$) would require additional normalization.
 
-A term can be $\beta$-reduced as follows: When a cell of the
+A term is $\beta$-reduced as follows: When a cell of the
 form $ \internalat(\internallam(\db{0}, s),t)$ is encountered, the field
 \texttt{binding} (normally used to record the substitution for a free variable) of the
 cell $\db{0}$ is set to $t$. Then $s$ is traversed to instantiate every
@@ -218,7 +218,7 @@ and performs parallel replacement of the bound variables $x_i$ with
 $t_i$. Since intermediate terms are not constructed, this reduces the number of
 recursive function calls and calls to the cell allocator.
 
-Second, in line with the gracefulness principle, we want \ehohii{} to incur
+Second, in line with the gracefulness principle, we wanted \ehohii{} to incur
 little (if any) overhead on first-order problems and to
 excel on higher-order problems with a large first-order component. If
 $\beta$-reduction is implemented naively, finding a $\beta$-redex involves
@@ -288,8 +288,8 @@ taking $\dbvar{j} = \infty$ if no such index exists.
 %bottom-up as innermost can suggest): Check "innermost".
 %%% @PETAR(you are right, but I will add righmost outermost to be more precise): But it's rightmost then not leftmost! In the example, the very first
 %%% binder remains (the one to which the 2's point). --JB
-We can then remove the $k = \min\{j,l,n\}$ rightmost outermost $\lambda$ binders in $\internallam(\db{0},
-\ldots, \internallam(\db{0}, t) \ldots)$ and replace %the body
+Then the $k = \min\{j,l,n\}$ rightmost outermost $\lambda$ binders in $\internallam(\db{0},
+\ldots, \internallam(\db{0}, t) \ldots)$ can be removed and replaced %the body
 $t$ by the variant of
 $u \allowbreak\, (\dbvar{n}\db{{}-1}) \allowbreak\, \ldots \, (\dbvar{k}\db{{}+1}) \, \dbvar{k}$
 obtained by shifting the loose De Bruijn indices down by~$k$.
@@ -893,7 +893,7 @@ $\cst{g} \, (\cst{f} \, \cst{a} \, \cst{b}) \, \cst{c}$ in the tree of Figure \r
   \begin{sloppypar}
     \ourpara{Extensionality} \ehohii{} takes a pragmatic approach to reasoning about
     functional and Boolean extensionality: It uses \emph{abstracting} rules (\infname{Abs} rules of Sect.~\ref{sect:bool:native}) 
-    which simulate basic superposition calculus rules,
+    that simulate basic superposition calculus rules,
     but do not require unifiability of the partner terms in the inference. More
     precisely, assume a core inference needs to be performed between two
     $\beta$-reduced terms $u$ and $v$, such that they can be represented as
