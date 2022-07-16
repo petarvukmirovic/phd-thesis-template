@@ -91,7 +91,7 @@ successful. After they were implemented in Zipperposition, it took its first
 victory at the higher-order division of CASC.
 
 After its first victory, Zipperposition was successfully integrated into
-Sledgehammer and it is now part of its default installation. We also noticed
+Sledgehammer and it is now part of Sledgehammer's default installation. We also noticed
 that problems which only Zipperposition can solve do pop up from time to time in
 practice. Antoine Defourné also integrated Zipperposition in the TLA+ proof
 assistant and observed that it helps prove some problems that were previously
@@ -150,7 +150,7 @@ not prove some problems when the technique is enabled. After sifting through ten
 benchmarks and carefully examining the debugging information, we realized that
 this was not due to a bug in the implementation but due to the incompatibility of
 blocked clause elimination with the redundancy criterion. In the end, we were left
-somewhat disappointed to learn that SAT techniques do not scale good enough to be used
+somewhat disappointed to learn that SAT techniques do not scale well enough to be used
 as superposition simplification techniques. However, we learned that they are
 very successful as preprocessing techniques.
 
@@ -182,7 +182,7 @@ explored in one of the earlier chapters:
 \ourpara{Higher-Order Unification} The complete variant of the unification procedure
 described in Chapter \ref{ch:unif} is proved complete with substantial
 restrictions on the order and kind of applied rules. To further
-remove redundancy, we plan to find alternative, less explosive unification rules
+remove redundancy, we hipe to find alternative, less explosive unification rules
 that do not compromise completeness. Furthermore, we want to investigate if
 there are more combinations of unification rules that lead to redundant unifiers
 and find ways to remove those redundancy-inducing combinations.
@@ -196,7 +196,7 @@ Lastly, we fixed the order in which Zipperposition applies different unification
 rules. It would be interesting to see if applying imitation before projection
 (or vice versa) yields performance improvements on some kinds of problems. 
 We also postponed the application of the most explosive rules such as iteration
-to the very end. However, it would not be surprising that there are many hard hand-crafted
+to the very end. However, it would not be surprising if there are many hard hand-crafted
 problems on which applying these rules early on would lead to a proof more quickly.
 
 \ourpara{Pragmatic Techniques and Heuristics } Many of the Boolean reasoning

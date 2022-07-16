@@ -22,12 +22,12 @@
 }
 
 \begin{abstract}
-Optimized SAT solvers not only simplify the clause set during preprocessing, but
+Optimized SAT solvers simplify the clause set not only during preprocessing, but
 they also simplify it during solving. This interleaving of
 simplification and solving is called inprocessing. Some preprocessing
 techniques have been generalized to first-order logic with equality. In this
 \paper, we port inprocessing techniques to work with superposition, a leading
-first-order proof calculus, and we strengthen known preprocessing techniques.
+first-order proof calculus, and strengthen known preprocessing techniques.
 Specifically, we look into elimination of hidden literals, variables
 (predicates), and blocked clauses. Our evaluation using the Zipperposition
 prover confirms that the new techniques usefully supplement the existing
@@ -46,7 +46,7 @@ to the calculus. I also implemented and evaluated all the techniques.
 \section{Introduction}
 \label{sec:satfol:introduction}
 
-Automated reasoning tools have become much more powerful in the last few decades
+Automated reasoning tools have become much more powerful in the last few decades,
 thanks to procedures such as conflict-driven clause learning (CDCL)
 \cite{MSLM09HBSAT} for propositional logic and superposition for first-order
 logic with equality. However, the effectiveness of these procedures crucially
@@ -54,7 +54,7 @@ depends on how the input problem is represented as a clause set. The clause set
 can be optimized beforehand (\emph{preprocessing}) or during the execution of
 the procedure (\emph{inprocessing}). In this \paper, we lift several
 preprocessing and inprocessing techniques from propositional logic to clausal
-first-order logic and demonstrate their usefulness in a superposition prover.
+first-order logic, and demonstrate their usefulness in a superposition prover.
 
 For many years, SAT solvers have used inexpensive clause simplification
 techniques such as \emph{hidden literal} and \emph{hidden tautology elimination}
@@ -161,8 +161,8 @@ models}: A canonical model $\ourmodel$ is a normal model such that for every
 element $d$ in one of $\ourmodel$'s domains there exists a ground term $t$ such
 that $\ourmodel$ interprets $t$ as $d$. 
 We also make use of Herbrand models and Herbrand's theorem \cite[Sect.~5.4]{mf-1996-fol}.
-In Herbrand's models the domain consists of all ground terms. These models have a 
-useful property that if a formula is satisfiable in a model, then it is also satisfiable in an
+In Herbrand models the domain consists of all ground terms. These models have a 
+useful property that a formula is satisfiable if and only if it is satisfiable in an
 Herbrand model. Herbrand's theorem states that every unsatisfiable clause set has (propositionally)
 unsatisfiable ground instance.     
 Canonical models generalize Herbrand models to first-order logic with equality.
@@ -2039,8 +2039,8 @@ signals that the prover emits whenever a clause is added to or removed from
 the proof state and update the records. At the beginning of the
 1st, $(K_\mathrm{iter} + 1)$st, $(2 K_\mathrm{iter} + 1)$st, $\dots{}$ iteration of the given clause procedure's
 loop body, predicate elimination is systematically applied to the entire proof
-state. The first application of inprocessing amounts to preprocessing. By
-default, $K_\mathrm{occ} = 512$ and $K_\mathrm{iter}=10$. The same ideas and
+state. The first application of inprocessing amounts to preprocessing. After some informal experiments,
+we chose $K_\mathrm{occ} = 512$ and $K_\mathrm{iter}=10$ as default values. The analogous optimization and
 limits apply for blocked clause elimination.
 
 The most important novel aspect of our predicate elimination implementation is
@@ -2072,8 +2072,8 @@ as follows, assuming $\tupleempty{x}$ is a fixed tuple of distinct free variable
 
 The invalidity of set $E$ from step \ref{step:encoding} is checked using a SAT
 solver, which is already integrated in Zipperposition. As modern theorem provers
-(including E and Vampire) also use SAT solvers, the method can easily be
-implemented.
+(including E and Vampire) also use SAT solvers, this definition set recognition method can easily be
+implemented in those provers as well.
 
 During experimentation, we noticed that recognizing definitions of symbols that
 occur in the conjecture often harms performance. Thus, Zipperposition
@@ -2347,7 +2347,7 @@ Kiesl et al.\ found that blocked clause elimination is especially effective on
 satisfiable problems. To corroborate their results and ascertain
 whether a combination of predicate elimination and blocked clause elimination
 increases the success rate, we evaluate BCE on all 2273
-satisfiable or TPTP FOF and CNF problems.
+satisfiable TPTP FOF and CNF problems.
 The hardware and CPU time limits are the same as in the experiments above.
 Figure~\ref{fig:bce-sat} presents the results.
 
