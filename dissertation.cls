@@ -264,8 +264,8 @@
 %% for the thumb indices.
 \definecolor{anthracite}{cmyk}{0,0,0,1}
 \if@print
-    \colorlet{title}{tudelft-cyan}
-    %\colorlet{title}{anthracite}
+    % \colorlet{title}{tudelft-cyan}
+    \colorlet{title}{anthracite}
 \else
     \colorlet{title}{tudelft-cyan}
 \fi
@@ -318,21 +318,21 @@
 
 \if@print%
     \newcommand*\cropmarks{%
-        \ifodd\c@page%
-            \begin{tikzpicture}[remember picture,overlay]
-                \draw ($(current page.north east)+(0mm,-3mm)$) -- ($(current page.north east)+(-2mm,-3mm)$);
-                \draw ($(current page.north east)+(-3mm,0mm)$) -- ($(current page.north east)+(-3mm,-2mm)$);
-                \draw ($(current page.south east)+(0mm,3mm)$) -- ($(current page.south east)+(-2mm,3mm)$);
-                \draw ($(current page.south east)+(-3mm,0mm)$) -- ($(current page.south east)+(-3mm,2mm)$);
-            \end{tikzpicture}%
-        \else%
-            \begin{tikzpicture}[remember picture,overlay]
-                \draw ($(current page.north west)+(0mm,-3mm)$) -- ($(current page.north west)+(2mm,-3mm)$);
-                \draw ($(current page.north west)+(3mm,0mm)$) -- ($(current page.north west)+(3mm,-2mm)$);
-                \draw ($(current page.south west)+(0mm,3mm)$) -- ($(current page.south west)+(2mm,3mm)$);
-                \draw ($(current page.south west)+(3mm,0mm)$) -- ($(current page.south west)+(3mm,2mm)$);
-            \end{tikzpicture}%
-        \fi%
+        % \ifodd\c@page%
+        %     \begin{tikzpicture}[remember picture,overlay]
+        %         \draw ($(current page.north east)+(0mm,-3mm)$) -- ($(current page.north east)+(-2mm,-3mm)$);
+        %         \draw ($(current page.north east)+(-3mm,0mm)$) -- ($(current page.north east)+(-3mm,-2mm)$);
+        %         \draw ($(current page.south east)+(0mm,3mm)$) -- ($(current page.south east)+(-2mm,3mm)$);
+        %         \draw ($(current page.south east)+(-3mm,0mm)$) -- ($(current page.south east)+(-3mm,2mm)$);
+        %     \end{tikzpicture}%
+        % \else%
+        %     \begin{tikzpicture}[remember picture,overlay]
+        %         \draw ($(current page.north west)+(0mm,-3mm)$) -- ($(current page.north west)+(2mm,-3mm)$);
+        %         \draw ($(current page.north west)+(3mm,0mm)$) -- ($(current page.north west)+(3mm,-2mm)$);
+        %         \draw ($(current page.south west)+(0mm,3mm)$) -- ($(current page.south west)+(2mm,3mm)$);
+        %         \draw ($(current page.south west)+(3mm,0mm)$) -- ($(current page.south west)+(3mm,2mm)$);
+        %     \end{tikzpicture}%
+        % \fi%
     }
 \else
     \newcommand*\cropmarks{}

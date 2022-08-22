@@ -15,13 +15,13 @@ In an attempt to automate significant parts of this proving process, assistants
 can invoke automatic theorem provers to finish the proof. However, most
 assistants are based on higher-order logic, while most automatic theorem provers
 are based on first-order logic. This means that the two systems must communicate
-through translations, which obfuscate the conjecture being proved and likely make it more
-difficult than it originally was.
+through translations, which obfuscate the conjecture being proved and likely
+make proving the conjecture more difficult.
 
 In this thesis, we try to bridge this translation gap. We start from E, one of the best
 first-order proof assistants backends, based on the superposition calculus, and
 gradually extend it to higher-order logic. As this approach is large in scope,
-we split it in three parts.
+we split it into three parts.
 
 The first part extends E to support a fragment of higher-order logic devoid of
 $\lambda$-abstra\-ction, yielding a prover called Ehoh. Despite this extension being small in scope, 
@@ -32,7 +32,7 @@ important challenge we faced during this extension is that of higher-order
 unification. At the time we started, the state-of-the-art procedure
 for full higher-order unification was the one developed in 1970s. We designed a new
 procedure inspired by this one that enumerates fewer redundant unifiers, has many
-modern optimizations built-in, and can easily be customized to trade its
+modern optimizations built in, and can easily be customized to trade its
 completeness for performance. It is implemented in a
 prototype prover called Zipperposition, a less efficient but more easily extendible
 prover compared to E. Our evaluation shows that our
@@ -68,7 +68,23 @@ prover can become an award-winning higher-order prover.
 
 {\selectlanguage{dutch}
 
+In de afgelopen decennia zijn bewijsassistenten bijzonder nuttig gebleken in het formeel bewijzen van de validiteit van complexe wiskundige theorie\"en zowel als de correctheid van veiligheidskritieke software. Met behulp van deze tools kan men een probleem formeel beschrijven en machinaal controleerbare bewijzen voor uitspraken hierover produceren. Om de controle-fase effici\"ent en betrouwbaar te maken, dienen bewijsstappen van een zeer fijne granulariteit te zijn. Als gevolg hiervan moeten op het eerste gezicht triviale feiten in uiterst precies detail bewezen worden, wat het werken met bewijsassistenten buitengewoon omslachtig maakt.
 
+In een poging om belangrijke delen van dit bewijsproces te automatiseren, kunnen bewijsassistenten automatische bewijzers aanroepen om een bewijs af te maken. De meeste bewijsassistenten zijn echter op hogere-orde logica gebaseerd, terwijl de meeste automatische bewijzers op eerste-orde logica gestoeld zijn. Dit betekent dat de twee systemen moeten communiceren door vertalingen, die het probleem dat wordt bewezen vertroebelen en het bewijzen ervan bemoeilijken.
+
+In dit proefschrift proberen we deze vertaalkloof te overbruggen. We beginnen bij E, een van de beste eerste-orde bewijsassistenten backends, gebaseerd op de superpositie calculus, en we breiden hem geleidelijk uit tot logica's van hogere orde. Omdat deze aanpak een omvangrijke reikwijdte heeft, splitsen we hem in drie delen.
+
+Het eerste deel breidt E uit om een fragment van hogere-orde logica te ondersteunen zonder $\lambda$-abstractie, wat een bewijzer oplevert die Ehoh heet. Alhoewel deze uitbreiding klein van omvang is, laat Ehoh betere prestaties zien op benchmarks voor bewijsassistenten dan E.
+
+Het tweede deel betreft het toevoegen van ondersteuning voor $\lambda$-abstractie. De belangrijkste uitdaging waarmee we tijdens deze uitbreiding werden geconfronteerd is die van hogere-orde unificatie. Op het moment dat we begonnen was de state-of-the-art procedure voor volledige hogere-orde unificatie in de jaren zeventig ontwikkeld. We ontwierpen hierop ge\"{\i}nspireerd een procedure die minder redundante unifiers vindt, waarbij ook veel moderne optimalisaties zijn ingebouwd. Hij kan verder eenvoudig worden aangepast om niet alle unifiers te vinden, maar sneller te zijn. Hij is ge\"{\i}mplementeerd in een prototype prover genaamd Zipperposition, een minder effici\"ente maar gemakkelijker uitbreidbare prover, vergeleken met E. Uit onze evaluatie blijkt dat onze procedure een aanzienlijk verbetering oplevert in prestaties.
+
+Het laatste deel betreft het toevoegen van bestaande ondersteuning voor Boolse termen. Voor dit deel hebben we ons laten inspireren door traditionele automatische hogere-orde bewijzers, gebaseerd op tableaus. Die technieken hebben we in de superpositie context toegepast en in Zipperposition ge\"{\i}mplementeerd. Dit maakte Zipperposition in twee opvolgende jaren tot de beste bewijzer in de hogere-orde divisie van de jaarlijkse CASC automatische bewijzers competitie.
+
+Na het testen van onze idee\"en in Zipperposition, besloten we terug te gaan naar Ehoh en die uit te breiden tot volledige logica van hogere orde. Dit heeft geleid tot een bewijzer genaamd $\lambda$E. We hebben hiervoor de meest succesvolle methoden van Zipperposition gekozen die gemakkelijk kunnen worden overgezet naar $\lambda$E. De resultaten waren wederom positief: Onze evaluatie toont aan dat $\lambda$E de beste prover is op een benchmark voor bewijsassistenten, en tweede na Zipperposition op een standaard benchmark verzameling.
+
+We hebben vervolgens een stap terug gezet bij onze intentie om technieken van zwakkere naar sterkere logica's over te hevelen: We onderzochten SAT-vereenvoudi\-gingstechnie\-ken die kunnen worden ge\"{\i}mplementeerd in de superpositie context. We ontdekten dat alhoewel sommige ervan kunnen worden gebruikt tijdens het bewijzen, de meeste het beste werken als preprocessors.
+
+Concluderend laat het werk beschreven in dit proefschrift zien dat eerste- en hogere-orde bewijzers veel meer op elkaar lijken dan eerder werd gedacht. Verder hebben we laten zien dat door een zorgvuldig ontworpen en afgestemde uitbreiding, een eerste-orde bewijzer een bekroonde bewijzer voor hogere orde kan worden.
 }
 
 
