@@ -29,7 +29,9 @@
 
 %% The following lines repeat the previous page exactly.
 
-\vspace*{2\bigskipamount}
+VRIJE UNIVERSITEIT
+
+\vspace*{4\bigskipamount}
 
 %% Print the title.
 {\makeatletter
@@ -48,19 +50,20 @@
 %% the title page.
 %\vfill
 %\includegraphics{title}
-\vfill
+% \vfill
+\vspace*{5\bigskipamount}
 
 %% Apart from the names and dates, the following text is dictated by the
 %% promotieregelement.
 
-{\Large\titlefont\bfseries Proefschrift}
+{ACADEMISCH PROEFSCHRIFT}
 
 \bigskip
 \bigskip
 
-ter verkrijging van de graad Doctor
+ter verkrijging van de graad Doctor aan
 
-aan de Vrije Universiteit Amsterdam,
+de Vrije Universiteit Amsterdam,
 
 op gezag van de rector magnificus
 
@@ -68,11 +71,13 @@ prof.dr. J.J.G. Geurts,
 
 in het openbaar te verdedigen
 
-ten overstaan van de promotiecommissie van de Faculteit der Bètawetenschappen
+ten overstaan van de promotiecommissie
 
-op dinsdag 18.10.2022. om 13.15 uur
+van de Faculteit der Bètawetenschappen
 
-in een bijeenkomst van de universiteit, 
+op dinsdag 18 oktober 2022 om 13.45 uur
+
+in een bijeenkomst van de universiteit,
 
 De Boelelaan 1105
 
@@ -81,21 +86,13 @@ De Boelelaan 1105
 
 door
 
-\bigskip
-\bigskip
+\smallskip
 
-%% Print the full name of the author.
-\makeatletter
-{\Large\titlefont\bfseries\@firstname\ \titleshape{\MakeUppercase{\@lastname}}}
-\makeatother
+Petar Vukmirovi\'c
 
-\bigskip
-\bigskip
+\smallskip
 
-Master of Science in Computer Science, \\
-Vrije Universiteit Amsterdam, Nederland,
-
-geboren te Belgrado, Servi\"e.
+geboren te Belgrado, Servi\"e
 
 %% Extra whitespace at the bottom.
 \vspace*{2\bigskipamount}
@@ -106,32 +103,38 @@ geboren te Belgrado, Servi\"e.
 \thispagestyle{empty}
 
 %% The following line is dictated by the promotieregelement.
-\noindent Dit proefschrift is goedgekeurd door de
 
 %% List the promotors (supervisors).
 \medskip\noindent
 \begin{tabular}{ll}
-    promotor: & prof.$\,$dr. W. J. Fokkink \\
+    promotor: & prof.$\,$dr. W. J. Fokkink \\[4\jot]
     copromotoren: & dr. J. C. Blanchette \\
-                  & prof.$\,$dr. S. Schulz
+                  & prof.$\,$dr. S. Schulz \\[4\jot]
+    promotiecommissie: & prof.$\,$dr. M. Hoogendoorn  \\
+                      & dr. K. Korovin               \\
+                      & dr. R. Piskac                \\
+                      & dr. A. Steen                 \\
+                      & dr. M. Suda                  \\
+                      & prof.$\,$dr. G. Sutcliffe    \\
+    
 \end{tabular}
 
-\bigskip
-\noindent Samenstelling promotiecommissie:
+% \bigskip
+% \noindent Promotiecommissie:
 
-%% List the committee members, starting with the Rector Magnificus and the
-%% promotor(s) and ending with the reserve members.
-\medskip\noindent
-\begin{tabular}{p{4.5cm}l}
+% %% List the committee members, starting with the Rector Magnificus and the
+% %% promotor(s) and ending with the reserve members.
+% \medskip\noindent
+% \begin{tabular}{p{4.5cm}l}
 
-prof.$\,$dr. M. Hoogendoorn & Vrije Universiteit Amsterdam \\
-dr. K. Korovin & The University of Manchester \\
-dr. R. Piskac & Yale University \\
-dr. A. Steen & University of Greifswald \\
-dr. M. Suda & Czech Technical University in Prague \\
-prof.$\,$dr. G. Sutcliffe & University of Miami \\
+% prof.$\,$dr. M. Hoogendoorn & Vrije Universiteit Amsterdam \\
+% dr. K. Korovin & The University of Manchester \\
+% dr. R. Piskac & Yale University \\
+% dr. A. Steen & University of Greifswald \\
+% dr. M. Suda & Czech Technical University in Prague \\
+% prof.$\,$dr. G. Sutcliffe & University of Miami \\
 
-\end{tabular}
+% \end{tabular}
 
 %% Include the following disclaimer for committee members who have contributed
 %% to this dissertation. Its formulation is again dictated by the
@@ -139,8 +142,7 @@ prof.$\,$dr. G. Sutcliffe & University of Miami \\
 %\medskip
 %\noindent  %Prof.\ Dr.\ D.\ Spinellis has contributed to the creation of this thesis.
 
-\medskip
-\medskip
+\newpage
 % TODO Include http://www.win.tue.nl/ipa/?page_id=309
 \noindent The work in the thesis has been carried out under the auspices of the research school IPA
 (Institute for Programming research and Algorithmics).
